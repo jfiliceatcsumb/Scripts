@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+﻿#!/bin/bash
 
 # Script to remove a directory user group (e.g. from Active Directory) from a Mac's ard_interact group.
 # Also enables ard_interact group and ARD client directory logins.
