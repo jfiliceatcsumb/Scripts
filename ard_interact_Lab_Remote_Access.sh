@@ -10,7 +10,7 @@
 # Edit variables in this section
 # 
 # User directory group to add to ard_interact. 
-addARDgroup="CSUMB\Domain Users"
+addARDgroup="MyDomain\Domain Users"
 # 
 ##################
 
