@@ -8,7 +8,7 @@
 # Edit variables in this section
 # 
 # User directory group to remove from ard_interact. 
-addARDgroup="CSUMB\Domain Users"
+addARDgroup="MyDomain\Domain Users"
 # 
 ##################
 
