@@ -1,5 +1,5 @@
 ﻿#!/bin/bash
-# Version 2.0.1
+# Version 2.0.2
 
 #########################################################################################
 # License information
@@ -9,7 +9,7 @@
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this
 # software and associated documentation files (the "Software"), to deal in the Software
 # without restriction, including without limitation the rights to use, copy, modify, merge,
-# publish, distribute, sublicense, and/or sell copies of the Software, and to pefrmit persons
+# publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 # to whom the Software is furnished to do so, subject to the following conditions:
 
 # The above copyright notice and this permission notice shall be included in all copies or
@@ -41,7 +41,6 @@
 # Quit Key set to command + control + x
   TESTING_MODE=true # Set variable to true or false
 
-
 #########################################################################################
 # General Appearance
 #########################################################################################
@@ -54,15 +53,17 @@
 #  BANNER_IMAGE_PATH="/Applications/Self Service.app/Contents/Resources/AppIcon.icns"
   BANNER_IMAGE_PATH="/var/tmp/CSUMB Logo 540 Bay Blue.png"
 
+# Update the variable below replacing "Organization" with the actual name of your organization. Example "ACME Corp Inc."
+  YOUR_ORG_NAME_HERE="CSUMB"
 
 # Main heading that will be displayed under the image
 # If this variable is left blank, the generic banner will appear
-  BANNER_TITLE="CSUMB Mac Setup"
+  BANNER_TITLE="$YOUR_ORG_NAME_HERE Mac Setup"
 
 # Paragraph text that will display under the main heading. For a new line, use \n
 # If this variable is left blank, the generic message will appear. Leave single
 # quotes below as double quotes will break the new lines.
-  MAIN_TEXT='This process will set up this Mac at CSUMB. We want to install a few applications and configure settings. This process should take several minutes to complete. \n \n Additional software is available in the Self Service app in the Applications folder.'
+  MAIN_TEXT='This process will set up this Mac at '$YOUR_ORG_NAME_HERE'. We want to install a few applications and configure settings. This process should take several minutes to complete. \n \n Additional software is available in the Self Service app in the Applications folder.'
 
 # Initial Start Status text that shows as things are firing up
   INITAL_START_STATUS="Initial Configuration Starting..."
@@ -110,8 +111,8 @@
 
 # Help Button Configuration
   # The help button was changed to a popup. Button will appear if title is populated.
-    HELP_BUBBLE_TITLE='Need Help?'
-    HELP_BUBBLE_BODY='If you have issues, please give us a call at 831-582-4357'
+    HELP_BUBBLE_TITLE="Need Help?"
+    HELP_BUBBLE_BODY="If you have issues, please give us a call at 831-582-4357"
 
 #########################################################################################
 # Error Screen Text
@@ -132,6 +133,15 @@
 
 # Error status message that is displayed under the progress bar
   ERROR_STATUS="Setup Failed"
+
+#########################################################################################
+# Trigger to be used to call the policy
+#########################################################################################
+# Policies can be called be either a custom trigger or by policy id.
+# Select either event, to call the policy by the custom trigger,
+# or id to call the policy by id.
+TRIGGER="event"
+
 
 #########################################################################################
 # Policy Variable to Modify
@@ -155,9 +165,6 @@
     "Resetting system updates to ignore,softwareUpdateIgnore"
 	"Updating Jamf inventory,jamfRecon"
   )
-
-#    "Enforcing the entire Jamf management framework,jamfManage"    
-
 
 #########################################################################################
 # Caffeinate / No Sleep Configuration
@@ -199,7 +206,7 @@
     EULA_BUTTON="Read and Agree to EULA"
 
   # EULA Screen Title
-    EULA_MAIN_TITLE="CSUMB End User License Agreement"
+    EULA_MAIN_TITLE="$YOUR_ORG_NAME_HERE End User License Agreement"
 
   # EULA Subtitle
     EULA_SUBTITLE="Please agree to the following terms and conditions to start configuration of this Mac"
@@ -232,7 +239,7 @@
 
   # Registration window can have up to two text fields. Leaving the text display
   # variable empty will hide the input box. Display text is to the side of the
-  # input and placeholder text is they grey text inside the input box.
+  # input and placeholder text is the gray text inside the input box.
   # Registration window can have up to four dropdown / pick list inputs. Leaving
   # the pick display variable empty will hide the dropdown / pick list.
 
@@ -242,7 +249,7 @@
       REG_TEXT_LABEL_1="Computer Name"
 
     # Place Holder Text
-      REG_TEXT_LABEL_1_PLACEHOLDER="M000-123-45678"
+      REG_TEXT_LABEL_1_PLACEHOLDER="M000-123-12345"
 
     # Optional flag for making the field an optional input for end user
       REG_TEXT_LABEL_1_OPTIONAL="false" # Set variable to true or false
@@ -421,21 +428,6 @@
         fi
       }
 
-
-#########################################################################################
-#########################################################################################
-# Kill depNotify script if DeployStudio has already run.
-#########################################################################################
-#########################################################################################
-
-# if [ -e /private/var/log/ds_finalize.log ]
-# then
-# 	echo "ds_finalize.log exists; exiting depNotify script."
-#    logger "ds_finalize.log exists; exiting depNotify script."
-#     exit 0
-# fi
-
-
 #########################################################################################
 #########################################################################################
 # Core Script Logic - Don't Change Without Major Testing
@@ -529,6 +521,22 @@
   CURRENT_USER=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "\n");')
   echo "$(date "+%a %h %d %H:%M:%S"): Current user set to $CURRENT_USER." >> "$DEP_NOTIFY_DEBUG"
 
+# Stop DEPNotify if there was already a DEPNotify window running (from a PreStage package postinstall script).
+ PREVIOUS_DEP_NOTIFY_PROCESS=$(pgrep -l "DEPNotify" | cut -d " " -f1)
+  until [ "$PREVIOUS_DEP_NOTIFY_PROCESS" = "" ]; do
+    echo "$(date "+%a %h %d %H:%M:%S"): Stopping the previously-opened instance of DEPNotify." >> "$DEP_NOTIFY_DEBUG"
+    kill $PREVIOUS_DEP_NOTIFY_PROCESS
+    PREVIOUS_DEP_NOTIFY_PROCESS=$(pgrep -l "DEPNotify" | cut -d " " -f1)
+  done
+  
+ # Stop BigHonkingText if it's running (from a PreStage package postinstall script).
+ BIG_HONKING_TEXT_PROCESS=$(pgrep -l "BigHonkingText" | cut -d " " -f1)
+  until [ "$BIG_HONKING_TEXT_PROCESS" = "" ]; do
+    echo "$(date "+%a %h %d %H:%M:%S"): Stopping the previously-opened instance of BigHonkingText." >> "$DEP_NOTIFY_DEBUG"
+    kill $BIG_HONKING_TEXT_PROCESS
+    BIG_HONKING_TEXT_PROCESS=$(pgrep -l "BigHonkingText" | cut -d " " -f1)
+  done
+ 
 # Adding Check and Warning if Testing Mode is off and BOM files exist
   if [[ ( -f "$DEP_NOTIFY_LOG" || -f "$DEP_NOTIFY_DONE" ) && "$TESTING_MODE" = false ]]; then
     echo "$(date "+%a %h %d %H:%M:%S"): TESTING_MODE set to false but config files were found in /var/tmp. Letting user know and exiting." >> "$DEP_NOTIFY_DEBUG"
@@ -788,7 +796,7 @@
     if [ "$TESTING_MODE" = true ]; then
       sleep 10
     elif [ "$TESTING_MODE" = false ]; then
-      "$JAMF_BINARY" policy -event "$(echo "$POLICY" | cut -d ',' -f2)"
+      "$JAMF_BINARY" policy "-$TRIGGER" "$(echo "$POLICY" | cut -d ',' -f2)"
     fi
   done
 
