@@ -150,7 +150,6 @@ TRIGGER="event"
 # run in order as they appear below.
   POLICY_ARRAY=(
 	"Setting Computer Name to Serial Number,renameComputerSerial"
-    "Installing Rosetta 2 for Apple Silicon,Rosetta2"
 	"Binding to Active Directory,activeDirectoryBinding"
 	"Installing Jamf Connect 2,JamfConnect2"
 	"Configuring basic settings,basicSettings_nonLab"    
