@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><extensionAttribute>
+<displayName>Rosetta 2 Installed</displayName>
+<description>Check Rosetta 2 LaunchDaemon. Borrowed from https://github.com/rtrouton/rtrouton_scripts/blob/master/rtrouton_scripts/install_rosetta_on_apple_silicon/install_rosetta_on_apple_silicon.sh&#13;
+</description>
+<dataType>string</dataType>
+<scriptContentsMac>#!/bin/bash&#13;
+&#13;
+if [[ -f "/Library/Apple/System/Library/LaunchDaemons/com.apple.oahd.plist" ]]; then&#13;
+	echo "&lt;result&gt;Yes&lt;/result&gt;"&#13;
+else&#13;
+	echo "&lt;result&gt;No&lt;/result&gt;"	&#13;
+fi&#13;
+</scriptContentsMac>
+</extensionAttribute>
