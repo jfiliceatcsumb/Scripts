@@ -6,19 +6,44 @@
 # Technology Support Services in IT
 # California State University, Monterey Bay
 # https://csumb.edu/it
-
-
+# 
+# 
+# This is free and unencumbered software released into the public domain.
+# 
+# Anyone is free to copy, modify, publish, use, compile, sell, or
+# distribute this software, either in source code form or as a compiled
+# binary, for any purpose, commercial or non-commercial, and by any
+# means.
+# 
+# In jurisdictions that recognize copyright laws, the author or authors
+# of this software dedicate any and all copyright interest in the
+# software to the public domain. We make this dedication for the benefit
+# of the public at large and to the detriment of our heirs and
+# successors. We intend this dedication to be an overt act of
+# relinquishment in perpetuity of all present and future rights to this
+# software under copyright law.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+# 
+# For more information, please refer to <https://unlicense.org>
 
 # Copied script functions from /ZoomInstallerIT-5.6.1.560/zoomus/Scripts/postinstall.sh
+# Copied script functions from https://www.jamf.com/jamf-nation/discussions/27069/zoom-app-asks-for-admin-credentials-when-trying-to-share-computer-audio#responseChild212551
 
-# Run it with no arguments. 
-# 
-# For best results, copy it to the Mac and run it as a post-flight task in DeployStudio 
-# or postinstall script in a PKG installer.
+
+# For best results, run as postinstall script in a PKG installer.
+# Must run as root.
+# Requires /Library/Audio/Plug-Ins/HAL/ZoomAudioDevice.driver to be installed on system.
 
 
 # Change History:
-# 2021/MM/DD:	Creation.
+# 2021/04/12:	Creation.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -49,27 +74,17 @@ alias sudo=/usr/bin/sudo
 
 #########################
 
-# Corrected syntax on ps command
 function kill_coreaudiod()
 {
- #    coreaudiod_pid=$(ps -ax  -o pid -o command | grep "coreaudiod"\
-#     | while read each_p
-#     do
-#     echo "$each_p"
-#     done \
-#     | grep "/usr/sbin/coreaudiod" | grep --invert-match grep  | awk '{print $1}')
-# 
-#     if [[ $coreaudiod_pid > 0 ]]; then
-#         kill -9 $coreaudiod_pid
-#     fi
-
+# 	Set variable to all PIDs of /usr/sbin/coreaudiod
+#	--invert-match to remove PID for the grep command itself
 	coreaudiod_pid=$( ps -ax -o pid -o command | grep "/usr/sbin/coreaudiod" | grep --invert-match grep | awk '{print $1}' )
     
 	for each_pid in $coreaudiod_pid
 	do
 		if [[ $each_pid -gt 0 ]] 
 		then
-# 			kill -9 $each_pid
+			kill -9 $each_pid
 			echo "kill -9 $each_pid"
 		fi
 	done
@@ -78,12 +93,13 @@ function kill_coreaudiod()
 	
 }
 
-set -x
 
 #################################
 # use audio device plugin
-# AudioPluginPath=/Library/Audio/Plug-Ins/HAL
-# audioPluginfile="$ZOOM_PATH"/Contents/Plugins/ZoomAudioDevice.driver
+# /Library/Audio/Plug-Ins/HAL/ZoomAudioDevice.driver
+
+# set -x
+
 echo "Load Zoom audio device driver..."
 # unload device kernel if loaded
 st=$(kextstat -b zoom.us.ZoomAudioDevice | grep zoom.us.ZoomAudioDevice 2>&1)
@@ -94,7 +110,7 @@ else
 	kill_coreaudiod
 fi
 
-set +x
+# set +x
 
 exit 0
 
