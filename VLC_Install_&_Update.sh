@@ -55,7 +55,7 @@ alias sleep=/bin/sleep
 alias perl=/usr/bin/perl
 alias tail=/usr/bin/tail
 
-set -x 
+# set -x 
 
 # script to update vlc
 find /Volumes -type d -name "*vlc*" -maxdepth 1 -exec hdiutil detach {} \;
@@ -103,11 +103,9 @@ fi
 ditto -rsrc "$appVol/VLC.app" "/Applications/VLC.app"
 chown -R root:wheel "/Applications/VLC.app"
 chmod -R 755 "/Applications/VLC.app"
-sleep 3
+sleep 1
 hdiutil detach "$appVol" -quiet
 sleep 3
 rm "/tmp/vlc.dmg"
-sleep 1
-# /usr/bin/open "/Applications/VLC.app" &
 
 exit
