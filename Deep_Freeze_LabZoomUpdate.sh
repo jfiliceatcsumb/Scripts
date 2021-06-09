@@ -59,19 +59,7 @@ write_script() {
 	cat > "$1" <<-EOF
 	#!/bin/sh
 
-	# Jason Filice
-	# jfilice@csumb.edu
-	# Technology Support Services in IT
-	# California State University, Monterey Bay
-	# http://csumb.edu/it
-
-
-	SCRIPTNAME=`/usr/bin/basename "$0"`
-	SCRIPTPATH=`/usr/bin/dirname "$0"`
-
-
 	/usr/local/bin/jamf policy -event LabZoomUpdate -randomDelaySeconds 15
-
 
 	exit 0
 	EOF
