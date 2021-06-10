@@ -22,6 +22,21 @@
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTPATH=`/usr/bin/dirname "$0"`
 
+# Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
+
+pathToScript=$0
+mountPoint=$1
+computerName=$2
+userName=$3
+
+shift 3
+# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+
+echo pathToScript=$pathToScript
+echo mountPoint=$mountPoint
+echo computerName=$computerName
+echo userName=$userName
+
 # set alias for PlistBuddy and several others so I don't have to specify full path.
 # Prefix sudo path because I'm using it here for all commands.
 # If I want to run a command without the alias, then specify the full path.
