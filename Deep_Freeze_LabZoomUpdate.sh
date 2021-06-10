@@ -59,7 +59,7 @@ write_script() {
 	cat > "$1" <<-EOF
 	#!/bin/sh
 
-	/usr/local/bin/jamf policy -event LabZoomUpdate -randomDelaySeconds 15
+	/usr/local/bin/jamf policy -event ZoomInstallerIT_latest -randomDelaySeconds 15
 
 	exit 0
 	EOF
