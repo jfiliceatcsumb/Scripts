@@ -59,21 +59,22 @@ alias sudo=/usr/bin/sudo
 
 if [[ -e /Library/LaunchAgents/com.jamf.connect.sync.plist ]]
 then
-	/bin/launchctl stop com.jamf.connect.sync
-	/bin/launchctl unload -wF /Library/LaunchAgents/com.jamf.connect.sync.plist
-	/bin/rm -f /Library/LaunchAgents/com.jamf.connect.sync.plist
+	/bin/launchctl stop com.jamf.connect.sync  2>&1
+	/bin/launchctl unload -wF /Library/LaunchAgents/com.jamf.connect.sync.plist 2>&1
+	/bin/rm -f /Library/LaunchAgents/com.jamf.connect.sync.plist 2>&1
 
 fi
 
-/usr/bin/killall "Jamf Connect Sync"
+/usr/bin/killall "Jamf Connect Sync"  2>&1
 
-
+if [[ -e "/Applications/Jamf Connect Sync.app" ]]
+then
 # Remove Jamf Connect Sync from /Applicatons .
-/bin/rm -fR "/Applications/Jamf Connect Sync.app"
+	/bin/rm -fR "/Applications/Jamf Connect Sync.app"  2>&1
+fi
+
+/usr/bin/killall "Jamf Connect Sync" 2>&1
 
 
-/usr/bin/killall "Jamf Connect Sync"
-
-
-exit
+exit 0
 
