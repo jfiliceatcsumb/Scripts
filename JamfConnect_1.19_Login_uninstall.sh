@@ -49,13 +49,16 @@ alias sudo=/usr/bin/sudo
 # https://docs.jamf.com/jamf-connect/administrator-guide/authchanger.html
 
 # Reset the authentication database by executing the following command with the authchanger:
-/usr/local/bin/authchanger -reset
+if [[ -e /usr/local/bin/authchanger ]]
+then
+	/usr/local/bin/authchanger -reset
 
-# Important: If you do not reset the authentication database before deleting Jamf Connect Login files, users will be unable to log in.
+	# Important: If you do not reset the authentication database before deleting Jamf Connect Login files, users will be unable to log in.
 
-#Remove the following files installed with Jamf Connect Login by executing the following commands:
-rm /usr/local/bin/authchanger
-rm /usr/local/lib/pam/pam_saml.so.2
-rm -r /Library/Security/SecurityAgentPlugins/JamfConnectLogin.bundle
+	#Remove the following files installed with Jamf Connect Login by executing the following commands:
+	rm /usr/local/bin/authchanger  2>&1
+	rm /usr/local/lib/pam/pam_saml.so.2 2>&1
+	rm -r /Library/Security/SecurityAgentPlugins/JamfConnectLogin.bundle 2>&1
+fi
 
-exit
+exit 0
