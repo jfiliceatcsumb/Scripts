@@ -15,7 +15,7 @@
 
 
 # Change History:
-# 2021/MM/DD:	Creation.
+# 2021/07/22:	Creation.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -71,6 +71,14 @@ rm -r /Library/Security/SecurityAgentPlugins/JamfConnectLogin.bundle
 
 # Uninstalling the Menu Bar App
 
+# Remove the Jamf Connect app from /Applicatons 
+rm -fR "/Applications/Jamf Connect.app"
 
+# Remove the Jamf Connect launch agent from /Library/LaunchAgents
+if [[ -f "/Library/LaunchAgents/com.jamf.connect.plist" ]]
+then
+	/bin/launchctl unload -wF "/Library/LaunchAgents/com.jamf.connect.plist"
+	rm -f "/Library/LaunchAgents/com.jamf.connect.plist"
+fi
 
 exit
