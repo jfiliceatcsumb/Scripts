@@ -31,6 +31,9 @@ mountPoint=$1
 computerName=$2
 userName=$3
 
+shift 3
+# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+
 
 # set alias for PlistBuddy and several others so I don't have to specify full path.
 # Prefix sudo path because I'm using it here for all commands.
@@ -47,16 +50,33 @@ alias sudo=/usr/bin/sudo
 
 
 # Setting default values:
-AutoUpdate=${4:="TRUE"}
-AutoUpdateRestartRequired=${5:="TRUE"}
-AutomaticCheckEnabled=${6:="TRUE"}
-AutomaticDownload=${7:="TRUE"}
-CriticalUpdateInstall=${8:="TRUE"}
-ConfigDataInstall=${9:="TRUE"}
-AutomaticallyInstallAppUpdates=${10:="TRUE"}
-restrict-software-update-require-admin-to-install=${11:="FALSE"}
+
+# Parameter 4
+AutoUpdate=${1:-"TRUE"}
+
+# Parameter 5
+AutoUpdateRestartRequired=${2:-"TRUE"}
+
+# Parameter 6
+AutomaticCheckEnabled=${3:-"TRUE"}
+
+# Parameter 7
+AutomaticDownload=${4:-"TRUE"}
+
+# Parameter 8
+CriticalUpdateInstall=${5:-"TRUE"}
+
+# Parameter 9
+ConfigDataInstall=${6:-"TRUE"}
+
+# Parameter 10
+AutomaticallyInstallAppUpdates=${7:-"TRUE"}
+
+# Parameter 11
+RestrictSoftwareUpdateRequireAdminToInstall=${8:-"FALSE"}
+
 AutomaticallyInstallMacOSUpdates=$AutoUpdateRestartRequired
-restrict-store-require-admin-to-install=${restrict-software-update-require-admin-to-install}
+RestrictStoreRequireAdminToInstall=${RestrictSoftwareUpdateRequireAdminToInstall}
 
 
 
@@ -68,8 +88,8 @@ defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist AutomaticDown
 defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist CriticalUpdateInstall -bool $CriticalUpdateInstall
 defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist ConfigDataInstall -bool $ConfigDataInstall
 defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist AutomaticallyInstallAppUpdates -bool $AutomaticallyInstallAppUpdates
-defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist restrict-software-update-require-admin-to-install -bool ${restrict-software-update-require-admin-to-install}
-defaults write /Library/Preferences/com.apple.appstore.plist restrict-store-require-admin-to-install -bool ${restrict-store-require-admin-to-install}
+defaults write /Library/Preferences/com.apple.SoftwareUpdate.plist restrict-software-update-require-admin-to-install -bool ${RestrictSoftwareUpdateRequireAdminToInstall}
+defaults write /Library/Preferences/com.apple.appstore.plist restrict-store-require-admin-to-install -bool ${RestrictStoreRequireAdminToInstall}
 
 
 
