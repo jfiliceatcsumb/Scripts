@@ -15,6 +15,7 @@
 
 # Change History:
 # 2021/02/19:	Creation.
+# 2021/08/04: 	RemoteUpdateManager.log in realtime
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -61,9 +62,21 @@ echo "***Begin $SCRIPTNAME script***"
 # RemoteUpdateManager must be launched with elevated privileges.
 
 
+
 # Check for /usr/local/bin/RemoteUpdateManager
 if [[ -e /usr/local/bin/RemoteUpdateManager ]]
 then
+
+	/bin/echo "When RemoteUpdateManager runs, it takes about a half hour or longer if there are lots of updates."
+
+
+	/bin/echo "Showing RemoteUpdateManager.log in realtime..."
+	/usr/bin/tail -F -n 0 $HOME/Library/Logs/RemoteUpdateManager.log &
+	
+	tailPID=$!
+	
+	/bin/echo "Running the Adobe RemoteUpdateManager..."
+
 	# Check for parameters passed to the script
 	if [[ "$1" == "" ]]
 	then
@@ -71,6 +84,13 @@ then
 	else
 		/usr/local/bin/RemoteUpdateManager --productVersions=$1
 	fi
+
+	/bin/echo "Finished running the RemoteUpdateManager."
+
+	/bin/sleep 3
+# 	Kill the tail background process.
+# 	/bin/kill $tailPID
+
 else
 	echo "Error: Adobe RemoteUpdateManager not installed."
 	exit 1
