@@ -4,7 +4,7 @@
 # jfilice@csumb.edu
 # Technology Support Services in IT
 # California State University, Monterey Bay
-# http://it.csumb.edu
+# http://csumb.edu/it
 
 
 
@@ -26,6 +26,7 @@
 # 2016/08/21:	Updated with script code from https://github.com/munki/munki/wiki/Xcode#xcode-7
 # 2019/07/26:	Combining installer these scripts: postinstall, Xcode-7.sh, edu.csumb.it.Xcode.DeveloperToolsGroup.sh, edu.csumb.it.Xcode.AccessibilityInspector.sh
 # 2019/08/13:	/usr/bin/xcodebuild path
+# 2021/08/09:	Redirect stderr to stdout for xcode-select --install. It was causing Jamf job flagging as failure.
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTPATH=`/usr/bin/dirname "$0"`
@@ -85,11 +86,14 @@ if [[ -e /usr/bin/xcodebuild ]]; then
 fi
 
 
+# https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
+/usr/bin/xcode-select -p 2>&1
+/usr/bin/xcode-select -p 1>/dev/null;echo $?
 
 # Install Command Line Tools.
 
 if [[ /usr/bin/xcode-select ]]; then
-    /usr/bin/xcode-select --install
+    /usr/bin/xcode-select --install 2>&1
 fi
 
 
