@@ -51,6 +51,12 @@ alias cp="bin/cp"
 alias mkdir="/bin/mkdir"
 alias sudo=/usr/bin/sudo
 
+# If you have multiple versions of Xcode installed, specify which one you want to be current.
+
+if [[ /usr/bin/xcode-select ]]; then
+    /usr/bin/xcode-select --switch /Applications/Xcode.app
+fi
+
 
 # Just in case the Accept EULA xcodebuild command below fails to accept the EULA, set the license acceptance info 
 # in /Library/Preferences/com.apple.dt.Xcode.plist. For more details on this, see Tim Sutton's post: 
@@ -72,17 +78,34 @@ if [[ -e "/Applications/Xcode.app/Contents/Resources/LicenseInfo.plist" ]]; then
 
 fi
 
-# Accept EULA so there is no prompt
+echo "Run Xcode first launch"
+echo "Accept EULA so there is no prompt"
 # https://github.com/munki/munki/wiki/Xcode#xcode-7
 
 if [[ -e "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" ]]; then
-  "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -runFirstLaunch
-  "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -license accept
+	echo "Check if any First Launch tasks need to be performed"
+	"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
+
+	"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -runFirstLaunch
+	sleep 1
+	"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -license accept
+	sleep 1
 fi
+# -allowProvisioningUpdates
+#     Allow xcodebuild to communicate with the Apple Developer website. For automatically signed targets, xcodebuild will create and update profiles, app IDs, and certificates. 
+#     For manually signed targets, xcodebuild will download missing or updated provisioning profiles. 
+#     Requires a developer account to have been added in Xcode's Accounts preference pane.
+
+#     -allowProvisioningDeviceRegistration
+#     Allow xcodebuild to register your destination device on the developer portal if necessary. 
+#     This flag only takes effect if -allowProvisioningUpdates is also passed.
+
 
 if [[ -e /usr/bin/xcodebuild ]]; then
   /usr/bin/xcodebuild -runFirstLaunch
+  sleep 1
   /usr/bin/xcodebuild -license accept
+  sleep 1
 fi
 
 
@@ -103,12 +126,12 @@ for PKG in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
     /usr/sbin/installer -pkg "$PKG" -target /
 done
 
-
+# enable developer mode
 # DevToolsSecurity tool to change the authorization policies, such that a user who is a
 # member of either the admin group or the _developer group does not need to enter an additional
 # password to use the Apple-code-signed debugger or performance analysis tools.
-# enable developer mode
 # https://github.com/munki/munki/wiki/Xcode
+echo "Enable developer mode"
 /usr/sbin/DevToolsSecurity -enable
 /usr/sbin/DevToolsSecurity -status
 
@@ -116,12 +139,6 @@ done
 # https://github.com/munki/munki/wiki/Xcode
 /usr/sbin/dseditgroup -o edit -a everyone -t group _developer
 
-
-# If you have multiple versions of Xcode installed, specify which one you want to be current.
-
-if [[ /usr/bin/xcode-select ]]; then
-    /usr/bin/xcode-select --switch /Applications/Xcode.app
-fi
 
 # Allow any member of _developer to install Apple provided software.
 
@@ -144,6 +161,8 @@ fi
 
 
 defaults read "/Library/Preferences/com.apple.dt.Xcode.plist"
+echo "Check if any First Launch tasks need to be performed"
+"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
 
 
 
