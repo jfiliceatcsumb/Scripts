@@ -85,6 +85,18 @@
 						<key>StaticCode</key>
 						<integer>1</integer>
 					</dict>
+					<dict>
+						<key>Allowed</key>
+						<integer>1</integer>
+						<key>CodeRequirement</key>
+						<string>anchor apple generic and identifier "com.wacom.Wacom-Desktop-Center" and (certificate leaf[field.1.2.840.113635.100.6.1.9] /* exists */ or certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = EG27766DY7)</string>
+						<key>Identifier</key>
+						<string>com.wacom.Wacom-Desktop-Center</string>
+						<key>IdentifierType</key>
+						<string>bundleID</string>
+						<key>StaticCode</key>
+						<integer>1</integer>
+					</dict>
 				</array>
 				<key>AppleEvents</key>
 				<array>
@@ -137,6 +149,24 @@
 						<string>anchor apple generic and identifier "com.wacom.TabletDriver" and (certificate leaf[field.1.2.840.113635.100.6.1.9] /* exists */ or certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = EG27766DY7)</string>
 						<key>Identifier</key>
 						<string>com.wacom.TabletDriver</string>
+						<key>IdentifierType</key>
+						<string>bundleID</string>
+						<key>StaticCode</key>
+						<integer>1</integer>
+					</dict>
+					<dict>
+						<key>AEReceiverCodeRequirement</key>
+						<string>identifier "com.apple.systempreferences" and anchor apple</string>
+						<key>AEReceiverIdentifier</key>
+						<string>com.apple.systempreferences</string>
+						<key>AEReceiverIdentifierType</key>
+						<string>bundleID</string>
+						<key>Allowed</key>
+						<integer>1</integer>
+						<key>CodeRequirement</key>
+						<string>anchor apple generic and identifier "com.wacom.Wacom-Desktop-Center" and (certificate leaf[field.1.2.840.113635.100.6.1.9] /* exists */ or certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = EG27766DY7)</string>
+						<key>Identifier</key>
+						<string>com.wacom.Wacom-Desktop-Center</string>
 						<key>IdentifierType</key>
 						<string>bundleID</string>
 						<key>StaticCode</key>
