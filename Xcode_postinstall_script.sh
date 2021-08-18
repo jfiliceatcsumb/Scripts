@@ -119,6 +119,19 @@ if [[ /usr/bin/xcode-select ]]; then
     /usr/bin/xcode-select --install 2>&1
 fi
 
+# create the placeholder file that's checked by CLI updates' .dist code
+# in Apple's SUS catalog
+touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+# find the CLI Tools update
+PROD=$(softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+# 	Strip "Label: "
+PROD=$(echo "$PROD" | sed -e 's/Label: //')
+
+# install it
+softwareupdate -i "$PROD" --verbose
+rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+
+
 
 # install embedded packages
 # https://github.com/munki/munki/wiki/Xcode
