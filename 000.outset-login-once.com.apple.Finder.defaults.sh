@@ -16,6 +16,8 @@
 
 # Change History:
 # 2020/10/09:	Creation.
+# 2021/08/12:	Added FXPreferredViewStyle
+# 				Added ShowSidebar
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -44,6 +46,8 @@ defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool TRUE
 defaults write com.apple.finder ShowStatusBar -bool TRUE
 defaults write com.apple.finder SidebarDevicesSectionDisclosedState -bool TRUE
 defaults write com.apple.finder SidebarPlacesSectionDisclosedState -bool TRUE
+defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
+defaults write com.apple.finder ShowSidebar -bool TRUE
 
 # restart Finder
 /usr/bin/killall -v -KILL Finder
