@@ -17,6 +17,8 @@
 # Sources:
 # https://github.com/munki/munki/wiki/Xcode
 # http://macops.ca/deploying-xcode-the-trick-with-accepting-license-agreements/
+# https://github.com/rtrouton/rtrouton_scripts/blob/c90890b7711b32fa5fcbc014869891c091375bb5/rtrouton_scripts/xcode_post_install_actions/xcode_post_install_actions.sh
+
 
 
 
@@ -51,93 +53,6 @@ alias cp="bin/cp"
 alias mkdir="/bin/mkdir"
 alias sudo=/usr/bin/sudo
 
-# If you have multiple versions of Xcode installed, specify which one you want to be current.
-
-if [[ /usr/bin/xcode-select ]]; then
-    /usr/bin/xcode-select --switch /Applications/Xcode.app
-fi
-
-
-# Just in case the Accept EULA xcodebuild command below fails to accept the EULA, set the license acceptance info 
-# in /Library/Preferences/com.apple.dt.Xcode.plist. For more details on this, see Tim Sutton's post: 
-# http://macops.ca/deploying-xcode-the-trick-with-accepting-license-agreements/
-
-if [[ -e "/Applications/Xcode.app/Contents/Resources/LicenseInfo.plist" ]]; then
-
-   xcode_version_number=`/usr/bin/defaults read "/Applications/Xcode.app/Contents/"Info CFBundleShortVersionString`
-   xcode_build_number=`/usr/bin/defaults read "/Applications/Xcode.app/Contents/Resources/"LicenseInfo licenseID`
-   xcode_license_type=`/usr/bin/defaults read "/Applications/Xcode.app/Contents/Resources/"LicenseInfo licenseType`
-
-   if [[ "${xcode_license_type}" == "GM" ]]; then
-       /usr/bin/defaults write "/Library/Preferences/"com.apple.dt.Xcode IDEXcodeVersionForAgreedToGMLicense "$xcode_version_number"
-       /usr/bin/defaults write "/Library/Preferences/"com.apple.dt.Xcode IDELastGMLicenseAgreedTo "$xcode_build_number"
-    else
-       /usr/bin/defaults write "/Library/Preferences/"com.apple.dt.Xcode IDEXcodeVersionForAgreedToBetaLicense "$xcode_version_number"
-       /usr/bin/defaults write "/Library/Preferences/"com.apple.dt.Xcode IDELastBetaLicenseAgreedTo "$xcode_build_number"
-   fi       
-
-fi
-
-echo "Run Xcode first launch"
-echo "Accept EULA so there is no prompt"
-# https://github.com/munki/munki/wiki/Xcode#xcode-7
-
-if [[ -e "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" ]]; then
-	echo "Check if any First Launch tasks need to be performed"
-	"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
-
-	"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -runFirstLaunch
-	sleep 1
-	"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -license accept
-	sleep 1
-fi
-# -allowProvisioningUpdates
-#     Allow xcodebuild to communicate with the Apple Developer website. For automatically signed targets, xcodebuild will create and update profiles, app IDs, and certificates. 
-#     For manually signed targets, xcodebuild will download missing or updated provisioning profiles. 
-#     Requires a developer account to have been added in Xcode's Accounts preference pane.
-
-#     -allowProvisioningDeviceRegistration
-#     Allow xcodebuild to register your destination device on the developer portal if necessary. 
-#     This flag only takes effect if -allowProvisioningUpdates is also passed.
-
-
-if [[ -e /usr/bin/xcodebuild ]]; then
-  /usr/bin/xcodebuild -runFirstLaunch
-  sleep 1
-  /usr/bin/xcodebuild -license accept
-  sleep 1
-fi
-
-
-# https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
-/usr/bin/xcode-select -p 2>&1
-/usr/bin/xcode-select -p 1>/dev/null;echo $?
-
-# Install Command Line Tools.
-
-if [[ /usr/bin/xcode-select ]]; then
-    /usr/bin/xcode-select --install 2>&1
-fi
-
-# create the placeholder file that's checked by CLI updates' .dist code
-# in Apple's SUS catalog
-touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-# find the CLI Tools update
-PROD=$(softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
-# 	Strip "Label: "
-PROD=$(echo "$PROD" | sed -e 's/Label: //')
-
-# install it
-softwareupdate -i "$PROD" --verbose
-rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-
-
-
-# install embedded packages
-# https://github.com/munki/munki/wiki/Xcode
-for PKG in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
-    /usr/sbin/installer -pkg "$PKG" -target /
-done
 
 # enable developer mode
 # DevToolsSecurity tool to change the authorization policies, such that a user who is a
@@ -162,9 +77,124 @@ echo "Enable developer mode"
 
 
 
+
+
+# If you have multiple versions of Xcode installed, specify which one you want to be current.
+
+if [[ /usr/bin/xcode-select ]]; then
+    /usr/bin/xcode-select --switch /Applications/Xcode.app
+fi
+
+echo "Accept EULA so there is no prompt"
+
+# #####
+# https://github.com/rtrouton/rtrouton_scripts/blob/c90890b7711b32fa5fcbc014869891c091375bb5/rtrouton_scripts/xcode_post_install_actions/xcode_post_install_actions.sh
+# 
+# 
+# Accept EULA so there is no prompt
+
+if [[ -e "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" ]]; then
+  "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -license accept
+fi
+
+# Just in case the xcodebuild command above fails to accept the EULA, set the license acceptance info 
+# in /Library/Preferences/com.apple.dt.Xcode.plist. For more details on this, see Tim Sutton's post: 
+# http://macops.ca/deploying-xcode-the-trick-with-accepting-license-agreements/
+
+if [[ -e "/Applications/Xcode.app/Contents/Resources/LicenseInfo.plist" ]]; then
+
+   xcode_version_number=`/usr/bin/defaults read "/Applications/Xcode.app/Contents/"Info CFBundleShortVersionString`
+   xcode_build_number=`/usr/bin/defaults read "/Applications/Xcode.app/Contents/Resources/"LicenseInfo licenseID`
+   xcode_license_type=`/usr/bin/defaults read "/Applications/Xcode.app/Contents/Resources/"LicenseInfo licenseType`
+   
+   if [[ "${xcode_license_type}" == "GM" ]]; then
+       /usr/bin/defaults write "/Library/Preferences/"com.apple.dt.Xcode IDEXcodeVersionForAgreedToGMLicense "$xcode_version_number"
+       /usr/bin/defaults write "/Library/Preferences/"com.apple.dt.Xcode IDELastGMLicenseAgreedTo "$xcode_build_number"
+    else
+       /usr/bin/defaults write "/Library/Preferences/"com.apple.dt.Xcode IDEXcodeVersionForAgreedToBetaLicense "$xcode_version_number"
+       /usr/bin/defaults write "/Library/Preferences/"com.apple.dt.Xcode IDELastBetaLicenseAgreedTo "$xcode_build_number"
+   fi       
+   
+fi
+
+
+# Install Mobile Device Package so there is no prompt
+# 
+# if [[ -e "/Applications/Xcode.app/Contents/Resources/Packages/MobileDevice.pkg" ]]; then
+#   /usr/sbin/installer -dumplog -verbose -pkg "/Applications/Xcode.app/Contents/Resources/Packages/MobileDevice.pkg" -target /
+# fi
+# 
+# if [[ -e "/Applications/Xcode.app/Contents/Resources/Packages/MobileDeviceDevelopment.pkg" ]]; then
+#   /usr/sbin/installer -dumplog -verbose -pkg "/Applications/Xcode.app/Contents/Resources/Packages/MobileDeviceDevelopment.pkg" -target /
+# fi
+# 
+# # Install Xcode System Resources Package, available in Xcode 8 and later
+# 
+# if [[ -e "/Applications/Xcode.app/Contents/Resources/Packages/XcodeSystemResources.pkg" ]]; then
+#   /usr/sbin/installer -dumplog -verbose -pkg "/Applications/Xcode.app/Contents/Resources/Packages/XcodeSystemResources.pkg" -target /
+# fi
+# 
+# 
+# #####
+
+
+# install embedded packages
+# https://github.com/munki/munki/wiki/Xcode
+for PKG in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
+    /usr/sbin/installer -dumplog -verbose -pkg "$PKG" -target /
+done
+
+
+
+echo "Run Xcode first launch"
+# https://github.com/munki/munki/wiki/Xcode#xcode-7
+
+echo "Check if any First Launch tasks need to be performed"
+"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
+
+"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -runFirstLaunch
+sleep 1
+
+# -allowProvisioningUpdates
+#     Allow xcodebuild to communicate with the Apple Developer website. For automatically signed targets, xcodebuild will create and update profiles, app IDs, and certificates. 
+#     For manually signed targets, xcodebuild will download missing or updated provisioning profiles. 
+#     Requires a developer account to have been added in Xcode's Accounts preference pane.
+
+#     -allowProvisioningDeviceRegistration
+#     Allow xcodebuild to register your destination device on the developer portal if necessary. 
+#     This flag only takes effect if -allowProvisioningUpdates is also passed.
+
+
+
+
+# https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
+/usr/bin/xcode-select -p 2>&1
+/usr/bin/xcode-select -p 1>/dev/null;echo $?
+
+# #####
+# Install Command Line Tools.
+# 
+# create the placeholder file that's checked by CLI updates' .dist code
+# in Apple's SUS catalog
+touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+# find the CLI Tools update
+PROD=$(softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+# 	Strip "Label: "
+PROD=$(echo "$PROD" | sed -e 's/Label: //')
+
+# install it
+softwareupdate -i "$PROD" --verbose
+rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+# 
+# 
+# #####
+
+
+# https://community.jamf.com/t5/jamf-pro/deploying-xcode-8-via-self-service-a-how-to/m-p/174953/highlight/true#M163832
 # Bypass Gatekeeper verification for Xcode, which can take awhile.
 
-if [[ -e "/Applications/Xcode.app" ]]; then xattr -dr com.apple.quarantine /Applications/Xcode.app
+if [[ -e "/Applications/Xcode.app" ]]; then 
+	xattr -dr com.apple.quarantine /Applications/Xcode.app
 fi
 
 
@@ -174,8 +204,8 @@ fi
 
 
 defaults read "/Library/Preferences/com.apple.dt.Xcode.plist"
-echo "Check if any First Launch tasks need to be performed"
-"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
+# echo "Check if any First Launch tasks need to be performed"
+# "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
 
 
 
