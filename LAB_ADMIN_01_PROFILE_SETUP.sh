@@ -20,6 +20,7 @@
 # 2017/03/21:	Changed using more reliable $(eval echo "~admin")
 # 				Changed PATHtoUSER to AdminHOME
 # 2017/03/22:	Using /usr/sbin/createhomedir to create admin home.
+
 # 				
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -31,15 +32,15 @@ echo "***Begin $SCRIPTNAME script***"
 #  set alias for PlistBuddy and several others so I don't have to specify full path.
 # Prefix sudo path because I'm using it here for all commands.
 # If I want to run a command without the alias, then specify the full path.
-alias PlistBuddy="/usr/bin/sudo /usr/libexec/PlistBuddy"
-alias chown="/usr/bin/sudo /usr/sbin/chown"
-alias chmod="/usr/bin/sudo /bin/chmod"
-alias ditto="/usr/bin/sudo /usr/bin/ditto"
-alias defaults="/usr/bin/sudo defaults"
-alias rm="/usr/bin/sudo /bin/rm"
-alias cp="/usr/bin/sudo /bin/cp"
-alias mkdir="/usr/bin/sudo /bin/mkdir"
-alias mv="/usr/bin/sudo /bin/mv"
+alias PlistBuddy="/usr/libexec/PlistBuddy"
+alias chown="/usr/sbin/chown"
+alias chmod="/bin/chmod"
+alias ditto="/usr/bin/ditto"
+alias defaults="defaults"
+alias rm="/bin/rm"
+alias cp="/bin/cp"
+alias mkdir="/bin/mkdir"
+alias mv="/bin/mv"
 alias sudo=/usr/bin/sudo
 
 # set -x # For debugging, show commands.
@@ -64,14 +65,16 @@ echo "osXversion=$osXversion"
 osXversion10=`echo $osXversion | awk -F. '{print $2}'`
 echo "osXversion10=$osXversion10"
 
-
-echo "Creating home directory for admin using /usr/sbin/createhomedir..."
-/usr/sbin/createhomedir -c -l -u admin
-
-	
 # AdminHOME=$(eval echo "~admin")
 # above was causing problems, so specifying path explicitly.
 AdminHOME=/Users/admin
+
+if [[ ! -e "${AdminHOME}" ]]; then
+	echo "Creating home directory for admin using /usr/sbin/createhomedir..."
+	/usr/sbin/createhomedir -c -l -u admin
+fi
+
+	
 
 echo "Copying User Template/English.lproj into ${AdminHOME}..."
 ditto -V "/System/Library/User Template/English.lproj" "${AdminHOME}"
