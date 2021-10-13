@@ -2,17 +2,27 @@
 
 # https://github.com/timsutton/osx-vm-templates/blob/master/scripts/xcode-cli-tools.sh
 
-set -x
+# set -x
 
-# if [[ ! "$INSTALL_XCODE_CLI_TOOLS" =~ ^(true|yes|on|1|TRUE|YES|ON])$ ]]; then
-#     exit
-# fi
 
 # Get and install Xcode CLI tools
 OSX_VERS=$(sw_vers -productVersion | awk -F "." '{print $2}')
 
+osXversion=$(sw_vers -productVersion)
+echo "osXversion=$osXversion"
+# Just get the second version value after 10.
+macOSversionMajor=$(echo $osXversion | awk -F. '{print $1}')
+macOSversionMinor=$(echo $osXversion | awk -F. '{print $2}')
+echo "macOSversionMajor=$macOSversionMajor"
+echo "macOSversionMinor=$macOSversionMinor"
+
+# if 
+# macOS 11.x or newer
+# or
+# macOS 10.9.x or newer
+
 # on 10.9+, we can leverage SUS to get the latest CLI tools
-if [ "$OSX_VERS" -ge 9 ]; then
+if [ $macOSversionMajor -ge 11 ] || [ $macOSversionMajor -ge 10 -a $macOSversionMinor -ge 9 ]; then
     # create the placeholder file that's checked by CLI updates' .dist code
     # in Apple's SUS catalog
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
@@ -29,14 +39,14 @@ if [ "$OSX_VERS" -ge 9 ]; then
 # the dvtdownloadableindex:
 # https://devimages.apple.com.edgekey.net/downloads/xcode/simulators/index-3905972D-B609-49CE-8D06-51ADC78E07BC.dvtdownloadableindex
 else
-    [ "$OSX_VERS" -eq 7 ] && DMGURL=http://devimages.apple.com.edgekey.net/downloads/xcode/command_line_tools_for_xcode_os_x_lion_april_2013.dmg
-    [ "$OSX_VERS" -eq 8 ] && DMGURL=http://devimages.apple.com.edgekey.net/downloads/xcode/command_line_tools_for_osx_mountain_lion_april_2014.dmg
+    [ "$macOSversionMinor" -eq 7 ] && DMGURL=http://devimages.apple.com.edgekey.net/downloads/xcode/command_line_tools_for_xcode_os_x_lion_april_2013.dmg
+    [ "$macOSversionMinor" -eq 8 ] && DMGURL=http://devimages.apple.com.edgekey.net/downloads/xcode/command_line_tools_for_osx_mountain_lion_april_2014.dmg
 
     TOOLS=clitools.dmg
     curl "$DMGURL" -o "$TOOLS"
     TMPMOUNT=`/usr/bin/mktemp -d /tmp/clitools.XXXX`
     hdiutil attach "$TOOLS" -mountpoint "$TMPMOUNT"
-    if [ "$OSX_VERS" -eq 7 ]; then
+    if [ "$macOSversionMinor" -eq 7 ]; then
         # using '-allowUntrusted' because Lion CLI tools are so old Apple never built another
         # package that doesn't have an expired CA cert. (Expired February 15, 2015)
         installer -pkg "$(find $TMPMOUNT -name '*.mpkg')" -allowUntrusted -target /
