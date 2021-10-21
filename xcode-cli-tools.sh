@@ -6,13 +6,12 @@
 
 
 # Get and install Xcode CLI tools
-OSX_VERS=$(sw_vers -productVersion | awk -F "." '{print $2}')
 
-osXversion=$(sw_vers -productVersion)
-echo "osXversion=$osXversion"
+macOSversion=$(sw_vers -productVersion)
+echo "macOSversion=$macOSversion"
 # Just get the second version value after 10.
-macOSversionMajor=$(echo $osXversion | awk -F. '{print $1}')
-macOSversionMinor=$(echo $osXversion | awk -F. '{print $2}')
+macOSversionMajor=$(echo $macOSversion | awk -F. '{print $1}')
+macOSversionMinor=$(echo $macOSversion | awk -F. '{print $2}')
 echo "macOSversionMajor=$macOSversionMajor"
 echo "macOSversionMinor=$macOSversionMinor"
 
@@ -22,7 +21,7 @@ echo "macOSversionMinor=$macOSversionMinor"
 # macOS 10.9.x or newer
 
 # on 10.9+, we can leverage SUS to get the latest CLI tools
-if [ $macOSversionMajor -ge 11 ] || [ $macOSversionMajor -ge 10 -a $macOSversionMinor -ge 9 ]; then
+if [ $macOSversionMajor -gt 11 ] || [ $macOSversionMajor -eq 10 -a $macOSversionMinor -ge 9 ]; then
     # create the placeholder file that's checked by CLI updates' .dist code
     # in Apple's SUS catalog
     touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
