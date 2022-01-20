@@ -130,4 +130,4 @@ echo "***End $SCRIPTNAME script***"
 /bin/date
 
 
-exit
+exit 0
