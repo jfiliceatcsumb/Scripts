@@ -61,7 +61,7 @@ fi
 
 echo "USER_TEMPL=$USER_TEMPL"
 
-########## FINDER ##########
+########## 	DOCK ##########
 
 mkdir -pv -m 755 "${USER_TEMPL}/Non_localized/Library/Preferences"
 touch "${USER_TEMPL}/Non_localized/Library/Preferences/com.apple.dock.plist"
