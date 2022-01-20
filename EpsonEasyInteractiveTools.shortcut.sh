@@ -8,7 +8,6 @@
 
 
 
-# This script requires .
 # Run it with no arguments. 
 # 
 # Use as script in Jamf JSS.
@@ -56,15 +55,71 @@ echo "***Begin $SCRIPTNAME script***"
 
 # set -x # For debugging, show commands.
 
-# Start here
+
+osXversion=$(sw_vers -productVersion)
+echo "osXversion=$osXversion"
+# Just get the second version value after 10.
+macOSversionMajor=$(echo $osXversion | awk -F. '{print $1}')
+macOSversionMinor=$(echo $osXversion | awk -F. '{print $2}')
+echo "macOSversionMajor=$macOSversionMajor"
+echo "macOSversionMinor=$macOSversionMinor"
+
+# if 
+# macOS 11.x or newer
+# or
+# macOS 10.15.x or newer
+
+if [ $macOSversionMajor -ge 11 ] || [ $macOSversionMajor -ge 10 -a $macOSversionMinor -ge 15 ]; then
+	echo "10.15 and newer"
+	USER_TEMPL='/Library/User Template'
+else
+	echo "older than 10.15"
+	USER_TEMPL='/System/Library/User Template'
+fi
+
+echo "USER_TEMPL=$USER_TEMPL"
+
 echo 'Only If Epson Easy Interactive Tools app exists, then'
-if [ -e "/Applications/Easy Interactive Tools Ver.3/Easy Interactive Tools.app" ] 
+if [ -e "/Applications/Easy Interactive Tools Ver.5/Easy Interactive Tools.app" ] 
 then
+	mkdir -pv -m 755 "${USER_TEMPL}/Non_localized/Desktop"
+	
 	echo 'Delete existing symbolic link or alias at target location; error if not exist.'
-	/bin/rm -fv "${HOME}/Desktop/Easy Interactive Tools.app"
+	/bin/rm -fv "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
 
 	echo 'Create symbolic link at target location.'
-	/bin/ln -shfFv "/Applications/Easy Interactive Tools Ver.3/Easy Interactive Tools.app" "${HOME}/Desktop/Easy Interactive Tools.app"
+	/bin/ln -shfFv "/Applications/Easy Interactive Tools Ver.5/Easy Interactive Tools.app" "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
+
+	chmod 755 "${USER_TEMPL}/Non_localized/Desktop"
+	chown -fR 0:0 "${USER_TEMPL}/Non_localized/Desktop"
+
+elif [ -e "/Applications/Easy Interactive Tools Ver.4/Easy Interactive Tools.app" ] 
+then
+	mkdir -pv -m 755 "${USER_TEMPL}/Non_localized/Desktop"
+	
+	echo 'Delete existing symbolic link or alias at target location; error if not exist.'
+	/bin/rm -fv "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
+
+	echo 'Create symbolic link at target location.'
+	/bin/ln -shfFv "/Applications/Easy Interactive Tools Ver.4/Easy Interactive Tools.app" "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
+
+	chmod 755 "${USER_TEMPL}/Non_localized/Desktop"
+	chown -fR 0:0 "${USER_TEMPL}/Non_localized/Desktop"
+
+
+elif [ -e "/Applications/Easy Interactive Tools Ver.3/Easy Interactive Tools.app" ] 
+then
+	mkdir -pv -m 755 "${USER_TEMPL}/Non_localized/Desktop"
+	
+	echo 'Delete existing symbolic link or alias at target location; error if not exist.'
+	/bin/rm -fv "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
+
+	echo 'Create symbolic link at target location.'
+	/bin/ln -shfFv "/Applications/Easy Interactive Tools Ver.3/Easy Interactive Tools.app" "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
+
+	chmod 755 "${USER_TEMPL}/Non_localized/Desktop"
+	chown -fR 0:0 "${USER_TEMPL}/Non_localized/Desktop"
+
 
 	# Else, echo not found.
 else
@@ -75,5 +130,4 @@ echo "***End $SCRIPTNAME script***"
 /bin/date
 
 
-exit 0
-
+exit
