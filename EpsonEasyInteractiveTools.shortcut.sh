@@ -15,6 +15,7 @@
 
 # Change History:
 # 2022/01/19:	Creation.
+# 2022/01/26:	Fixed chmod, chown of symbolic link.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -90,8 +91,8 @@ then
 	echo 'Create symbolic link at target location.'
 	/bin/ln -shfFv "/Applications/Easy Interactive Tools Ver.5/Easy Interactive Tools.app" "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
 
-	chmod 755 "${USER_TEMPL}/Non_localized/Desktop"
-	chown -fR 0:0 "${USER_TEMPL}/Non_localized/Desktop"
+	chmod -fRhPv 755 "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
+	chown -fRhPv 0:0 "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
 
 elif [ -e "/Applications/Easy Interactive Tools Ver.4/Easy Interactive Tools.app" ] 
 then
@@ -103,8 +104,8 @@ then
 	echo 'Create symbolic link at target location.'
 	/bin/ln -shfFv "/Applications/Easy Interactive Tools Ver.4/Easy Interactive Tools.app" "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
 
-	chmod 755 "${USER_TEMPL}/Non_localized/Desktop"
-	chown -fR 0:0 "${USER_TEMPL}/Non_localized/Desktop"
+	chmod -fRhPv 755 "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
+	chown -fRhPv 0:0 "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
 
 
 elif [ -e "/Applications/Easy Interactive Tools Ver.3/Easy Interactive Tools.app" ] 
@@ -117,8 +118,8 @@ then
 	echo 'Create symbolic link at target location.'
 	/bin/ln -shfFv "/Applications/Easy Interactive Tools Ver.3/Easy Interactive Tools.app" "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
 
-	chmod 755 "${USER_TEMPL}/Non_localized/Desktop"
-	chown -fR 0:0 "${USER_TEMPL}/Non_localized/Desktop"
+	chmod -fRhPv 755 "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
+	chown -fRhPv 0:0 "${USER_TEMPL}/Non_localized/Desktop/Easy Interactive Tools.app"
 
 
 	# Else, echo not found.
