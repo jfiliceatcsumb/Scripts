@@ -62,9 +62,16 @@ PKGfile="Zoom.pkg"
 PKG_URL="https://zoom.us/client/latest/Zoom.pkg"
 PKG_URL_arm64="https://zoom.us/client/latest/Zoom.pkg?archType=arm64"
 userHome=$(echo ~$userName)
+CPUarch=$(/usr/bin/uname -m)
+# Expected results: arm64 | i386 | x86_64
 
-if [ -e /tmp/"$PKGfile" ]; then
+
+if [[ -e /tmp/"$PKGfile" ]]; then
 	rm -fR /tmp/"$PKGfile"
+fi
+
+if [[ "$CPUarch" = "arm64" ]]; then
+	PKG_URL="$PKG_URL_arm64"
 fi
 
 # Download vendor pkg file into /tmp/
