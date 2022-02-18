@@ -8,7 +8,10 @@
 
 
 
-# This script downloads and installs the current "Download for IT Admin" Zoom Client for Meetings from zoom.us.
+# This script downloads and installs the current Zoom Client for Meetings from zoom.us. Installs into current user's home.
+# https://zoom.us/client/latest/Zoom.pkg
+# https://zoom.us/client/latest/Zoom.pkg?archType=arm64
+# 
 # Run it with no arguments. 
 # 
 # For best results, copy it to the Mac and run it as postinstall script in a PKG installer.
@@ -17,6 +20,7 @@
 # Change History:
 # 2020/06/04:	Creation.
 # 2021/06/09:	Added flag -allow to installer
+# 2022/02/17:	Forked for User home folder installation.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -54,8 +58,10 @@ echo "Start $SCRIPTNAME"
 
 # set -x
 
-PKGfile="ZoomInstallerIT.pkg"
-PKG_URL="https://zoom.us/client/latest/ZoomInstallerIT.pkg"
+PKGfile="Zoom.pkg"
+PKG_URL="https://zoom.us/client/latest/Zoom.pkg"
+PKG_URL_arm64="https://zoom.us/client/latest/Zoom.pkg?archType=arm64"
+userHome=$(echo ~$userName)
 
 if [ -e /tmp/"$PKGfile" ]; then
 	rm -fR /tmp/"$PKGfile"
@@ -67,7 +73,7 @@ fi
 sleep 1
 
 # Install
-/usr/sbin/installer -allow -pkg "/tmp/$PKGfile" -target /
+/usr/sbin/installer -allow -pkg "/tmp/$PKGfile" -target "$userHome"
 
 sleep 1
 
