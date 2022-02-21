@@ -80,6 +80,8 @@ fi
 sleep 1
 
 # Install
+export USER="$userName"
+export HOME="$userHome"
 /usr/sbin/installer -allow -pkg "/tmp/$PKGfile" -target CurrentUserHomeDirectory
 # "$userHome"
 
@@ -91,3 +93,22 @@ if [[ -e /tmp/"$PKGfile" ]]; then
 fi
 
 echo "End $SCRIPTNAME"
+
+
+# Available Installer environment variables and examples, many of which are typical global variables:
+# 
+# PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/libexec
+# TMPDIR=/private/tmp/PKInstallSandbox.7PigCx/tmp
+# DSTROOT=/
+# DSTVOLUME=/
+# SCRIPT_NAME=preinstall
+# SHARED_INSTALLER_TEMP=/var/folders/zz/zyxvpxvq6csfxvn_n0000000000000/C/PKInstallSandboxManager-shared-tmp
+# SHELL=/bin/bash
+# HOME=/Users/admin
+# USER=admin
+# LOGNAME=admin
+# HOSTTYPE=x86_64
+# MACHTYPE=x86_64-apple-darwin13
+# UID=501
+# EUID=501
+# PWD=/
