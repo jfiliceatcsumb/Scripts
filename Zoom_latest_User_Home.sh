@@ -61,7 +61,6 @@ echo "Start $SCRIPTNAME"
 PKGfile="Zoom.pkg"
 PKG_URL="https://zoom.us/client/latest/Zoom.pkg"
 PKG_URL_arm64="https://zoom.us/client/latest/Zoom.pkg?archType=arm64"
-userHome=$(eval echo ~$userName)
 CPUarch=$(/usr/bin/uname -m)
 # Expected results: arm64 | i386 | x86_64
 
@@ -80,10 +79,7 @@ fi
 sleep 1
 
 # Install
-export USER="$userName"
-export HOME="$userHome"
-/usr/sbin/installer -allow -pkg "/tmp/$PKGfile" -target CurrentUserHomeDirectory
-# "$userHome"
+sudo --user=$userName /usr/sbin/installer -allow -pkg "/tmp/$PKGfile" -target CurrentUserHomeDirectory
 
 sleep 1
 
