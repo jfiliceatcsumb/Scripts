@@ -3,11 +3,21 @@
 # script to determine if MS Office 2016 is installed
 # https://www.jamf.com/jamf-nation/discussions/31041/microsoft-office-2019-extension-attribute
 
-excelversion=$(defaults read /Applications/Microsoft\ Excel.app/Contents/Info.plist CFBundleVersion)
-onenoteversion=$(defaults read /Applications/Microsoft\ OneNote.app/Contents/Info.plist CFBundleVersion)
-outlookversion=$(defaults read /Applications/Microsoft\ Outlook.app/Contents/Info.plist CFBundleVersion)
-powerpointversion=$(defaults read /Applications/Microsoft\ PowerPoint.app/Contents/Info.plist CFBundleVersion)
-wordversion=$(defaults read /Applications/Microsoft\ Word.app/Contents/Info.plist CFBundleVersion)
+if [[ -e /Applications/Microsoft\ Excel.app/Contents/Info.plist ]]; then
+	excelversion=$(defaults read /Applications/Microsoft\ Excel.app/Contents/Info.plist CFBundleVersion)
+fi
+if [[ -e /Applications/Microsoft\ OneNote.app/Contents/Info.plist ]]; then
+	onenoteversion=$(defaults read /Applications/Microsoft\ OneNote.app/Contents/Info.plist CFBundleVersion)
+fi
+if [[ -e /Applications/Microsoft\ Outlook.app/Contents/Info.plist ]]; then
+	outlookversion=$(defaults read /Applications/Microsoft\ Outlook.app/Contents/Info.plist CFBundleVersion)
+fi
+if [[ -e /Applications/Microsoft\ PowerPoint.app/Contents/Info.plist ]]; then
+	powerpointversion=$(defaults read /Applications/Microsoft\ PowerPoint.app/Contents/Info.plist CFBundleVersion)
+fi
+if [[ -e /Applications/Microsoft\ Word.app/Contents/Info.plist ]]; then
+	wordversion=$(defaults read /Applications/Microsoft\ Word.app/Contents/Info.plist CFBundleVersion)
+fi
 
 
 ######
@@ -28,10 +38,10 @@ wordversion=$(defaults read /Applications/Microsoft\ Word.app/Contents/Info.plis
 
 
 #below will identify presence of any Office app version 15 through 16.16:
-if [[ $excelversion = ^15.*|^16.([0-9]\..*|1[0-6].*) || \
-$onenoteversion = ^15.*|^16.([0-9]\..*|1[0-6].*) || \
-$powerpointversion = ^15.*|^16.([0-9]\..*|1[0-6].*) || \
-$wordversion = ^15.*|^16.([0-9]\..*|1[0-6].*) ]] ;
+if [[ $excelversion =~ ^15.*|^16.([0-9]\..*|1[0-6].*) ]] || \
+[[ $onenoteversion =~ ^15.*|^16.([0-9]\..*|1[0-6].*) ]] || \
+[[ $powerpointversion =~ ^15.*|^16.([0-9]\..*|1[0-6].*) ]] || \
+[[ $wordversion =~ ^15.*|^16.([0-9]\..*|1[0-6].*) ]] ;
 
 #For JAMF EA:
 then echo "<result>Office2016Installed</result>"
@@ -39,4 +49,3 @@ else echo "<result>Office2016NotInstalled</result>"
 fi
 
 exit 0
-
