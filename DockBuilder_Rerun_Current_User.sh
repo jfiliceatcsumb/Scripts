@@ -8,14 +8,13 @@
 
 
 
-# This script requires .
-# Run it with no arguments. 
-# 
+# https://github.com/ryangball/DockBuilder#re-create-a-users-dock
+
 # Use as script in Jamf JSS.
 
 
 # Change History:
-# 2021/MM/DD:	Creation.
+# 2022/05/15:	Creation.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -52,6 +51,26 @@ alias sudo=/usr/bin/sudo
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
+# Delete the breadcrumb for the user if it exists
+userHome=$(/usr/bin/dscl . read "/Users/$userName" NFSHomeDirectory | awk '{print $NF}')
+echo userHome=$userHome
+if [[ -e $userHome/Library/Preferences/com.github.ryangball.dockbuilder.breadcrumb.plist ]]; then
+	/bin/rm $userHome/Library/Preferences/com.github.ryangball.dockbuilder.breadcrumb.plist
+fi
+userID=$(id -ur $userName)
+echo userID=$userID
+
+
+# Unload the LaunchAgent
+# /bin/launchctl unload /Library/LaunchAgents/com.github.ryangball.dockbuilder.plist
+/bin/launchctl bootout gui/$userID/ /Library/LaunchAgents/com.github.ryangball.dockbuilder.plist
+
+# Load the LaunchAgent
+# /bin/launchctl load /Library/LaunchAgents/com.github.ryangball.dockbuilder.plist
+/bin/launchctl bootstrap gui/$userID/ /Library/LaunchAgents/com.github.ryangball.dockbuilder.plist
+
+# Start the LaunchAgent (if necessary)
+# /bin/launchctl start com.github.ryangball.dockbuilder
+/bin/launchctl kickstart -k gui/$userID/com.github.ryangball.dockbuilder
 
 exit 0
-
