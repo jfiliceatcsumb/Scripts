@@ -43,10 +43,6 @@ done
 # Mount vendor supplied DMG File
 /usr/bin/hdiutil attach /tmp/$VendorDMG -nobrowse
 
-
-# Identify the correct mount point for the vendor supplied DMG file 
-# GoogleDriveFileStreamDMG="$(/usr/bin/hdiutil info | grep "/Volumes/$GoogleDriveVolume" | awk '{ print $1 }')"
-
 # Install
 /usr/sbin/installer -pkg "/Volumes/$GoogleDriveVolume/GoogleDrive.pkg" -target /
 
