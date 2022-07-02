@@ -13,7 +13,7 @@
 # 	This is especially useful on shared/lab Macs where multiple users will log in.
 # 
 # This script requires /Applications/zoom.us.app is already installed. 
-# Best to install Zoom first with ZoomInstallerIT.pkg
+# Best to install Zoom first with https://zoom.us/client/latest/ZoomInstallerIT.pkg
 # Run it with no arguments. 
 # 
 # Use as script in Jamf JSS.
