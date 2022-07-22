@@ -66,7 +66,9 @@ echo userName=$userName
 
 /bin/cp /System/Library/CoreServices/Dock.app/Contents/Resources/com.apple.dockfixup.plist /Library/Preferences/com.apple.dockfixup.plist
 
+echo "read /Library/Preferences/com.apple.dockfixup.plist 'add-app'..."
 /usr/bin/defaults read /Library/Preferences/com.apple.dockfixup.plist 'add-app' 
+echo "delete /Library/Preferences/com.apple.dockfixup.plist 'add-app'..."
 /usr/bin/defaults delete /Library/Preferences/com.apple.dockfixup.plist 'add-app'
 
 /bin/chmod 644 /Library/Preferences/com.apple.dockfixup.plist
@@ -75,8 +77,8 @@ echo userName=$userName
 
 /usr/bin/defaults write /Library/Preferences/com.apple.dock.plist AllowDockFixupOverride -bool true
 /bin/chmod 644 /Library/Preferences/com.apple.dock.plist
+echo "read /Library/Preferences/com.apple.dockfixup.plist..."
 /usr/bin/defaults read /Library/Preferences/com.apple.dock.plist
 
 
 exit 0
-
