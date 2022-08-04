@@ -4,7 +4,7 @@
 # jfilice@csumb.edu
 # Technology Support Services in IT
 # California State University, Monterey Bay
-# http://it.csumb.edu
+# http://csumb.edu/it
 
 
 
@@ -20,6 +20,7 @@
 # 2017/03/21:	Changed using more reliable $(eval echo "~admin")
 # 				Changed PATHtoUSER to AdminHOME
 # 2017/03/22:	Using /usr/sbin/createhomedir to create admin home.
+# 2022/08/04:	Copying User Template/Non_localized
 
 # 				
 
@@ -77,10 +78,13 @@ fi
 	
 
 echo "Copying User Template/English.lproj into ${AdminHOME}..."
-ditto -V "/System/Library/User Template/English.lproj" "${AdminHOME}"
+ditto -V "/Library/User Template/English.lproj" "${AdminHOME}"
+
+echo "Copying User Template/Non_localized into ${AdminHOME}..."
+ditto -V "/Library/User Template/Non_localized" "${AdminHOME}"
 
 ########## LAUNCH SERVICES ##########
-echo "Adding LSHandlers for textwrangler: plist and sh"
+echo "Adding LSHandlers for BBEdit: plist and sh"
 defaults write "${AdminHOME}/Library/Preferences/com.apple.LaunchServices.plist" LSHandlers -array-add '<dict><key>LSHandlerContentType</key> <string>com.apple.property-list</string> <key>LSHandlerRoleAll</key> <string>com.barebones.bbedit</string> </dict>'
 defaults write "${AdminHOME}/Library/Preferences/com.apple.LaunchServices.plist" LSHandlers -array-add '<dict><key>LSHandlerContentType</key> <string>public.shell-script</string> <key>LSHandlerRoleAll</key> <string>com.barebones.bbedit</string> </dict>'
 ##########  ##########
