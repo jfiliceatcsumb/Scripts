@@ -12,10 +12,16 @@ userName=$3
 shift 3
 # Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
 
-echo pathToScript=$pathToScript
-echo mountPoint=$mountPoint
-echo computerName=$computerName
-echo userName=$userName
+echo "pathToScript=$pathToScript"
+echo "mountPoint=$mountPoint"
+echo "computerName=$computerName"
+echo "userName=$userName"
+if [ "$userName" != "" ]; then
+	userIDnum=$(id -u $userName)
+else
+	userIDnum=""
+fi
+echo "userIDnum=$userIDnum"
 
 # set alias for PlistBuddy and several others so I don't have to specify full path.
 # Prefix sudo path because I'm using it here for all commands.
@@ -50,14 +56,17 @@ echo AnonymizeLogins=false | tee -a "$hostFile"
 
 echo "After the host.text file is configured, we can start the service."
 set -x
-/bin/launchctl unload /Library/LaunchDaemons/labstatsgo.plist
+/bin/launchctl unload /Library/LaunchDaemons/labstatsgo.plist 2>  /dev/null
 sleep 1
 /bin/launchctl load /Library/LaunchDaemons/labstatsgo.plist
 sleep 1
 if [ "$userName" != "" ]; then
-  sudo -u daemon launchctl unload /Library/LaunchAgents/labstatsgo.plist
-  sleep 1
-  sudo -u daemon launchctl load /Library/LaunchAgents/labstatsgo.plist
+	sudo -u daemon /bin/launchctl unload /Library/LaunchAgents/labstatsgo.plist 2>  /dev/null
+	sleep 1
+	sudo -u daemon /bin/launchctl load /Library/LaunchAgents/labstatsgo.plist 2>  /dev/null
+	sleep 1
+	/bin/launchctl bootstrap user/$userIDnum/ /Library/LaunchAgents/labstatsgo.plist 2>  /dev/null
+  
 fi
 set +x
 echo "LabStats Installation Complete"
