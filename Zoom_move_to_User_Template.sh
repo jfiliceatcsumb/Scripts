@@ -21,6 +21,7 @@
 
 # Change History:
 # 2022/07/02:	Creation.
+# 2022/08/05:	Removed mv -v Verbose flag because it was too verbose, filling up policy logs.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -60,9 +61,8 @@ if [[ -e "$target_ZoomApp" ]]; then
 fi
 /bin/mkdir -pv -m 755 "$target_User_Template/Applications"
 /usr/sbin/chown -vf 0:0 "$target_User_Template/Applications"
-/bin/mv -fv "$source_ZoomApp" "$target_ZoomApp"
+/bin/mv -f "$source_ZoomApp" "$target_ZoomApp"
 /usr/sbin/chown -vfR 0:0 "$target_ZoomApp"
 /bin/chmod  -vfR 755 "$target_ZoomApp"
 
 exit 0
-
