@@ -83,6 +83,7 @@ UpdateNoticeShown=1
 EOF_AUDACITY_CFG
 
 ################
+# 
 # Fetch
 # [August 17, 2021] Update notice when launched.
 # com.fetchsoftworks.Fetch.plist
@@ -92,7 +93,6 @@ defaults write "${USER_TEMPL}/Library/Preferences/com.fetchsoftworks.Fetch.plist
 
 
 ################
-
 # 
 # Camtasia 2022
 # [August 23, 2021] Prompts permissions checklist at launch. 
@@ -130,6 +130,32 @@ cat << EOF_VLCRC >> "${USER_TEMPL}/Library/Preferences/org.videolan.vlc/vlcrc"
 metadata-network-access=1
 
 EOF_VLCRC
+
+################
+# 
+# NVivo 20
+
+# 	<key>appSettingUserInitials</key>
+# 	<string></string>
+# 
+# 	<key>appSettingUserName</key>
+# 	<string></string>
+# 
+# 	<key>appSettingShowWelcomeScreen</key>
+# 	<integer>1</integer>
+# 
+# 	<key>SUHasLaunchedBefore</key>
+# 	<true/>
+# 
+# 	<key>appSettingAgreedEULAVersion.20</key>
+# 	<string>2.7</string>
+# 
+# 	<key>appSettingAnalytics</key>
+# 	<integer>1</integer>
+
+defaults write "${USER_TEMPL}/Library/Preferences/com.qsrinternational.NVivo-20.plist" 'SUHasLaunchedBefore' -bool TRUE
+defaults write "${USER_TEMPL}/Library/Preferences/com.qsrinternational.NVivo-20.plist" 'appSettingAgreedEULAVersion.20' -string "2.7"
+defaults write "${USER_TEMPL}/Library/Preferences/com.qsrinternational.NVivo-20.plist" 'appSettingAnalytics' -int 1
 
 
 ################
