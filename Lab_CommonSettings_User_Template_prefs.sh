@@ -155,7 +155,7 @@ EOF_VLCRC
 
 defaults write "${USER_TEMPL}/Library/Preferences/com.qsrinternational.NVivo-20.plist" 'SUHasLaunchedBefore' -bool TRUE
 defaults write "${USER_TEMPL}/Library/Preferences/com.qsrinternational.NVivo-20.plist" 'appSettingAgreedEULAVersion.20' -string "2.7"
-defaults write "${USER_TEMPL}/Library/Preferences/com.qsrinternational.NVivo-20.plist" 'appSettingAnalytics' -int 1
+defaults write "${USER_TEMPL}/Library/Preferences/com.qsrinternational.NVivo-20.plist" 'appSettingAnalytics' -int 0
 
 
 ################
