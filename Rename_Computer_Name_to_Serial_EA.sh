@@ -26,6 +26,9 @@ shift 3
 # Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
 ## Variables ##
 
+# Run jamf policy which should try to load any missing config profiles and managed prefs.
+/usr/local/bin/jamf policy -forceNoRecon
+
 plistlocation="/Library/Managed Preferences/edu.csumb.custom.extensionattributes.plist"
 
 if [[ -e "$plistlocation" ]]; then
