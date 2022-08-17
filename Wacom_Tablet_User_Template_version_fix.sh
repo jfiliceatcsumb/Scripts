@@ -35,19 +35,36 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
+# <key>Analytics_On</key>
+# <string>NO</string>
+# <key>PEN_SECOND_RUN</key>
+# <string>YES</string>
+# <key>TOUCH_SECOND_RUN</key>
+# <string>YES</string>
+# <key>LastShown</key>
+# <string>6.3.46-1</string>
+
 
 WacomPersistentPlist="/Library/Containers/com.wacom.DataStoreMgr/Data/Library/Preferences/.wacom/persistent.plist"
 WacomDesktopCenterVersion=""
 WacomDesktopCenterVersion=$(/usr/bin/defaults read "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" CFBundleShortVersionString)
 
-if [[ ! "WacomDesktopCenterVersion" = "" ]]
+if [[ "$WacomDesktopCenterVersion" != "" ]]
 then
 	/bin/mkdir -p -m 755 "$(/usr/bin/dirname '/Library/User Template/Non_localized'${WacomPersistentPlist})" 
-	/usr/bin/defaults write "'/Library/User Template/Non_localized'${WacomPersistentPlist}" 'LastShown' -string "$WacomDesktopCenterVersion"
+	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'Analytics_On' -string "NO"
+	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
+	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
+	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'LastShown' -string "$WacomDesktopCenterVersion"
+	/bin/chmod 644 "/Library/User Template/Non_localized${WacomPersistentPlist}"
+	/usr/sbin/chown 0:0 "/Library/User Template/Non_localized${WacomPersistentPlist}"
 
 	if [[  -d "/Users/$userName" ]]
 	then
 		/bin/mkdir -p -m 755 "$(/usr/bin/dirname /Users/$userName/${WacomPersistentPlist})" 
+		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'Analytics_On' -string "NO"
+		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
+		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
 		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'LastShown' -string "$WacomDesktopCenterVersion"
 		/usr/sbin/chown $userName "/Users/$userName/${WacomPersistentPlist}"
 	fi
