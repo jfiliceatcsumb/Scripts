@@ -38,7 +38,7 @@ echo "userName=$userName"
 
 WacomPersistentPlist="/Library/Containers/com.wacom.DataStoreMgr/Data/Library/Preferences/.wacom/persistent.plist"
 WacomDesktopCenterVersion=""
-WacomDesktopCenterVersion=$(/usr/bin/defaults read /Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist CFBundleShortVersionString)
+WacomDesktopCenterVersion=$(/usr/bin/defaults read "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" CFBundleShortVersionString)
 
 if [[ ! "WacomDesktopCenterVersion" = "" ]]
 then
