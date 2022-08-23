@@ -159,11 +159,6 @@ defaults write "${USER_TEMPL}/Library/Preferences/com.qsrinternational.NVivo-20.
 
 
 ################
-# Avid Pro Tools 2021
-# [August 23, 2021] Prompt to send usage and diagnostics data to Avid.
-
-
-################
 # Avid Sibelius 2021
 # [August 23, 2021] Quick Start screen prompt at startup
 
