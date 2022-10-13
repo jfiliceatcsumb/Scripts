@@ -32,7 +32,7 @@ shift 3
 plistlocation="/Library/Managed Preferences/edu.csumb.custom.extensionattributes.plist"
 
 if [[ -e "$plistlocation" ]]; then
-	ComputerName=$(/usr/bin/defaults read "${plistlocation}" "ComputerName" 2>/dev/null)
+	ComputerName=$(/usr/bin/defaults read "${plistlocation}" "Computer_Name" 2>/dev/null)
 else
 	ComputerName=""
 fi
