@@ -53,6 +53,7 @@ mkdir -p "${BackupDirectory}"
 # backup
 /usr/bin/security -v authorizationdb read system.preferences > ${BackupDirectory}/${date_stamp}.system.preferences.plist
 /usr/bin/security -v authorizationdb read system.preferences.printing > ${BackupDirectory}/${date_stamp}.system.preferences.printing.plist
+/usr/bin/security -v authorizationdb read system.print.operator > ${BackupDirectory}/${date_stamp}.system.print.operator.plist
 
 # unlock the sysprefs before unlocking specific panes: 
 /usr/bin/security -v authorizationdb write system.preferences allow 
@@ -66,4 +67,3 @@ mkdir -p "${BackupDirectory}"
 /usr/sbin/dseditgroup -o edit -n /Local/Default -a everyone -t group _lpadmin
 
 exit 0
-
