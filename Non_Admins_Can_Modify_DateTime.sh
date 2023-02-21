@@ -13,9 +13,6 @@
 # Use as script in Jamf JSS.
 
 
-# Change History:
-# 2020/03/24:	Creation.
-#
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTPATH=`/usr/bin/dirname "$0"`
@@ -61,6 +58,9 @@ security -v authorizationdb write system.preferences allow
 security -v authorizationdb read system.preferences.datetime > ${BackupDirectory}/${date_stamp}.system.preferences.datetime.plist
 # unlock date & time: 
 security -v authorizationdb write system.preferences.datetime allow
-security -v authorizationdb write system.preferences.dateandtime.changetimezone allow
+
+# Added for macOS 12 Monterey (and Big Sur?)
+security -v authorizationdb read system.settings.dateandtime.changetimezone > ${BackupDirectory}/${date_stamp}.system.settings.dateandtime.changetimezone.plist
+security -v authorizationdb write system.settings.dateandtime.changetimezone allow
 
 exit 0
