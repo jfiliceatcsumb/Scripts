@@ -61,6 +61,6 @@ security -v authorizationdb write system.preferences allow
 security -v authorizationdb read system.preferences.datetime > ${BackupDirectory}/${date_stamp}.system.preferences.datetime.plist
 # unlock date & time: 
 security -v authorizationdb write system.preferences.datetime allow
-
+security -v authorizationdb write system.preferences.dateandtime.changetimezone allow
 
 exit 0
