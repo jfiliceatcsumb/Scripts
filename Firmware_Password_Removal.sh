@@ -13,11 +13,6 @@
 # Use as script in Jamf JSS.
 
 
-# Change History:
-# 2018/05/07:	Creation.
-# 2020/04/21:	Added better status echoes and password status that makes more sense.
-# 2020/08/05:	changed script to accept just 1 password. Script can be run multiple times to attempt several different firmware passwords
-#
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTPATH=`/usr/bin/dirname "$0"`
@@ -77,10 +72,14 @@ then
 spawn "/Library/Application Support/JAMF/bin/setregproptool" -d -o "${1}"
 expect "Enter current password" {
 close
-send_error "Error: Incorrect old firmware password"
+send_error "Error: Incorrect old firmware password\r"
 }
 EOL
 			echo $?
+# if does not contain "Error"
+			if [ "$?" != *"Error"* ]; then
+				break
+			fi
 			sleep 1
 		
 		fi
