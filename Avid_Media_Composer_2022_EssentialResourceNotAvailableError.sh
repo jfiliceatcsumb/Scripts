@@ -64,8 +64,9 @@ alias sudo=/usr/bin/sudo
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
-/bin/rm -f "/Library/Application Support/Avid/AVX2_Plug-ins/OpenIO_NDI.acf"
-/bin/rm -f "/Library/Application Support/Avid/AVX2_Plug-ins/OpenIO_SRT.acf"
+# Requires -R because these are bundle directories
+/bin/rm -fR "/Library/Application Support/Avid/AVX2_Plug-ins/OpenIO_NDI.acf"
+/bin/rm -fR "/Library/Application Support/Avid/AVX2_Plug-ins/OpenIO_SRT.acf"
 
 exit 0
 
