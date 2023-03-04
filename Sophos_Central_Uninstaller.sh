@@ -18,10 +18,16 @@
 
 
 /usr/bin/dscl . -delete /Users/_Sophos
-cd /Library/Preferences
-rm -r com.sophos.*
+# cd /Library/Preferences
+# rm -r com.sophos.*
 /Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer --force_remove
-
+rm -rf /Library/Application\ Support/Sophos/ 
+rm -fR /Library/SophosCBR
+rm -f /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+rm -fR /Library/Sophos\ Anti-Virus/
+rm -fR /Library/Sophos\ Live\ Query/
+rm -fR /Library/Caches/com.sophos.*
+rm -fR /Library/Preferences/com.sophos.*
 
 # 
 # usage: InstallationDeployer [--ui] --install [--product_name <product_name>] [--tamper_password <tamper_password>] [--features <feature_list>] [--autoUpdateProtocolVersion <AUP_version>] [--notificationId <notification_id>][--suppress_temp_cleanup]
