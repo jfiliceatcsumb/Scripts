@@ -16,18 +16,28 @@
 # https://support.sophos.com/support/s/article/KB-000033340?language=en_US#Removal-via-the-Terminal---v9.2+-installation-managed-by-Sophos-Central
 # https://community.sophos.com/intercept-x-endpoint/big-sur-eap/f/recommended-reads/124391/how-to-remove-system-extensions
 
-
 /usr/bin/dscl . -delete /Users/_Sophos
-# cd /Library/Preferences
-# rm -r com.sophos.*
-/Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer --force_remove
-rm -rf /Library/Application\ Support/Sophos/ 
-rm -fR /Library/SophosCBR
-rm -f /Library/LaunchDaemons/com.sophos.sophoscbr.plist
-rm -fR /Library/Sophos\ Anti-Virus/
-rm -fR /Library/Sophos\ Live\ Query/
-rm -fR /Library/Caches/com.sophos.*
-rm -fR /Library/Preferences/com.sophos.*
+if [[ -e /Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer ]]; then
+	/Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer --force_remove
+else
+	echo "InstallationDeployer tool not found. Employing manual deletion..."
+# Manual removal:
+	echo "Bootout com.sophos.sophoscbr.plist..."
+	/bin/launchctl bootout system /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+	echo $?
+	echo " launchctl legacy command..."
+	/bin/launchctl unload -F /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+	echo "Manual file deletion..."
+	/bin/rm -vf /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+	/bin/rm -vrf /Library/Application\ Support/Sophos/ 
+	/bin/rm -vfR /Library/SophosCBR/
+	/bin/rm -vfR /Library/Sophos\ Anti-Virus/
+	/bin/rm -vfR /Library/Sophos\ Live\ Query/
+	/bin/rm -vfR /Library/Caches/com.sophos.*
+	/bin/rm -vfR /Library/Preferences/com.sophos.*
+fi
+
+exit 0
 
 # 
 # usage: InstallationDeployer [--ui] --install [--product_name <product_name>] [--tamper_password <tamper_password>] [--features <feature_list>] [--autoUpdateProtocolVersion <AUP_version>] [--notificationId <notification_id>][--suppress_temp_cleanup]
