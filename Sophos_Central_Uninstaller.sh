@@ -37,6 +37,8 @@ else
 	/bin/rm -vfR /Library/Preferences/com.sophos.*
 fi
 
+exit 0
+
 # 
 # usage: InstallationDeployer [--ui] --install [--product_name <product_name>] [--tamper_password <tamper_password>] [--features <feature_list>] [--autoUpdateProtocolVersion <AUP_version>] [--notificationId <notification_id>][--suppress_temp_cleanup]
 #        InstallationDeployer --receipt [--temp_directory_name <temp_directory_name>] [--protocol_version <protocol_version_int>]
