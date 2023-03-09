@@ -10,6 +10,8 @@
 
 # Sophos Central Endpoint: Installer command line options for Windows and Mac
 # https://community.sophos.com/kb/en-us/127045#macArguments
+# https://docs.sophos.com/central/Customer/help/en-us/PeopleAndDevices/ProtectDevices/EndpointProtection/CentralMacCommandLineOptions/index.html#mac-examples
+
 # 
 # For best results, use as postinstall script in a PKG installer.
 
@@ -20,6 +22,7 @@
 # 				https://support.sophos.com/support/s/article/KB-000035045
 #				Removed --products all from command line. 
 # 				We just want the products to be specified in SophosCloudConfig.plist
+# 				
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTPATH=`/usr/bin/dirname "$0"`
