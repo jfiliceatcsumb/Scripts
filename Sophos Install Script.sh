@@ -1,15 +1,45 @@
-#!/bin/bash
+#!/bin/zsh
+
+# Jason Filice
+# jfilice@csumb.edu
+# Technology Support Services in IT
+# California State University, Monterey Bay
+# https://csumb.edu/it
+
+
+
 
 # Script requires Sophos installer URL passed as Jamf Pro policy parameter #4.
 # https://docs.sophos.com/central/Customer/help/en-us/PeopleAndDevices/ProtectDevices/EndpointProtection/MacDeployment/index.html#create-sophos-installation-script
 
+
+SCRIPTNAME=`/usr/bin/basename "$0"`
+SCRIPTDIR=`/usr/bin/dirname "$0"`
+
+# Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
+
+pathToScript=$0
+mountPoint=$1
+computerName=$2
+userName=$3
+
+shift 3
+# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+
+echo "pathToScript=$pathToScript"
+echo "mountPoint=$mountPoint"
+echo "computerName=$computerName"
+echo "userName=$userName"
+
+
 SOPHOS_DIR="/Users/Shared/Sophos_Install"
-SOPHOS_INSTALLER_URL=$4
-mkdir $SOPHOS_DIR
+SOPHOS_INSTALLER_URL=$1
+/bin/mkdir $SOPHOS_DIR
 cd $SOPHOS_DIR
 
 # Installing Sophos
 # put installer URL in these quotes
+# curl flags: --location --remote-name
 /usr/bin/curl -L -O "$SOPHOS_INSTALLER_URL"
 /usr/bin/unzip SophosInstall.zip
 /bin/chmod a+x $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer
