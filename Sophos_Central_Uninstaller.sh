@@ -25,7 +25,7 @@ else
 	echo "Bootout com.sophos.sophoscbr.plist..."
 	/bin/launchctl bootout system /Library/LaunchDaemons/com.sophos.sophoscbr.plist
 	echo $?
-	echo " launchctl legacy command..."
+	echo "launchctl legacy command..."
 	/bin/launchctl unload -F /Library/LaunchDaemons/com.sophos.sophoscbr.plist
 	echo "Manual file deletion..."
 	/bin/rm -vf /Library/LaunchDaemons/com.sophos.sophoscbr.plist
