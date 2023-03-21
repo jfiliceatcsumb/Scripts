@@ -12,30 +12,36 @@
 # 
 # Use as script in Jamf JSS.
 
-
+# Note: On MacOS 12.1 or higher, if the script steps fail, perform the following:
+# Open Terminal and run the command sudo /usr/bin/dscl . -delete /Users/_Sophos
 # https://support.sophos.com/support/s/article/KB-000033340?language=en_US#Removal-via-the-Terminal---v9.2+-installation-managed-by-Sophos-Central
+# If needed:
 # https://community.sophos.com/intercept-x-endpoint/big-sur-eap/f/recommended-reads/124391/how-to-remove-system-extensions
 
+echo ""
 /usr/bin/dscl . -delete /Users/_Sophos
+
 if [[ -e /Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer ]]; then
 	/Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer --force_remove
 else
-	echo "InstallationDeployer tool not found. Employing manual deletion..."
-# Manual removal:
-	echo "Bootout com.sophos.sophoscbr.plist..."
-	/bin/launchctl bootout system /Library/LaunchDaemons/com.sophos.sophoscbr.plist
-	echo $?
-	echo "launchctl legacy command..."
-	/bin/launchctl unload -F /Library/LaunchDaemons/com.sophos.sophoscbr.plist
-	echo "Manual file deletion..."
-	/bin/rm -vf /Library/LaunchDaemons/com.sophos.sophoscbr.plist
-	/bin/rm -vrf /Library/Application\ Support/Sophos/ 
-	/bin/rm -vfR /Library/SophosCBR/
-	/bin/rm -vfR /Library/Sophos\ Anti-Virus/
-	/bin/rm -vfR /Library/Sophos\ Live\ Query/
-	/bin/rm -vfR /Library/Caches/com.sophos.*
-	/bin/rm -vfR /Library/Preferences/com.sophos.*
+	echo "InstallationDeployer tool not found."
 fi
+# Manual removal:
+echo "Employing manual deletions for additional cleanup..."
+echo "Bootout com.sophos.sophoscbr.plist..."
+/bin/launchctl bootout system /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+echo $?
+echo "launchctl legacy command..."
+/bin/launchctl unload -F /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+echo "Manual file deletion..."
+/bin/rm -vf /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+/bin/rm -vrf /Library/Application\ Support/Sophos/ 
+/bin/rm -vfR /Library/SophosCBR/
+/bin/rm -vfR /Library/Sophos\ Anti-Virus/
+/bin/rm -vfR /Library/Sophos\ Live\ Query/
+/bin/rm -vfR /Library/Caches/com.sophos.*
+/bin/rm -vfR /Library/Preferences/com.sophos.*
+
 
 exit 0
 
