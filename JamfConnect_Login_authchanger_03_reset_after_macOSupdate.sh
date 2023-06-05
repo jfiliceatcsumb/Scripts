@@ -1,8 +1,13 @@
 #!/bin/sh
 
+# Modified from
+# https://gist.github.com/sgmills/0a708fa4eb857ac7bf8ba84dc2b59f90#file-re-enable-jamf-connect-login-sh
+# https://mostlymac.blog/2020/12/17/enable-jcl-after-os-upgrade/
+
 # Location of macOS Build plist for comparison
 # Subsitute your org name for anyOrg, or place in another location
-buildPlist="/usr/local/anyOrg/macOSBuild.plist"
+# ##### Modified Path #####
+buildPlist="/Library/Management/edu.csumb/macOSBuild.plist"
 
 # Get the local os build version
 # Using build version accounts for supplimental updates as well as dot updates and os upgrades
