@@ -36,8 +36,12 @@ alias cp="/bin/cp"
 alias mkdir="/bin/mkdir"
 alias sudo=/usr/bin/sudo
 
+# Script must run under root
+
 # $1 = CustomerUID
 # $2 = Client Server Url
+# $3 = Web Tracking Control Flag
+
 
 # 1. Install app. Install via Jamf Policy
 # /usr/sbin/installer -pkg '/Volumes/LabStats/LabStatsInstaller.pkg' -target /
@@ -47,12 +51,21 @@ hostFile="/Library/Application Support/LabStatsGo/host.txt"
 echo "Remove the host.txt file if it already exists"
 rm -rf "$hostFile"
 
+# Default web tracking flag if not set
+if [ -z "$3" ]; then 
+    WEBTRACKING='false'
+else 
+    WEBTRACKING=$3
+fi
+
+
 echo "Create host.txt file"
 touch "$hostFile"
 echo CheckinServer=$2 | tee -a "$hostFile"
 echo CustomerUid=$1 | tee -a "$hostFile"
 echo AssignmentServer=https://clientserver.labstats.com/ | tee -a "$hostFile"
 echo AnonymizeLogins=false | tee -a "$hostFile"
+echo WebTrackingEnabled=$WEBTRACKING | tee -a "$hostFile"
 
 echo "After the host.text file is configured, we can start the service."
 set -x
