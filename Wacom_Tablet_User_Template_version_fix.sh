@@ -49,10 +49,13 @@ echo "userName=$userName"
 # set -x
 
 WacomPersistentPlist="/Library/Containers/com.wacom.DataStoreMgr/Data/Library/Preferences/.wacom/persistent.plist"
+WacomTabletPrefs="/Library/Group Containers/EG27766DY7.com.wacom.WacomTabletDriver/Library/Preferences/com.wacom.wacomtablet.prefs"
 WacomDesktopCenterVersion=""
 WacomDesktopCenterVersion=$(/usr/bin/defaults read "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" CFBundleShortVersionString)
 echo "WacomDesktopCenterVersion $WacomDesktopCenterVersion"
 
+# 
+#
 
 if [[ "$WacomDesktopCenterVersion" != "" ]]
 then
@@ -67,6 +70,12 @@ then
 	echo "/Library/User Template/Non_localized${WacomPersistentPlist}..."
     /usr/bin/defaults read "/Library/User Template/Non_localized${WacomPersistentPlist}" 
 
+    # Turn off Wacom Center Autostart
+	/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Library/User Template/Non_localized/${WacomTabletPrefs}"
+	echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
+	echo '</root>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
+
+
 # ##### CURRENT LOGGED IN USER #####
 	if [[ "$userName" != "" ]]
 	then
@@ -80,6 +89,13 @@ then
 			/usr/sbin/chown $userName "/Users/$userName/${WacomPersistentPlist}"
 			echo "/Users/$userName/${WacomPersistentPlist}..."
             /usr/bin/defaults read "/Users/$userName/${WacomPersistentPlist}"
+            
+			# Turn off Wacom Center Autostart
+			/bin/mkdir -p -m 755 "$(/usr/bin/dirname /Users/$userName/${WacomTabletPrefs})"
+			/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Users/$userName/${WacomTabletPrefs}"
+			echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Users/$userName/${WacomTabletPrefs}"
+			echo '</root>' >> "/Users/$userName/${WacomTabletPrefs}"
+
 		fi
 	fi
 fi
