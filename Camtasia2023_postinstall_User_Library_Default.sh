@@ -62,7 +62,7 @@ set -x
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
 mkdir -pv "/Library/User Template/Non_localized/Library/Application Support/TechSmith/Camtasia 2023/Library/Camtasia Libraries/Camtasia 2023"
-cp -Rf "/Applications/Camtasia 2023.app/Contents/Resources/Default Libraries/Camtasia 2023"  "/Library/User Template/Non_localized/Library/Application Support/TechSmith/Camtasia 2023/Library/Camtasia Libraries/Camtasia 2023"
+cp -Rf "/Applications/Camtasia 2023.app/Contents/Resources/Default Libraries/Camtasia 2023/"  "/Library/User Template/Non_localized/Library/Application Support/TechSmith/Camtasia 2023/Library/Camtasia Libraries/Camtasia 2023"
 
 if [ -e "/Applications/Camtasia 2023.app/Contents/Info.plist" ]
 then
