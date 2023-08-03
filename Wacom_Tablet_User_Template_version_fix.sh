@@ -51,7 +51,16 @@ echo "userName=$userName"
 WacomPersistentPlist="/Library/Containers/com.wacom.DataStoreMgr/Data/Library/Preferences/.wacom/persistent.plist"
 WacomTabletPrefs="/Library/Group Containers/EG27766DY7.com.wacom.WacomTabletDriver/Library/Preferences/com.wacom.wacomtablet.prefs"
 WacomDesktopCenterVersion=""
-WacomDesktopCenterVersion=$(/usr/bin/defaults read "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" CFBundleShortVersionString)
+
+# Wacom changed the name of the app from Wacom Desktop Center.app to Wacom Center.app, so I need to check for both.
+if [ -e "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" ]
+then
+	WacomDesktopCenterVersion=$(/usr/bin/defaults read "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" CFBundleShortVersionString)
+elif [ -e "/Applications/Wacom Tablet.localized/Wacom Center.app/Contents/Info.plist" ]
+then
+	WacomDesktopCenterVersion=$(/usr/bin/defaults read "/Applications/Wacom Tablet.localized/Wacom Center.app/Contents/Info.plist" CFBundleShortVersionString)
+fi
+
 echo "WacomDesktopCenterVersion $WacomDesktopCenterVersion"
 
 # 
