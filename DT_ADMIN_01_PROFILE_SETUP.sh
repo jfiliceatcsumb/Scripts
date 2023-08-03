@@ -74,7 +74,7 @@ echo "Creating home directory for admin using /usr/sbin/createhomedir..."
 AdminHOME=/Users/admin
 
 echo "Copying User Template/English.lproj into ${AdminHOME}..."
-ditto -V "/System/Library/User Template/English.lproj" "${AdminHOME}"
+ditto -V "/Library/User Template/English.lproj" "${AdminHOME}"
 
 ########## LAUNCH SERVICES ##########
 echo "Adding LSHandlers for textwrangler: plist and sh"
