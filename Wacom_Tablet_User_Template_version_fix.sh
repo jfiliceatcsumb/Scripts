@@ -66,46 +66,49 @@ echo "WacomDesktopCenterVersion $WacomDesktopCenterVersion"
 # 
 #
 
-if [[ "$WacomDesktopCenterVersion" != "" ]]
-then
 # ##### USER TEMPLATE #####
-	/bin/mkdir -p -m 755 "$(/usr/bin/dirname '/Library/User Template/Non_localized'${WacomPersistentPlist})" 
-	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'Analytics_On' -string "NO"
-	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
-	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
+/bin/mkdir -p -m 755 "$(/usr/bin/dirname '/Library/User Template/Non_localized'${WacomPersistentPlist})" 
+/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'Analytics_On' -string "NO"
+/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
+/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
+if [[ "$WacomDesktopCenterVersion" != "" ]]; then
 	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'LastShown' -string "$WacomDesktopCenterVersion"
-	/bin/chmod 644 "/Library/User Template/Non_localized${WacomPersistentPlist}"
-	/usr/sbin/chown 0:0 "/Library/User Template/Non_localized${WacomPersistentPlist}"
-	echo "/Library/User Template/Non_localized${WacomPersistentPlist}..."
-    /usr/bin/defaults read "/Library/User Template/Non_localized${WacomPersistentPlist}" 
+fi
 
-    # Turn off Wacom Center Autostart
-	/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Library/User Template/Non_localized/${WacomTabletPrefs}"
-	echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
-	echo '</root>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
+/bin/chmod 644 "/Library/User Template/Non_localized${WacomPersistentPlist}"
+/usr/sbin/chown 0:0 "/Library/User Template/Non_localized${WacomPersistentPlist}"
+echo "/Library/User Template/Non_localized${WacomPersistentPlist}..."
+/usr/bin/defaults read "/Library/User Template/Non_localized${WacomPersistentPlist}" 
+
+# Turn off Wacom Center Autostart
+/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Library/User Template/Non_localized/${WacomTabletPrefs}"
+echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
+echo '</root>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
 
 
 # ##### CURRENT LOGGED IN USER #####
-	if [[ "$userName" != "" ]]
+if [[ "$userName" != "" ]]
+then
+	if [[  -d "/Users/$userName" ]]
 	then
-		if [[  -d "/Users/$userName" ]]
-		then
-			/bin/mkdir -p -m 755 "$(/usr/bin/dirname /Users/$userName/${WacomPersistentPlist})" 
-			/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'Analytics_On' -string "NO"
-			/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
-			/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
-			/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'LastShown' -string "$WacomDesktopCenterVersion"
-			/usr/sbin/chown $userName "/Users/$userName/${WacomPersistentPlist}"
-			echo "/Users/$userName/${WacomPersistentPlist}..."
-            /usr/bin/defaults read "/Users/$userName/${WacomPersistentPlist}"
-            
-			# Turn off Wacom Center Autostart
-			/bin/mkdir -p -m 755 "$(/usr/bin/dirname /Users/$userName/${WacomTabletPrefs})"
-			/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Users/$userName/${WacomTabletPrefs}"
-			echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Users/$userName/${WacomTabletPrefs}"
-			echo '</root>' >> "/Users/$userName/${WacomTabletPrefs}"
-
+		/bin/mkdir -p -m 755 "$(/usr/bin/dirname /Users/$userName/${WacomPersistentPlist})" 
+		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'Analytics_On' -string "NO"
+		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
+		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
+		if [[ "$WacomDesktopCenterVersion" != "" ]]; then
+				/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'LastShown' -string "$WacomDesktopCenterVersion"
 		fi
+		/usr/sbin/chown $userName "/Users/$userName/${WacomPersistentPlist}"
+		echo "/Users/$userName/${WacomPersistentPlist}..."
+		/usr/bin/defaults read "/Users/$userName/${WacomPersistentPlist}"
+		
+		# Turn off Wacom Center Autostart
+		/bin/mkdir -p -m 755 "$(/usr/bin/dirname /Users/$userName/${WacomTabletPrefs})"
+		/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Users/$userName/${WacomTabletPrefs}"
+		echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Users/$userName/${WacomTabletPrefs}"
+		echo '</root>' >> "/Users/$userName/${WacomTabletPrefs}"
+
 	fi
 fi
+
 
