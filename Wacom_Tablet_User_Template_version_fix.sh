@@ -53,10 +53,10 @@ WacomTabletPrefs="/Library/Group Containers/EG27766DY7.com.wacom.WacomTabletDriv
 WacomDesktopCenterVersion=""
 
 # Wacom changed the name of the app from Wacom Desktop Center.app to Wacom Center.app, so I need to check for both.
-if [ -e "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" ]
+if [[ -e "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" ]]
 then
 	WacomDesktopCenterVersion=$(/usr/bin/defaults read "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" CFBundleShortVersionString)
-elif [ -e "/Applications/Wacom Tablet.localized/Wacom Center.app/Contents/Info.plist" ]
+elif [[ -e "/Applications/Wacom Tablet.localized/Wacom Center.app/Contents/Info.plist" ]]
 then
 	WacomDesktopCenterVersion=$(/usr/bin/defaults read "/Applications/Wacom Tablet.localized/Wacom Center.app/Contents/Info.plist" CFBundleShortVersionString)
 fi
