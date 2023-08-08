@@ -29,6 +29,7 @@
 # 2019/07/26:	Combining installer these scripts: postinstall, Xcode-7.sh, edu.csumb.it.Xcode.DeveloperToolsGroup.sh, edu.csumb.it.Xcode.AccessibilityInspector.sh
 # 2019/08/13:	/usr/bin/xcodebuild path
 # 2021/08/09:	Redirect stderr to stdout for xcode-select --install. It was causing Jamf job flagging as failure.
+# 2023/08/08:	Added more log output echoes and added explicit paths to several commands, for better security.
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTPATH=`/usr/bin/dirname "$0"`
@@ -65,11 +66,12 @@ echo "Enable developer mode"
 
 # make sure all users on this machine are members of the _developer group
 # https://github.com/munki/munki/wiki/Xcode
+echo "Make sure all users on this machine are members of the _developer group..."
 /usr/sbin/dseditgroup -o edit -a everyone -t group _developer
 
 
 # Allow any member of _developer to install Apple provided software.
-
+echo "Allow any member of _developer to install Apple provided software..."
 /usr/bin/security authorizationdb write system.install.apple-software authenticate-developer
 
 /usr/bin/security authorizationdb write com.apple.dt.instruments.process.analysis authenticate-developer
@@ -80,7 +82,7 @@ echo "Enable developer mode"
 
 
 # If you have multiple versions of Xcode installed, specify which one you want to be current.
-
+echo "xcode-select /Applications/Xcode.app..."
 if [[ /usr/bin/xcode-select ]]; then
     /usr/bin/xcode-select --switch /Applications/Xcode.app
 fi
@@ -101,6 +103,7 @@ fi
 # in /Library/Preferences/com.apple.dt.Xcode.plist. For more details on this, see Tim Sutton's post: 
 # http://macops.ca/deploying-xcode-the-trick-with-accepting-license-agreements/
 
+echo "In case the xcodebuild command above fails to accept the EULA, set the license acceptance info in /Library/Preferences/com.apple.dt.Xcode.plist..."
 if [[ -e "/Applications/Xcode.app/Contents/Resources/LicenseInfo.plist" ]]; then
 
    xcode_version_number=`/usr/bin/defaults read "/Applications/Xcode.app/Contents/"Info CFBundleShortVersionString`
@@ -140,20 +143,21 @@ fi
 
 # install embedded packages
 # https://github.com/munki/munki/wiki/Xcode
+echo "Installing all Xcode resource packages, such as mobile device support..."
 for PKG in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
     /usr/sbin/installer -dumplog -verbose -pkg "$PKG" -target /
 done
 
 
 
-echo "Run Xcode first launch"
+echo "Run Xcode first launch tasks..."
 # https://github.com/munki/munki/wiki/Xcode#xcode-7
 
-echo "Check if any First Launch tasks need to be performed"
+echo "Check if any First Launch tasks need to be performed..."
 "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
 
-"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -runFirstLaunch
-sleep 1
+"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild..." -runFirstLaunch
+/bin/sleep 1
 
 # -allowProvisioningUpdates
 #     Allow xcodebuild to communicate with the Apple Developer website. For automatically signed targets, xcodebuild will create and update profiles, app IDs, and certificates. 
@@ -168,45 +172,46 @@ sleep 1
 
 
 # https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
+echo "Check if command line tools are installed..."
 /usr/bin/xcode-select -p 2>&1
 /usr/bin/xcode-select -p 1>/dev/null;echo $?
 
 # #####
-# Install Command Line Tools.
+echo "(Re)Install Command Line Tools..."
 # 
 # create the placeholder file that's checked by CLI updates' .dist code
 # in Apple's SUS catalog
-touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+/usr/bin/touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
 # find the CLI Tools update
-PROD=$(softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+PROD=$(/usr/sbin/softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
 # 	Strip "Label: "
 PROD=$(echo "$PROD" | sed -e 's/Label: //')
 
 # install it
-softwareupdate -i "$PROD" --verbose
-rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+/usr/sbin/softwareupdate -i "$PROD" --verbose
+/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
 # 
 # 
 # #####
 
 
 # https://community.jamf.com/t5/jamf-pro/deploying-xcode-8-via-self-service-a-how-to/m-p/174953/highlight/true#M163832
-# Bypass Gatekeeper verification for Xcode, which can take awhile.
+
+echo "Bypass Gatekeeper verification for Xcode, which can take awhile..."
 
 if [[ -e "/Applications/Xcode.app" ]]; then 
-	xattr -dr com.apple.quarantine /Applications/Xcode.app
+	/usr/bin/xattr -dr com.apple.quarantine /Applications/Xcode.app
 fi
 
 
 # https://github.com/munki/munki/wiki/Xcode#xcode-7
-# disable version check for MobileDeviceDevelopment
+echo "Disable version check for MobileDeviceDevelopment..."
 /usr/bin/defaults write /Library/Preferences/com.apple.dt.Xcode DVTSkipMobileDeviceFrameworkVersionChecking -bool true
 
-
-defaults read "/Library/Preferences/com.apple.dt.Xcode.plist"
+echo "read /Library/Preferences/com.apple.dt.Xcode.plist"
+/usr/bin/defaults read "/Library/Preferences/com.apple.dt.Xcode.plist"
 # echo "Check if any First Launch tasks need to be performed"
 # "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
-
 
 
 exit 0
