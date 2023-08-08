@@ -8,7 +8,6 @@
 
 
 
-# This script requires .
 # Run it with one argument, string name of the wi-fi SSID to remove from preferred wireless networks. 
 # 
 # Use as script in Jamf JSS.
