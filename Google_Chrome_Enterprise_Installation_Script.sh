@@ -50,7 +50,8 @@ PKGfile="GoogleChrome.pkg"
 PKG_URL="https://dl.google.com/dl/chrome/mac/universal/stable/gcem/GoogleChrome.pkg"
 
 # Download vendor supplied PKG file into /tmp/
-/usr/bin/curl "$PKG_URL" --location --create-dirs --output /tmp/"$PKGfile"
+# This prints an error message to stderr
+/usr/bin/curl "$PKG_URL" --fail --silent --show-error --location --create-dirs --output /tmp/"$PKGfile"
 
 sleep 1
 
