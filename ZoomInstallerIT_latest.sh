@@ -62,7 +62,8 @@ if [ -e /tmp/"$PKGfile" ]; then
 fi
 
 # Download vendor pkg file into /tmp/
-/usr/bin/curl "$PKG_URL" --location --create-dirs --output /tmp/"$PKGfile"
+# This prints an error message to stderr
+/usr/bin/curl "$PKG_URL" --fail --silent --show-error --location --create-dirs --output /tmp/"$PKGfile"
 
 sleep 1
 
