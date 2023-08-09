@@ -37,7 +37,8 @@ done
 
 
 # Download vendor supplied DMG file into /tmp/
-/usr/bin/curl "https://dl.google.com/drive-file-stream/$VendorDMG" --location --output /tmp/$VendorDMG
+# This prints an error message to stderr
+/usr/bin/curl "https://dl.google.com/drive-file-stream/$VendorDMG" --fail --silent --show-error --location --output /tmp/$VendorDMG
 # https://dl.google.com/drive-file-stream/GoogleDrive.dmg
 
 # Mount vendor supplied DMG File
