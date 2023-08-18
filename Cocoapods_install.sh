@@ -91,7 +91,7 @@ fi
 
 
 /usr/bin/gem uninstall cocoapods
-/usr/bin/gem install activesupport -v ${activesupportVer}
+/usr/bin/gem install activesupport --version ${activesupportVer}
 /usr/bin/gem install cocoapods --version ${cocoapodsVer}
 
 /usr/bin/xcode-select --switch /Applications/Xcode.app
