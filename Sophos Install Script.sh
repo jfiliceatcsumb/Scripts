@@ -40,7 +40,7 @@ SOPHOS_INSTALLER_URL=$1
 /bin/mkdir $SOPHOS_DIR
 cd $SOPHOS_DIR
 
-# Installing Sophos
+echo "Installing Sophos..."
 # put installer URL in these quotes
 # curl specify output file to the same as expected in the script. The URL could change and break things.
 /usr/bin/curl --output SophosInstall.zip -L -O "$SOPHOS_INSTALLER_URL"
@@ -48,5 +48,18 @@ cd $SOPHOS_DIR
 /bin/chmod a+x $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer
 /bin/chmod a+x $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/tools/com.sophos.bootstrap.helper
 /usr/bin/sudo $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer --quiet
+
+echo "Removing Sophos installer..."
+
 /bin/rm -rf $SOPHOS_DIR
+
+echo "Waiting 60 seconds before updating Sophos..."
+sleep 60
+echo "Run Sophos AutoUpdate Tool..."
+/usr/local/bin/RunSophosUpdate
+# https://community.sophos.com/free-tools/f/discussions/7419/mac-terminal-update-and-running-options
+
+echo "Read Sophos product info..."
+/usr/bin/defaults read "/Library/Sophos Anti-Virus/product-info.plist"
+
 exit
