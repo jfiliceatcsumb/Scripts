@@ -103,10 +103,10 @@ then
 		/usr/bin/defaults read "/Users/$userName/${WacomPersistentPlist}"
 		
 		# Turn off Wacom Center Autostart
-		/bin/mkdir -p -m 755 "$(/usr/bin/dirname /Users/$userName/${WacomTabletPrefs})"
-		/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Users/$userName/${WacomTabletPrefs}"
-		echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Users/$userName/${WacomTabletPrefs}"
-		echo '</root>' >> "/Users/$userName/${WacomTabletPrefs}"
+		/bin/mkdir -p -m 755 "/Users/${userName}"$(/usr/bin/dirname "${WacomTabletPrefs}")
+		/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Users/${userName}/${WacomTabletPrefs}"
+		echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Users/${userName}/${WacomTabletPrefs}"
+		echo '</root>' >> "/Users/${userName}/${WacomTabletPrefs}"
 
 	fi
 fi
