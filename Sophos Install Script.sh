@@ -53,8 +53,10 @@ echo "Removing Sophos installer..."
 
 /bin/rm -rf $SOPHOS_DIR
 
-echo "Waiting 60 seconds before updating Sophos..."
-sleep 60
+# 60 seconds does not seem to be enough time. Still getting results: 'Failed to request update'
+# Increasing the wait time.
+echo "Waiting 5 minutes before updating Sophos..."
+sleep 300
 echo "Run Sophos AutoUpdate Tool..."
 /usr/local/bin/RunSophosUpdate
 # https://community.sophos.com/free-tools/f/discussions/7419/mac-terminal-update-and-running-options
