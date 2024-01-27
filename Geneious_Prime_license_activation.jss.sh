@@ -8,7 +8,7 @@
 
 
 
-# This script requires Geneious Prime to be installed at /Applications/Geneious Prime.app.
+# This script requires Geneious Prime (version 2021.1 and later )to be installed at /Applications/Geneious Prime.app.
 # 
 # 
 # Use as script in Jamf JSS.
@@ -105,12 +105,19 @@ alias sudo=/usr/bin/sudo
 # Copy the geneious.properties to the 
 mkdir -v -p -m 755 "/Library/Application Support/Geneious/"
 cp "/Applications/Geneious Prime.app/Contents/Resources/app/geneious.properties"  "/Library/Application Support/Geneious/geneious.properties"
-sed 's/#license-key=/license-key=${LICENSE_KEY}/g' FILE
+/usr/bin/sed -i -e 's/#license-key=/license-key=${LICENSE_KEY}/g' "/Library/Application Support/Geneious/geneious.properties"
+
+
+## disable checking for updates, both automatic and manual (admin can uncomment this when user's machine should not allow updates from the Internet)
+#enable-check-internet-for-new-versions=false
+
+/usr/bin/sed -i -e 's/#enable-check-internet-for-new-versions/enable-check-internet-for-new-versions/g' "/Library/Application Support/Geneious/geneious.properties"
+
 
 chmod 644 "/Library/Application Support/Geneious/geneious.properties"
 chown 0:0 -FR "/Library/Application Support/Geneious/"
 
-# defaults write "/Library/Application Support/Geneious/default_user_preferences.xml" 'userEmail' -string "${USER_EMAIL}"
+defaults write "/Library/Preferences/com.biomatters.utilities.plist" 'userEmail' -string "${USER_EMAIL}"
 
 # <key>userEmail</key>
 # <string>software@csumb.edu</string>
