@@ -8,7 +8,7 @@
 
 
 
-# This script requires Geneious Prime (version 2021.1 and later )to be installed at /Applications/Geneious Prime.app.
+# This script requires Geneious Prime (version 2021.1 and later) to be installed at /Applications/Geneious Prime.app.
 # 
 # 
 # Use as script in Jamf JSS.
@@ -102,16 +102,26 @@ set -x
 # This setting cannot be used to configure Sassafras KeyServer licenses.
 
 
+echo LICENSE_KEY ${LICENSE_KEY:=$1}
+echo USER_EMAIL ${USER_EMAIL:=$2}
+
+
+# Check for the existence of the geneious.properties file in the application
+if [[ ! -e "/Applications/Geneious Prime.app/Contents/Resources/app/geneious.properties" ]]
+then 
+	exit 1
+fi
+
 # Copy the geneious.properties to the 
 mkdir -v -p -m 755 "/Library/Application Support/Geneious/"
 cp "/Applications/Geneious Prime.app/Contents/Resources/app/geneious.properties"  "/Library/Application Support/Geneious/geneious.properties"
-/usr/bin/sed -e "s/#license-key=/license-key=${LICENSE_KEY}/g" "/Library/Application Support/Geneious/geneious.properties" -i
+/usr/bin/sed -e "s/#license-key=/license-key=${LICENSE_KEY}/g" -i '' "/Library/Application Support/Geneious/geneious.properties"
 
 
 ## disable checking for updates, both automatic and manual (admin can uncomment this when user's machine should not allow updates from the Internet)
 #enable-check-internet-for-new-versions=false
 
-/usr/bin/sed -e 's/#enable-check-internet-for-new-versions/enable-check-internet-for-new-versions/g' "/Library/Application Support/Geneious/geneious.properties" -i
+/usr/bin/sed -e 's/#enable-check-internet-for-new-versions/enable-check-internet-for-new-versions/g' -i '' "/Library/Application Support/Geneious/geneious.properties"
 
 
 chmod -f 644 "/Library/Application Support/Geneious/geneious.properties"
@@ -119,9 +129,10 @@ chown -fR 0:80 "/Library/Application Support/Geneious/"
 
 /bin/cat "/Library/Application Support/Geneious/geneious.properties"
 
-defaults write "/Library/Preferences/com.biomatters.utilities.plist" 'userEmail' -string "${USER_EMAIL}"
-defaults read "/Library/Preferences/com.biomatters.utilities.plist"
-
+defaults write "/Library/User Template/Non_localized/Library/Preferences/com.biomatters.utilities.plist" '/com/biomatters/utilities/' -dict-add 'userEmail' "${USER_EMAIL}" 
+chmod -f 644  "/Library/User Template/Non_localized/Library/Preferences/com.biomatters.utilities.plist"
+chown -fR 0:0  "/Library/User Template/Non_localized/Library/Preferences/com.biomatters.utilities.plist"
+defaults read "/Library/User Template/Non_localized/Library/Preferences/com.biomatters.utilities.plist"
 
 exit 0
 
