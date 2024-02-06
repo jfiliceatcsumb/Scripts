@@ -83,5 +83,5 @@ sleep 1
 echo "Wi-Fi (Airport) prefs after..."
 /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport prefs
 
-exit 0
+exit
 
