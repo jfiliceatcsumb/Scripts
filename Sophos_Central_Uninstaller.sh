@@ -22,7 +22,7 @@ echo ""
 /usr/bin/dscl . -delete /Users/_Sophos
 
 if [[ -e /Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer ]]; then
-	/Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer --force_remove
+	/Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer --ui --force_remove
 else
 	echo "InstallationDeployer tool not found."
 fi
