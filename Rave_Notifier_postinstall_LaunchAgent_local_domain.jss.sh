@@ -10,8 +10,7 @@
 # This script fixes an installer design flaw in the Rave Notifier installer "Rave_Notifier_0.9.25.pkg" 
 # The pkg postinstall script copies the LaunchAgent config into the current user’s profile ~/Library/LaunchAgents/ directory; 
 # this must be installed instead at the local domain directory for all users: /Library/LaunchAgents/
-
-"
+# The script below is modified from the Rave_Notifier_0.9.25.pkg postinstall script.
 
 # This script requires '/Applications/Rave Notifier.app' to be installed.
 # This script requires '/Applications/Rave Notifier.app/Contents/Resources/com.ale-enterprise.RaveNotifier.plist'.
