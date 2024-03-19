@@ -65,7 +65,7 @@ UID_CURRENT=$(/usr/bin/id -u $userName)
 # If we have not already an agent it means it's the first install
 if [ ! -f "$LAUNCH_AGENT_DST" ]; then
   
-#	 Copy and Load new agent
+#	 Copy new agent
 	/bin/cp "$LAUNCH_AGENT_SRC" "$LAUNCH_AGENT_DST" || true
 	/usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
 	/bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
