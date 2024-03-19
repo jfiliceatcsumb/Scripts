@@ -60,6 +60,8 @@ LAUNCH_AGENT_SRC="/Applications/Rave Notifier.app/Contents/Resources/com.ale-ent
 LAUNCH_AGENT_DST_PATH="/Library/LaunchAgents/"
 LAUNCH_AGENT_DST="${LAUNCH_AGENT_DST_PATH}com.ale-enterprise.RaveNotifier.plist"
 
+UID_CURRENT=$(/usr/bin/id -u $userName)
+
 # If we have not already an agent it means it's the first install
 if [ ! -f "$LAUNCH_AGENT_DST" ]; then
   
@@ -67,25 +69,24 @@ if [ ! -f "$LAUNCH_AGENT_DST" ]; then
 	/bin/cp "$LAUNCH_AGENT_SRC" "$LAUNCH_AGENT_DST" || true
 	/usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
 	/bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
-	/bin/launchctl load "$LAUNCH_AGENT_DST" || true
-  
-# 	Start app, since it's the first install
-	/usr/bin/open -a 'Rave Notifier.app'
 
 else
 
 # 	Unload and Delete old agent
-	/bin/launchctl unload "$LAUNCH_AGENT_DST"
+	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+		/bin/launchctl unload "$LAUNCH_AGENT_DST"
+		/bin/launchctl bootout gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
+	fi
+
 	/bin/rm -f "$LAUNCH_AGENT_DST"
 	
 # 	Copy and Load new agent
 	/bin/cp -f "$LAUNCH_AGENT_SRC" "$LAUNCH_AGENT_DST" || true
 	/usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
 	/bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
-
-	/bin/launchctl load "$LAUNCH_AGENT_DST" || true
-  
-# 	Here it's not necessary to start app ...
+	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+		/bin/launchctl bootstrap gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
+	fi
 
 fi
 
