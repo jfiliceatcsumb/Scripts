@@ -32,30 +32,31 @@ echo "computerName=$computerName"
 echo "userName=$userName"
 
 
-SOPHOS_DIR="/Users/Shared/Sophos_Install"
+SOPHOS_DIR=$(/usr/bin/mktemp -d -t Sophos_Install)
 SOPHOS_INSTALLER_URL=$1
 # Sanitize by deleting this directory at the beginning if it already exists. 
 # Unfortunately, this script does not do any checksum of the Sophos installer, so this is critical.
-/bin/rm -rf $SOPHOS_DIR
-/bin/mkdir $SOPHOS_DIR
+trap '/bin/rm -rf ${SOPHOS_DIR}' EXIT
 cd $SOPHOS_DIR
+
 
 echo "Installing Sophos..."
 # put installer URL in these quotes
 # curl specify output file to the same as expected in the script. The URL could change and break things.
-/usr/bin/curl --output SophosInstall.zip -L -O "$SOPHOS_INSTALLER_URL"
+/usr/bin/curl --output SophosInstall.zip --location "$SOPHOS_INSTALLER_URL"
 /usr/bin/unzip SophosInstall.zip
 /bin/chmod a+x $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer
 /bin/chmod a+x $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/tools/com.sophos.bootstrap.helper
-/usr/bin/sudo $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer --quiet
+$SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer --quiet
 
 echo "Removing Sophos installer..."
 
 /bin/rm -rf $SOPHOS_DIR
 
+
+echo "Waiting 5 minutes before updating Sophos..."
 # 60 seconds does not seem to be enough time. Still getting results: 'Failed to request update'
 # Increasing the wait time.
-echo "Waiting 5 minutes before updating Sophos..."
 sleep 300
 echo "Run Sophos AutoUpdate Tool..."
 /usr/local/bin/RunSophosUpdate
@@ -64,4 +65,23 @@ echo "Run Sophos AutoUpdate Tool..."
 echo "Read Sophos product info..."
 /usr/bin/defaults read "/Library/Sophos Anti-Virus/product-info.plist"
 
-exit
+exit 0
+
+# #####################
+# Install Sophos Script.txt
+# 2024-Mar-27
+# Included with Sophos Installer.app v.1.7.0
+# #####################
+# #!/bin/bash
+# SOPHOS_DIR=$(mktemp -d -t Sophos_Install)
+# trap 'rm -rf ${SOPHOS_DIR}' EXIT
+# cd $SOPHOS_DIR
+# 
+# # Installing Sophos
+# curl -L -O "put installer URL in these quotes."
+# unzip SophosInstall.zip
+# chmod a+x $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer
+# chmod a+x $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/tools/com.sophos.bootstrap.helper
+# $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer --quiet
+# rm -rf $SOPHOS_DIR
+# exit 0
