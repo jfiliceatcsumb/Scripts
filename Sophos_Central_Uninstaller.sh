@@ -25,22 +25,23 @@ if [[ -e /Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/
 	/Library/Application\ Support/Sophos/saas/Installer.app/Contents/MacOS/tools/InstallationDeployer --ui --force_remove
 else
 	echo "InstallationDeployer tool not found."
-fi
 # Manual removal:
-echo "Employing manual deletions for additional cleanup..."
-echo "Bootout com.sophos.sophoscbr.plist..."
-/bin/launchctl bootout system /Library/LaunchDaemons/com.sophos.sophoscbr.plist
-echo $?
-echo "launchctl legacy command..."
-/bin/launchctl unload -F /Library/LaunchDaemons/com.sophos.sophoscbr.plist
-echo "Manual file deletion..."
-/bin/rm -vf /Library/LaunchDaemons/com.sophos.sophoscbr.plist
-/bin/rm -vrf /Library/Application\ Support/Sophos/ 
-/bin/rm -vfR /Library/SophosCBR/
-/bin/rm -vfR /Library/Sophos\ Anti-Virus/
-/bin/rm -vfR /Library/Sophos\ Live\ Query/
-/bin/rm -vfR /Library/Caches/com.sophos.*
-/bin/rm -vfR /Library/Preferences/com.sophos.*
+	echo "Employing manual deletions..."
+	echo "Bootout or unload com.sophos.sophoscbr.plist if it exists..."
+	if [[ -e /Library/LaunchDaemons/com.sophos.sophoscbr.plist ]]; then
+		/bin/launchctl bootout system /Library/LaunchDaemons/com.sophos.sophoscbr.plist || /bin/launchctl unload -F /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+		echo $?
+	fi
+	echo "Manual file deletions..."
+	/bin/rm -vf /Library/LaunchDaemons/com.sophos.sophoscbr.plist
+	/bin/rm -vrf /Library/Application\ Support/Sophos/ 
+	/bin/rm -vfR /Library/SophosCBR/
+	/bin/rm -vfR /Library/Sophos\ Anti-Virus/
+	/bin/rm -vfR /Library/Sophos\ Live\ Query/
+	/bin/rm -vfR /Library/Caches/com.sophos.*
+	/bin/rm -vfR /Library/Preferences/com.sophos.*
+
+fi
 
 
 exit 0
