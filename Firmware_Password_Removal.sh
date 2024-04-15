@@ -58,7 +58,7 @@ else
 fi
 
 
-echo "Attempting to disable firmware, trying several known passwords..."
+echo "Attempting to disable firmware, trying $# known password(s)..."
 
 # Test that there is at least one parameter for the old password.
 if [ $# -ge 1 ]
@@ -66,8 +66,6 @@ then
 	while [ $# != 0 ]
 	do
 		if [ "${1}" != "" ]; then
-# 		firmwarePasswordCommand="/Library/Application Support/JAMF/bin/setregproptool -d -o ${1}"
-# spawn 	{*}$firmwarePasswordCommand
 			/usr/bin/expect <<EOL
 spawn "/Library/Application Support/JAMF/bin/setregproptool" -d -o "${1}"
 expect "Enter current password" {
@@ -85,18 +83,6 @@ EOL
 		fi
 # 		shift off one argument, before loop back.
 		shift
-
-    # Check whether password is enabled. 
-    # return status of 0 if set, 1 otherwise.
-# 	echo "Check again whether firmware password is set..."
-# 	setregproptoolresult=""
-# 	setregproptoolresult=$("/Library/Application Support/JAMF/bin/setregproptool" -c; echo $?)
-# 	if [ "$setregproptoolresult" = "0" ]; then
-# 		echo "Firmware password is set."
-# 	else
-#     	echo "Firmware password is not set."
-# 		exit
-# 	fi
 	done
 else 
 	exit 1
