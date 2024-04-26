@@ -17,7 +17,7 @@
 
 # Run it with no arguments. 
 # 
-# Use as script in Jamf JSS.
+# Use as post install script in Jamf JSS.
 
 
 # Change History:
@@ -60,9 +60,6 @@ LAUNCH_AGENT_SRC="/Applications/Rave Notifier.app/Contents/Resources/com.ale-ent
 LAUNCH_AGENT_DST_PATH="/Library/LaunchAgents/"
 LAUNCH_AGENT_DST="${LAUNCH_AGENT_DST_PATH}com.ale-enterprise.RaveNotifier.plist"
 
-UID_CURRENT=$(/usr/bin/id -u $userName)
-
-  
 #	 Copy new agent
 /bin/cp -f "$LAUNCH_AGENT_SRC" "$LAUNCH_AGENT_DST" || true
 /usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
