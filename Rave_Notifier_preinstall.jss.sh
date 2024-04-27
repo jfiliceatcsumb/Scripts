@@ -45,18 +45,29 @@ echo "userName=$userName"
 # identify the unset variables while debugging bash script
 # set -u
 # debug bash script using xtrace
-# set -x
+set -x
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
-appBundlePath=""
-appBundleID="com.ale-enterprise.RaveNotifier" 
-
-if [[ -e "$appBundlePath" ]]; then
-	rm -fR "$appBundlePath"
-fi
+appBundleDefaultPath="/Applications/Rave Notifier.app"
+appBundleID="com.ale-enterprise.RaveNotifier"
+ProcNameToKill="Rave Notifier"
 
 
+/usr/bin/killall -vq "${ProcNameToKill}"
+
+# if [[ -e "$appBundleDefaultPath" ]]; then
+	/bin/rm -fR "$appBundleDefaultPath"
+# fi
+
+# Save found application paths as an array of strings.
+# Normally, the explicit rm command above should remove the only copy installed on most systems.
+appBundleIDfound=(${(f)"$(/usr/bin/mdfind  kMDItemCFBundleIdentifier="${appBundleID}")"})
+# Iterate through each element of the array to delete all found copies.
+for appBundlePath in ${appBundleIDfound[@]}; do
+	echo "deleting ${appBundlePath}..."
+	/bin/rm -fR "${appBundlePath}"
+done
 
 exit 0
 
