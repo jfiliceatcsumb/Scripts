@@ -45,7 +45,7 @@ echo "userName=$userName"
 # identify the unset variables while debugging bash script
 # set -u
 # debug bash script using xtrace
-set -x
+# set -x
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
@@ -56,9 +56,9 @@ ProcNameToKill="Rave Notifier"
 
 /usr/bin/killall -vq "${ProcNameToKill}"
 
-# if [[ -e "$appBundleDefaultPath" ]]; then
+if [[ -e "$appBundleDefaultPath" ]]; then
 	/bin/rm -fR "$appBundleDefaultPath"
-# fi
+fi
 
 # Save found application paths as an array of strings.
 # Normally, the explicit rm command above should remove the only copy installed on most systems.
