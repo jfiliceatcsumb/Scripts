@@ -73,7 +73,8 @@ UID_CURRENT=$(/usr/bin/id -u $userName)
 # 	Unload and Delete old agent
 if [[ -e "${LAUNCH_AGENT_DST}" ]]; then
 	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
-		/bin/launchctl unload "$LAUNCH_AGENT_DST"
+# 		bootout is the modern launchctlsubcommand for macOS 10.10 and newer.
+# 		https://babodee.wordpress.com/2016/04/09/launchctl-2-0-syntax/
 		/bin/launchctl bootout gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
 	fi
 	/usr/bin/defaults delete "${LAUNCH_AGENT_DST}"
@@ -141,6 +142,7 @@ echo "Reading the ${LAUNCH_AGENT_DST} values..."
 
 # Load new agent
 if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+# 	bootstrap is the modern launchctl subcommand for macOS 10.10 and newer.
 	/bin/launchctl bootstrap gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
 fi
 
