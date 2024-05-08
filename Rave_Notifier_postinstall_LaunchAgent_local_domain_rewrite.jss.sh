@@ -68,6 +68,16 @@ LAUNCH_AGENT_StandardOutPath=$(/usr/bin/defaults read "$LAUNCH_AGENT_SRC" 'Stand
 APP_PATH="/Applications/Rave Notifier.app"
 LAUNCH_AGENT_Program="/Applications/Rave Notifier.app/Contents/MacOS/Rave Notifier"
 
+UID_CURRENT=$(/usr/bin/id -u $userName)
+
+# 	Unload and Delete old agent
+if [[ -e "${LAUNCH_AGENT_DST}" ]]; then
+	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+		/bin/launchctl unload "$LAUNCH_AGENT_DST"
+		/bin/launchctl bootout gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
+	fi
+	/usr/bin/defaults delete "${LAUNCH_AGENT_DST}"
+fi
 # Write the LaunchAgent Plist file
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'Label' -string "${LAUNCH_AGENT_Label}"
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'RunAtLoad' -bool TRUE
@@ -79,6 +89,7 @@ LAUNCH_AGENT_Program="/Applications/Rave Notifier.app/Contents/MacOS/Rave Notifi
 
 echo "Reading the ${LAUNCH_AGENT_DST} values..."
 /usr/bin/defaults read "${LAUNCH_AGENT_DST}"
+
 
 ################
 # Expected plist values
@@ -128,6 +139,10 @@ echo "Reading the ${LAUNCH_AGENT_DST} values..."
 /usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
 /bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
 
+# Load new agent
+if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+	/bin/launchctl bootstrap gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
+fi
 
 exit 0
 
