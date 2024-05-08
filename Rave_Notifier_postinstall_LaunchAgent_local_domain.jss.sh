@@ -74,7 +74,8 @@ else
 
 # 	Unload and Delete old agent
 	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
-		/bin/launchctl unload "$LAUNCH_AGENT_DST"
+# 		bootout is the modern launchctlsubcommand for macOS 10.10 and newer.
+# 		https://babodee.wordpress.com/2016/04/09/launchctl-2-0-syntax/
 		/bin/launchctl bootout gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
 	fi
 
@@ -85,11 +86,11 @@ else
 	/usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
 	/bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
 	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+# 		bootstrap is the modern launchctl subcommand for macOS 10.10 and newer.
 		/bin/launchctl bootstrap gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
 	fi
 
 fi
-
 
 exit 0
 
