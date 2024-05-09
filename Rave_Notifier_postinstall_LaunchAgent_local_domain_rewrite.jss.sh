@@ -75,7 +75,9 @@ if [[ -e "${LAUNCH_AGENT_DST}" ]]; then
 	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
 # 		bootout is the modern launchctlsubcommand for macOS 10.10 and newer.
 # 		https://babodee.wordpress.com/2016/04/09/launchctl-2-0-syntax/
-		/bin/launchctl bootout gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
+		/bin/launchctl bootout gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
+		/bin/launchctl disable gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
+		/usr/bin/defaults delete "${userName}/${LAUNCH_AGENT_DST}"
 	fi
 	/usr/bin/defaults delete "${LAUNCH_AGENT_DST}"
 fi
@@ -91,6 +93,18 @@ fi
 echo "Reading the ${LAUNCH_AGENT_DST} values..."
 /usr/bin/defaults read "${LAUNCH_AGENT_DST}"
 
+# Set file permissions
+/usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
+/bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
+
+# Load new agent
+if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+# 	bootstrap is the modern launchctl subcommand for macOS 10.10 and newer.
+	/bin/launchctl bootstrap gui/${UID_CURRENT} "${LAUNCH_AGENT_DST}"
+	/bin/launchctl enable gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
+	/bin/launchctl kickstart -kp gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
+	/bin/launchctl print gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
+fi
 
 ################
 # Expected plist values
@@ -136,15 +150,6 @@ echo "Reading the ${LAUNCH_AGENT_DST} values..."
 # 	<string>/tmp/RaveNotifier.out</string>
 # </dict>
 
-# Set file permissions
-/usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
-/bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
-
-# Load new agent
-if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
-# 	bootstrap is the modern launchctl subcommand for macOS 10.10 and newer.
-	/bin/launchctl bootstrap gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
-fi
 
 exit 0
 
