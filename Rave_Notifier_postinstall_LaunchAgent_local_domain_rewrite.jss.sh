@@ -52,7 +52,7 @@ echo "userName=$userName"
 # identify the unset variables while debugging bash script
 # set -u
 # debug bash script using xtrace
-# set -x
+set -x
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
@@ -68,16 +68,20 @@ LAUNCH_AGENT_StandardOutPath=$(/usr/bin/defaults read "$LAUNCH_AGENT_SRC" 'Stand
 APP_PATH="/Applications/Rave Notifier.app"
 LAUNCH_AGENT_Program="/Applications/Rave Notifier.app/Contents/MacOS/Rave Notifier"
 
+
 UID_CURRENT=$(/usr/bin/id -u $userName)
 
 # 	Unload and Delete old agent
 if [[ -e "${LAUNCH_AGENT_DST}" ]]; then
 	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+		userHome=$(sudo -u "${userName}" sh -c 'echo $HOME')
 # 		bootout is the modern launchctlsubcommand for macOS 10.10 and newer.
 # 		https://babodee.wordpress.com/2016/04/09/launchctl-2-0-syntax/
 		/bin/launchctl bootout gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
-		/bin/launchctl disable gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
-		/usr/bin/defaults delete "${userName}/${LAUNCH_AGENT_DST}"
+		/bin/rm -fv "${userHome}/${LAUNCH_AGENT_DST}"
+# 		/usr/bin/defaults delete "${userHome}/${LAUNCH_AGENT_DST}"
+# 		/bin/chmod -fv 644 "${userHome}/${LAUNCH_AGENT_DST}"
+# 		/usr/sbin/chown -fv "${userName}" "${userHome}/${LAUNCH_AGENT_DST}"
 	fi
 	/usr/bin/defaults delete "${LAUNCH_AGENT_DST}"
 fi
@@ -85,8 +89,9 @@ fi
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'Label' -string "${LAUNCH_AGENT_Label}"
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'RunAtLoad' -bool TRUE
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'Program' -string "${LAUNCH_AGENT_Program}"
+# /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'ProgramArguments' -array "open" "-a" "${APP_PATH}"
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'KeepAlive' -bool TRUE
-/usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'LimitLoadToSessionType' -string "Aqua"
+# /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'LimitLoadToSessionType' -string "Aqua"
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'StandardErrorPath' -string "${LAUNCH_AGENT_StandardErrorPath}"
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'StandardOutPath' -string "${LAUNCH_AGENT_StandardOutPath}"
 
@@ -100,9 +105,9 @@ echo "Reading the ${LAUNCH_AGENT_DST} values..."
 # Load new agent
 if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
 # 	bootstrap is the modern launchctl subcommand for macOS 10.10 and newer.
-	/bin/launchctl bootstrap gui/${UID_CURRENT} "${LAUNCH_AGENT_DST}"
 	/bin/launchctl enable gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
-	/bin/launchctl kickstart -kp gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
+	/bin/launchctl bootstrap gui/${UID_CURRENT} "${LAUNCH_AGENT_DST}"
+# 	/bin/launchctl kickstart -kp gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
 	/bin/launchctl print gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
 fi
 
