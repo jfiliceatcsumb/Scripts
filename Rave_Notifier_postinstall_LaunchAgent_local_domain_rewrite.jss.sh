@@ -72,7 +72,6 @@ ProcNameToKill="Rave Notifier"
 UID_CURRENT=$(/usr/bin/id -u $userName)
 
 
-
 # 	Unload and Delete old agent
 if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
 	userHome=$(eval echo ~${userName})
@@ -89,7 +88,13 @@ if [[ -e "${LAUNCH_AGENT_DST}" ]]; then
 	/usr/bin/defaults delete "${LAUNCH_AGENT_DST}"
 fi
 
-/usr/bin/killall -vq "${ProcNameToKill}"
+# `killall -q`
+# 		Suppress error message if no processes are matched. 
+# 		Not supported on on older versions (e.g. macOS 11)
+# 		Thus redirecting stderr to stdout instead
+# `killall -v`
+# 		Be verbose about what will be done
+/usr/bin/killall -v "${ProcNameToKill}" 2>&1
 
 sleep 5
 
