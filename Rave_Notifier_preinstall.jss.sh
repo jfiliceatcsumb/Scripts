@@ -54,7 +54,13 @@ appBundleID="com.ale-enterprise.RaveNotifier"
 ProcNameToKill="Rave Notifier"
 
 
-/usr/bin/killall -vq "${ProcNameToKill}"
+# `killall -q`
+# 		Suppress error message if no processes are matched. 
+# 		Not supported on on older versions (e.g. macOS 11)
+# 		Thus redirecting stderr to stdout instead
+# `killall -v`
+# 		Be verbose about what will be done
+/usr/bin/killall -v "${ProcNameToKill}" 2>&1
 
 if [[ -e "$appBundleDefaultPath" ]]; then
 	/bin/rm -fR "$appBundleDefaultPath"
