@@ -52,7 +52,7 @@ echo "userName=$userName"
 # identify the unset variables while debugging bash script
 # set -u
 # debug bash script using xtrace
-set -x
+# set -x
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
@@ -68,6 +68,8 @@ LAUNCH_AGENT_StandardOutPath=$(/usr/bin/defaults read "$LAUNCH_AGENT_SRC" 'Stand
 APP_PATH="/Applications/Rave Notifier.app"
 LAUNCH_AGENT_Program="/Applications/Rave Notifier.app/Contents/MacOS/Rave Notifier"
 ProcNameToKill="Rave Notifier"
+
+set -x
 
 UID_CURRENT=$(/usr/bin/id -u $userName)
 
@@ -97,7 +99,7 @@ fi
 /usr/bin/killall -v "${ProcNameToKill}" 2>&1
 
 sleep 5
-
+set +x
 # Write the LaunchAgent Plist file
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'Label' -string "${LAUNCH_AGENT_Label}"
 /usr/bin/defaults write "${LAUNCH_AGENT_DST}" 'RunAtLoad' -bool TRUE
@@ -115,7 +117,9 @@ echo "Reading the ${LAUNCH_AGENT_DST} values..."
 /usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
 /bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
 
-# Load new agent
+
+echo "Load new agent in current user domain context..."
+set -x
 if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
 # 	bootstrap is the modern launchctl subcommand for macOS 10.10 and newer.
 	/bin/launchctl enable gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
@@ -169,5 +173,5 @@ fi
 # </dict>
 
 
-exit 0
+exit
 
