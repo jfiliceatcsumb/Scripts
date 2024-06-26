@@ -1,11 +1,30 @@
 #!/bin/zsh
 
+SCRIPTNAME=`/usr/bin/basename "$0"`
+SCRIPTDIR=`/usr/bin/dirname "$0"`
+
+# Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
+
+pathToScript=$0
+mountPoint=$1
+computerName=$2
+userName=$3
+
+
+echo "pathToScript=$pathToScript"
+echo "mountPoint=$mountPoint"
+echo "computerName=$computerName"
+echo "userName=$userName"
+
+
 # new user account details
-username="lapsadmin"
-displayName="LAPS Admin"
-password="P@55w0rd"
-admin="yes"
-hidden="yes"
+username="${4:-lapsadmin}"
+displayName="${5:-LAPS Admin}"
+password="${6:-P@55w0rd}"
+admin="${7:-no}"
+hidden="${8:-yes}"
+SecureToken="${9:-yes}"
+
 
 # determine next available UID
 highestUID=$( dscl . -list /Users UniqueID | /usr/bin/awk '$2>m {m=$2} END { print m }' )
@@ -17,7 +36,13 @@ nextUID=$(( highestUID+1 ))
 /usr/bin/dscl . create "/Users/$username" RealName "$displayName" 
 /usr/bin/dscl . create "/Users/$username" UniqueID "$nextUID"
 /usr/bin/dscl . create "/Users/$username" PrimaryGroupID 20
+
+if [[ "$SecureToken" = "yes" ]]; then
+	/usr/bin/dscl . create "/Users/$username" AuthenticationAuthority ';SecureToken;'
+fi
+
 /usr/bin/dscl . passwd "/Users/$username" "$password"
+
 
 # make the account admin, if specified
 if [[ "$admin" = "yes" ]]; then
@@ -31,3 +56,17 @@ if [[ "$hidden" = "yes" ]]; then
 else
     /usr/bin/dscl . create "/Users/$username" NFSHomeDirectory "/Users/$username"
 fi
+
+$(/usr/libexec/PlistBuddy -c "print :Users:"$n":VolumeOwner" 
+$(/usr/libexec/PlistBuddy -c "print :Users:"$n":APFSCryptoUserUUID" 
+
+echo "Secure Token Status for $username:"
+/usr/sbin/sysadminctl -secureTokenStatus "$username"
+
+echo 
+echo "Current list of volume owners:"
+/usr/bin/fdesetup list -extended
+/usr/sbin/diskutil apfs listUsers /
+
+
+exit
