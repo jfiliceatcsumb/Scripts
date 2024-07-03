@@ -71,10 +71,10 @@ declare -x PATH="/usr/bin:/bin:/usr/sbin:/sbin"
 declare -x APP_NAME="Alertus Desktop"
 declare -x AQUA_SESSION_USER=$(ls -l /dev/console | cut -d " " -f4)
 declare -x AQUA_SESSION_USER_ID=$(id -u "$AQUA_SESSION_USER")
-declare -x LOG_PREFIX="/var/log/AlertusDesktoppreinstall.log"
+declare -x LOG_PREFIX="${mountPoint}/var/log/AlertusDesktoppreinstall.log"
 declare -x FAILURE_MSG="$LOG_PREFIX: Could not quit the app; it may not have been open."
 declare -x SUDO=''
-declare -x INSTALLER_USER=$(stat -f '%Su' $HOME)
+declare -x INSTALLER_USER="${userName}"
 
 
 if ([ "$AQUA_SESSION_USER" != 0 ]); then
@@ -85,32 +85,33 @@ fi
 # Using $mountPoint variable instead of $3 positional parameter for compatibility as JSS script.
 if [ "$mountPoint" == "/" ]; then
     echo $(date -u) "Operating on boot volume as user $INSTALLER_USER ($AQUA_SESSION_USER_ID)." >> $LOG_PREFIX
-	  if ([ "$AQUA_SESSION_USER" != "" ]); then
-		#ITEMS=$(osascript -e 'tell application "System Events" to get the name of every login item' | grep "Alertus Desktop")
-
-		#if [ -z "$ITEMS" ]
-			#then
-			#echo $(date -u) "Legacy login item not found." >> $LOG_PREFIX
-		# else
-			# osascript -e 'tell application "System Events" to delete login item "Alertus Desktop"' 
-		#fi
-		
-        echo $(date -u) "Attempting to quit $APP_NAME for $AQUA_SESSION_USER ($AQUA_SESSION_USER_ID)." >> $LOG_PREFIX
-        $SUDO touch /var/log/alertus.log
-        $SUDO chmod 777 /var/log/alertus.log
-        killall Alertus\ Desktop 2>&-
-        if launchctl list | grep com.alertus.AlertusDesktopClient ; then
-        	echo $(date -u) "Unloading $APP_NAME." >> $LOG_PREFIX
-        	$SUDO /bin/launchctl bootout gui/$AQUA_SESSION_USER_ID "/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" 2>&-
-        	$SUDO rm /Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist
-        	$SUDO rm -rf "/Applications/Alertus Desktop.app"
-#         	Added this line to complete removal:
-        	$SUDO rm -rf "/Library/Application Support/Alertus Technologies"
-        	exit 0
-        fi
-    fi
 fi
 
+if ([ "$AQUA_SESSION_USER" != "" ]); then
+	ITEMS=$(/usr/bin/osascript -e 'tell application "System Events" to get the name of every login item' | grep "Alertus Desktop")
+	
+	if [ -z "$ITEMS" ]
+		then
+		echo $(date -u) "Legacy login item not found." >> $LOG_PREFIX
+	else
+		/usr/bin/osascript -e 'tell application "System Events" to delete login item "Alertus Desktop"' 
+	fi
+	
+	echo $(date -u) "Attempting to quit $APP_NAME for $AQUA_SESSION_USER ($AQUA_SESSION_USER_ID)." >> $LOG_PREFIX
+	/usr/bin/touch "${mountPoint}/var/log/alertus.log"
+	/bin/chmod 777 "${mountPoint}/var/log/alertus.log"
+	/usr/bin/killall Alertus\ Desktop 2>&-
 
-exit 0
+	if launchctl list | grep com.alertus.AlertusDesktopClient ; then
+		echo $(date -u) "Unloading $APP_NAME." >> $LOG_PREFIX
+		/bin/launchctl bootout gui/$AQUA_SESSION_USER_ID "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" 2>&-
+	fi
+fi
+/bin/rm  "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist"
+/bin/rm  -rf "${mountPoint}/Applications/Alertus Desktop.app"
+#         	Added this line to complete removal:
+/bin/rm  -rf "${mountPoint}/Library/Application Support/Alertus Technologies"
+
+
+exit
 
