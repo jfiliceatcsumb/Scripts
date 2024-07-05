@@ -84,6 +84,7 @@ fi
 
 if [ -e "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" ]
 then
+	echo "Deleting ${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist..."
 	/bin/rm -f "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist"
 else
 	echo "File path ${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist not found"
