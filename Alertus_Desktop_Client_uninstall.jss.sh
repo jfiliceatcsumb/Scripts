@@ -88,8 +88,9 @@ then
 else
 	echo "File path ${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist not found"
 fi
-	if [ -e "${mountPoint}/Applications/Alertus Desktop.app" ]
-	then
+
+if [ -e "${mountPoint}/Applications/Alertus Desktop.app" ]
+then
 	echo "Deleting ${mountPoint}/Applications/Alertus Desktop.app..."
 	/bin/rm  -rfv "${mountPoint}/Applications/Alertus Desktop.app"
 else
@@ -97,13 +98,7 @@ else
 fi
 
 #         	Added this line to complete removal:
-if [ -e "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" ]
-then
-	/bin/rm  "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist"
-else
-	echo "File path ${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist not found"
-fi
-
+# /bin/rm  -rfv "${mountPoint}/Library/Application Support/Alertus Technologies"
 if [ -e "${mountPoint}/Library/Application Support/Alertus Technologies" ]
 then
 	echo "Deleting ${mountPoint}/Library/Application Support/Alertus Technologies..."
@@ -111,7 +106,6 @@ then
 else
 	echo "File path ${mountPoint}/Library/Application Support/Alertus Technologies not found"
 fi
-# /bin/rm  -rfv "${mountPoint}/Library/Application Support/Alertus Technologies"
 
 
 exit
