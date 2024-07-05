@@ -68,25 +68,28 @@ declare -x APP_NAME="Alertus Desktop"
 declare -x AQUA_SESSION_USER="${userName}"
 declare -x AQUA_SESSION_USER_ID=$(id -u "$AQUA_SESSION_USER")
 
-if ([ "$AQUA_SESSION_USER" != "" ]); then
-
+if ([ "$AQUA_SESSION_USER" != "" ])
+then
 	
 	echo $(date -u) "Attempting to quit $APP_NAME for $AQUA_SESSION_USER ($AQUA_SESSION_USER_ID)." 
 
 	/usr/bin/killall Alertus\ Desktop 2>&-
 
-	if launchctl list | grep com.alertus.AlertusDesktopClient ; then
+	if launchctl list | grep com.alertus.AlertusDesktopClient 
+	then
 		echo $(date -u) "Unloading $APP_NAME." 
 		/bin/launchctl bootout gui/$AQUA_SESSION_USER_ID "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" 2>&-
 	fi
 fi
 
-if [ -e "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" ]; then
+if [ -e "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" ]
+then
 	/bin/rm  "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist"
 else
 	echo "File path ${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist not found"
 fi
-	if [ -e "${mountPoint}/Applications/Alertus Desktop.app" ]; then
+	if [ -e "${mountPoint}/Applications/Alertus Desktop.app" ]
+	then
 	echo "Deleting ${mountPoint}/Applications/Alertus Desktop.app..."
 	/bin/rm  -rfv "${mountPoint}/Applications/Alertus Desktop.app"
 else
@@ -94,7 +97,21 @@ else
 fi
 
 #         	Added this line to complete removal:
-/bin/rm  -rfv "${mountPoint}/Library/Application Support/Alertus Technologies"
+if [ -e "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" ]
+then
+	/bin/rm  "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist"
+else
+	echo "File path ${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist not found"
+fi
+
+if [ -e "${mountPoint}/Library/Application Support/Alertus Technologies" ]
+then
+	echo "Deleting ${mountPoint}/Library/Application Support/Alertus Technologies..."
+	/bin/rm  -rfv "${mountPoint}/Library/Application Support/Alertus Technologies"
+else
+	echo "File path ${mountPoint}/Library/Application Support/Alertus Technologies not found"
+fi
+# /bin/rm  -rfv "${mountPoint}/Library/Application Support/Alertus Technologies"
 
 
 exit
