@@ -53,7 +53,7 @@ alias sudo=/usr/bin/sudo
 # identify the unset variables while debugging bash script
 # set -u
 # debug bash script using xtrace
-set -x
+# set -x
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
@@ -84,7 +84,7 @@ fi
 
 if [ -e "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist" ]
 then
-	/bin/rm  "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist"
+	/bin/rm -f "${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist"
 else
 	echo "File path ${mountPoint}/Library/LaunchAgents/com.alertus.AlertusDesktopClient.plist not found"
 fi
@@ -92,7 +92,7 @@ fi
 if [ -e "${mountPoint}/Applications/Alertus Desktop.app" ]
 then
 	echo "Deleting ${mountPoint}/Applications/Alertus Desktop.app..."
-	/bin/rm  -rfv "${mountPoint}/Applications/Alertus Desktop.app"
+	/bin/rm  -rf "${mountPoint}/Applications/Alertus Desktop.app"
 else
 	echo "File path ${mountPoint}/Applications/Alertus Desktop.app not found"
 fi
@@ -102,7 +102,7 @@ fi
 if [ -e "${mountPoint}/Library/Application Support/Alertus Technologies" ]
 then
 	echo "Deleting ${mountPoint}/Library/Application Support/Alertus Technologies..."
-	/bin/rm  -rfv "${mountPoint}/Library/Application Support/Alertus Technologies"
+	/bin/rm  -rf "${mountPoint}/Library/Application Support/Alertus Technologies"
 else
 	echo "File path ${mountPoint}/Library/Application Support/Alertus Technologies not found"
 fi
