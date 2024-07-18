@@ -1,4 +1,7 @@
 ﻿#!/bin/zsh
+# shellcheck shell=bash
+# shellcheck disable=SC2034,SC2296
+# these are due to the dynamic variable assignments used in the localization strings
 
 # This script runs a manual policy trigger to
 # allow the policy or policies associated with that
