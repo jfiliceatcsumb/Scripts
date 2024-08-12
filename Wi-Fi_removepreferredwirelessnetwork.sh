@@ -13,10 +13,6 @@
 # Use as script in Jamf JSS.
 
 
-# Change History:
-# 2023/08/07:	Creation.
-#
-
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTDIR=`/usr/bin/dirname "$0"`
 
@@ -61,9 +57,9 @@ alias sudo=/usr/bin/sudo
 # Example:
 #!/bin/sh
 
-SSID = "$1"
+SSID="$1"
 
-for interface in $(networksetup -listnetworkserviceorder | grep Hardware| awk '/Wi-Fi/ { print $NF }'| awk -F ")"'{ print $1 }')
+for interface in $(networksetup -listnetworkserviceorder | grep -e "Hardware" | grep -e "Wi-Fi" |  sed -e 's/(//'  -e  's/)//' | awk '{ print $NF }')
 do  
 	echo "Disconnecting $interface from non-internal device network"  
 	/usr/sbin/networksetup -removepreferredwirelessnetwork $interface "${SSID}"
