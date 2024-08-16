@@ -156,7 +156,10 @@ echo "Run Xcode first launch tasks..."
 echo "Check if any First Launch tasks need to be performed..."
 "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
 
-"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild..." -runFirstLaunch
+"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -runFirstLaunch
+/usr/bin/xcodebuild -runFirstLaunch
+echo "Download and install all device platform simulators: iOS Simulator, watchOS Simulator, tvOS Simulator..."
+/usr/bin/xcodebuild -downloadAllPlatforms
 /bin/sleep 1
 
 # -allowProvisioningUpdates
