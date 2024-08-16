@@ -27,7 +27,7 @@ shift 3
 ## Variables ##
 
 # Run jamf policy which should try to load any missing config profiles and managed prefs.
-/usr/local/bin/jamf policy -forceNoRecon
+# /usr/local/bin/jamf policy -forceNoRecon -showPID
 
 plistlocation="/Library/Managed Preferences/edu.csumb.custom.extensionattributes.plist"
 
@@ -37,13 +37,12 @@ else
 	ComputerName=""
 fi
 
-if [ ! -z "${ComputerName}" ]; then
+if [[ ! -z "${ComputerName}" ]]; then
 	/usr/local/bin/jamf setComputerName -name "${ComputerName}"
 else
 	/usr/local/bin/jamf setComputerName -useSerialNumber
 fi
 
-/usr/local/bin/jamf recon
-
+/usr/local/bin/jamf recon -showPID
 
 exit 0
