@@ -51,7 +51,7 @@ echo "userName=$userName"
 WacomPersistentPlist="/Library/Containers/com.wacom.DataStoreMgr/Data/Library/Preferences/.wacom/persistent.plist"
 WacomTabletPrefs="/Library/Group Containers/EG27766DY7.com.wacom.WacomTabletDriver/Library/Preferences/com.wacom.wacomtablet.prefs"
 WacomDesktopCenterVersion=""
-
+WacomTabletPrefsDir=$(/usr/bin/dirname "${WacomTabletPrefs}")
 # Wacom changed the name of the app from Wacom Desktop Center.app to Wacom Center.app, so I need to check for both.
 if [[ -e "/Applications/Wacom Tablet.localized/Wacom Desktop Center.app/Contents/Info.plist" ]]
 then
@@ -67,20 +67,22 @@ echo "WacomDesktopCenterVersion $WacomDesktopCenterVersion"
 #
 
 # ##### USER TEMPLATE #####
-/bin/mkdir -p -m 755 "$(/usr/bin/dirname '/Library/User Template/Non_localized'${WacomPersistentPlist})" 
-/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'Analytics_On' -string "NO"
-/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
-/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
+/bin/mkdir -p -m 755 "$(/usr/bin/dirname '/Library/User Template/Non_localized'/${WacomPersistentPlist})" 
+/usr/bin/defaults write "/Library/User Template/Non_localized/${WacomPersistentPlist}" 'Analytics_On' -string "NO"
+/usr/bin/defaults write "/Library/User Template/Non_localized/${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
+/usr/bin/defaults write "/Library/User Template/Non_localized/${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
 if [[ "$WacomDesktopCenterVersion" != "" ]]; then
 	/usr/bin/defaults write "/Library/User Template/Non_localized${WacomPersistentPlist}" 'LastShown' -string "$WacomDesktopCenterVersion"
 fi
 
-/bin/chmod 644 "/Library/User Template/Non_localized${WacomPersistentPlist}"
-/usr/sbin/chown 0:0 "/Library/User Template/Non_localized${WacomPersistentPlist}"
-echo "/Library/User Template/Non_localized${WacomPersistentPlist}..."
-/usr/bin/defaults read "/Library/User Template/Non_localized${WacomPersistentPlist}" 
+/bin/chmod 644 "/Library/User Template/Non_localized/${WacomPersistentPlist}"
+/usr/sbin/chown 0:0 "/Library/User Template/Non_localized/${WacomPersistentPlist}"
+echo "/Library/User Template/Non_localized/${WacomPersistentPlist}..."
+/usr/bin/defaults read "/Library/User Template/Non_localized/${WacomPersistentPlist}" 
 
 # Turn off Wacom Center Autostart
+/bin/mkdir -p -m 755 "/Library/User Template/Non_localized/${WacomTabletPrefsDir}/${WacomTabletPrefs}"
+touch "/Library/User Template/Non_localized/${WacomTabletPrefs}"
 /usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Library/User Template/Non_localized/${WacomTabletPrefs}"
 echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
 echo '</root>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
@@ -96,7 +98,9 @@ if [[ "$userName" != "" ]]
 then
 	if [[  -d "/Users/$userName" ]]
 	then
+		
 		/bin/mkdir -p -m 755 "$(/usr/bin/dirname /Users/$userName/${WacomPersistentPlist})" 
+		/bin/cp -f  "/Library/User Template/Non_localized/${WacomPersistentPlist}" "/Users/$userName/${WacomPersistentPlist}"
 		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'Analytics_On' -string "NO"
 		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'PEN_SECOND_RUN' -string "YES"
 		/usr/bin/defaults write "/Users/$userName/${WacomPersistentPlist}" 'TOUCH_SECOND_RUN' -string "YES"
@@ -108,7 +112,9 @@ then
 		/usr/bin/defaults read "/Users/$userName/${WacomPersistentPlist}"
 		
 		# Turn off Wacom Center Autostart
-		/bin/mkdir -p -m 755 "/Users/${userName}"$(/usr/bin/dirname "${WacomTabletPrefs}")
+		/bin/mkdir -p -m 755 "/Users/${userName}/${WacomTabletPrefsDir}/${WacomTabletPrefs}"
+		/bin/cp -f "/Library/User Template/Non_localized/${WacomTabletPrefs}" "/Users/${userName}/${WacomTabletPrefs}"
+		touch "/Users/${userName}/${WacomTabletPrefs}" 
 		/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Users/${userName}/${WacomTabletPrefs}"
 		echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Users/${userName}/${WacomTabletPrefs}"
 		echo '</root>' >> "/Users/${userName}/${WacomTabletPrefs}"
