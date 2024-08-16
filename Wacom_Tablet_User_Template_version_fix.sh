@@ -84,7 +84,12 @@ echo "/Library/User Template/Non_localized${WacomPersistentPlist}..."
 /usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Library/User Template/Non_localized/${WacomTabletPrefs}"
 echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
 echo '</root>' >> "/Library/User Template/Non_localized/${WacomTabletPrefs}"
+/usr/bin/defaults write "/Library/User Template/Non_localized/Library/Preferences/com.wacom.Wacom-Desktop-Center.plist" cacheAutoStart false
+# /usr/bin/defaults write "/Library/User Template/Non_localized/Library/Preferences/com.wacom.Wacom-Desktop-Center.plist" cacheAutoStart -bool FALSE
+/bin/chmod 644 "/Library/User Template/Non_localized/Library/Preferences/com.wacom.Wacom-Desktop-Center.plist"
+/usr/sbin/chown 0:0 "/Library/User Template/Non_localized/Library/Preferences/com.wacom.Wacom-Desktop-Center.plist"
 
+/usr/bin/defaults write com.wacom.Wacom-Desktop-Center.plist cacheAutoStart false
 
 # ##### CURRENT LOGGED IN USER #####
 if [[ "$userName" != "" ]]
@@ -107,8 +112,11 @@ then
 		/usr/bin/sed -i '' -e '$d' -e '/WCAutoStart/d' "/Users/${userName}/${WacomTabletPrefs}"
 		echo '<WCAutoStart type="bool">false</WCAutoStart>' >> "/Users/${userName}/${WacomTabletPrefs}"
 		echo '</root>' >> "/Users/${userName}/${WacomTabletPrefs}"
+		/usr/bin/defaults write "/Users/${userName}/Library/Preferences/com.wacom.Wacom-Desktop-Center.plist" cacheAutoStart false
+# 		/usr/bin/defaults write "/Users/${userName}/Library/Preferences/com.wacom.Wacom-Desktop-Center.plist" cacheAutoStart -bool FALSE
+		/bin/chmod 644 "/Users/${userName}/Library/Preferences/com.wacom.Wacom-Desktop-Center.plist"
+		/usr/sbin/chown ${userName} "/Users/${userName}/Library/Preferences/com.wacom.Wacom-Desktop-Center.plist"
 
 	fi
 fi
-
 
