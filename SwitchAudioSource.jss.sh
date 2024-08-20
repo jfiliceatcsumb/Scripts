@@ -64,17 +64,20 @@ echo "https://github.com/deweller/switchaudio-osx"
 echo "List  all output devices, cli format..."
 /usr/local/bin/SwitchAudioSource -a -f cli -t output
 echo "Show  current output device, cli format..."
-/usr/local/bin/SwitchAudioSource -a -f cli -t output
+/usr/local/bin/SwitchAudioSource -c -f cli -t output
 
 
 allAudioSources=$(/usr/local/bin/SwitchAudioSource -a -f human -t output)
 | grep --ignore-case -e "Built-in")
 echo "${allAudioSources}"
 
-for i in 
-selectAudioSource=$(echo "${allAudioSources}" | grep "{$i}")
-/usr/local/bin/SwitchAudioSource -t output -s 'HDMI' | logger
 
+selectAudioSource=$(echo "${allAudioSources}" | grep "{$1}")
+# /usr/local/bin/SwitchAudioSource -t output -s 'HDMI' | logger
+if [[ -n $selectAudioSource ]]
+then
+	/usr/local/bin/SwitchAudioSource -t output -s "${selectAudioSource}"
+fi
 
 echo "***End $SCRIPTNAME script***"
 
