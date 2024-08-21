@@ -12,11 +12,26 @@
 # Sets  audio output to script input parameter. 
 # If multiple values are provided, the script will stop after setting it to the first match. 
 # Run by Jamf Pro.
-
-
+# 
+# PARAMETERS:
+# 4: device type (input/output/system).  Defaults to output
+# 5-11: Audio device names
+# 
 # Change History:
 # 2022/MM/DD:	Creation.
 #
+
+
+# ##### Debugging flags #####
+# debug bash script by enabling verbose “-v” option
+# set -v
+# debug bash script using noexec (Test for syntaxt errors)
+# set -n
+# identify the unset variables while debugging bash script
+# set -u
+# debug bash script using xtrace
+# set -x
+
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTDIR=`/usr/bin/dirname "$0"`
@@ -36,29 +51,20 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
-# set alias for PlistBuddy and several others so I don't have to specify full path.
-# Prefix sudo path because I'm using it here for all commands.
-# If I want to run a command without the alias, then specify the full path.
-alias PlistBuddy="/usr/libexec/PlistBuddy"
-alias chown="/usr/sbin/chown"
-alias chmod="/bin/chmod"
-alias ditto="/usr/bin/ditto"
-alias defaults="/usr/bin/defaults"
-alias rm="/bin/rm"
-alias cp="/bin/cp"
-alias mkdir="/bin/mkdir"
-alias sudo=/usr/bin/sudo
+device_type=${1:="output"}
 
-# ##### Debugging flags #####
-# debug bash script by enabling verbose “-v” option
-# set -v
-# debug bash script using noexec (Test for syntaxt errors)
-# set -n
-# identify the unset variables while debugging bash script
-# set -u
-# debug bash script using xtrace
-# set -x
-
+# Usage: 
+# SwitchAudioSource [-a] [-c] [-t type] [-n] -s device_name | -i device_id | -u device_uid
+# 	-a             : shows all devices
+# 	-c             : shows current device
+# 	-f format      : output format (cli/human/json). Defaults to human.
+# 	-t type        : device type (input/output/system).  Defaults to output.
+# 	-m mute_mode : sets the mute status (mute/unmute/toggle). (version 1.2.0+)
+# 	-n             : cycles the audio device to the next one
+# 	-i device_id   : sets the audio device to the given device by id
+# 	-u device_uid  : sets the audio device to the given device by uid or a substring of the uid
+# 	-s device_name : sets the audio device to the given device by name
+# 
 
 echo "https://github.com/deweller/switchaudio-osx"
 echo "List  all output devices, cli format..."
