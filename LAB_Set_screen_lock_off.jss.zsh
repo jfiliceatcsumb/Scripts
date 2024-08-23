@@ -16,7 +16,7 @@ echo "Set user template Require password after sleep or screen saver begins."
 # -int 0 = off
 # -int 1 = on
 # -int 0 = default (off)
-/usr/bin/defaults write /System/Library/User\ Template/Non_localized/Library/Preferences/com.apple.screensaver askForPassword -int 0
+/usr/bin/defaults write /Library/User\ Template/Non_localized/Library/Preferences/com.apple.screensaver askForPassword -int 0
 
 echo '*** End Set_Lab_screen_lock.sh ***'
 exit 0
