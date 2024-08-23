@@ -27,9 +27,6 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
-# Un-comment the set of Lab or Desktop variables we want to set:
-
-# 
 
 # Desktop Laptop Employee
 ImagePlacement='Crop'
@@ -44,6 +41,10 @@ BackgroundColorReal1='0.0'
 BackgroundColorReal2='0.11965226382017136'
 BackgroundColorReal3='0.29628658294677734'
 
+if [[ -n "$1" ]]; then
+	ImageFilePath="$1"
+	NewImageFilePath="$1"
+fi
 
 # ImagePlacement can be one of the following five options:
 # 	'Centered' = preference pane's "Center"
