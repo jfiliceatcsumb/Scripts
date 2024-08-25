@@ -36,18 +36,6 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
-# set alias for PlistBuddy and several others so I don't have to specify full path.
-# Prefix sudo path because I'm using it here for all commands.
-# If I want to run a command without the alias, then specify the full path.
-alias PlistBuddy="/usr/libexec/PlistBuddy"
-alias chown="/usr/sbin/chown"
-alias chmod="/bin/chmod"
-alias ditto="/usr/bin/ditto"
-alias defaults="/usr/bin/defaults"
-alias rm="/bin/rm"
-alias cp="/bin/cp"
-alias mkdir="/bin/mkdir"
-alias sudo=/usr/bin/sudo
 
 # ##### Debugging flags #####
 # debug bash script by enabling verbose “-v” option
@@ -73,6 +61,10 @@ alias sudo=/usr/bin/sudo
 <string>Spanish - ISO</string>
 </dict>'
 
+/usr/bin/plutil -lint  "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+
+/usr/bin/plutil -p  "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+ 
 /usr/sbin/chown 0:0 "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
 
 /usr/sbin/chmod 644 "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
