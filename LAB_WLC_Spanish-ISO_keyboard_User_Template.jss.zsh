@@ -67,7 +67,7 @@ echo "userName=$userName"
  
 /usr/sbin/chown 0:0 "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
 
-/usr/sbin/chmod 644 "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+/bin/chmod 644 "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
 
 
 exit 0
