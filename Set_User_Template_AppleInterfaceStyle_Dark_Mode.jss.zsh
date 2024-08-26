@@ -61,7 +61,7 @@ alias sudo=/usr/bin/sudo
 
 /bin/mkdir -p -m 0755 "/System/Library/User Template/Non_localized/Library/Preferences/"
 /usr/bin/defaults write "/System/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist" AppleInterfaceStyle -string "Dark"
-/bin/chmod 0:0 "/System/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist"
+/usr/sbin/chown 0:0 "/System/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist"
 
 
 exit 0
