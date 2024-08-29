@@ -54,7 +54,7 @@ VendorURL="https://dl.google.com/japanese-ime/latest/GoogleJapaneseInput.dmg"
 # Vendor supplied DMG file
 VendorDMG="GoogleJapaneseInput.dmg"
 
-dmgVolume="/Volumes/GoogleJapaneseInput"
+dmgVolume="GoogleJapaneseInput"
 VendorPKG="GoogleJapaneseInput.pkg"
 
 # https://support.google.com/a/answer/7491144?hl=en&ref_topic=7455083#zippy=%2Cmac
@@ -63,19 +63,21 @@ VendorPKG="GoogleJapaneseInput.pkg"
 
 
 # Detatch any previous mounted installer image
-for i in /Volumes/"${dmgVolume}"*
-do 
-	echo "$i"
-	if [[ -d "$i" ]]
-	then
-		/usr/bin/hdiutil detach "$i" -force
-	fi
-done
-
+if [[ -e /Volumes/"${dmgVolume}"* ]]
+then
+	for i in /Volumes/"${dmgVolume}"*
+	do 
+		echo "$i"
+		if [[ -d "$i" ]]
+		then
+			/usr/bin/hdiutil detach "$i" -force
+		fi
+	done
+fi
 
 # Download vendor supplied DMG file into /tmp/
 # This prints an error message to stderr
-/usr/bin/curl "https://dl.google.com/drive-file-stream/$VendorDMG" --fail --silent --show-error --location --output /tmp/$VendorDMG
+/usr/bin/curl "$VendorURL" --fail --silent --show-error --location --output /tmp/$VendorDMG
 # https://dl.google.com/drive-file-stream/GoogleDrive.dmg
 
 # Mount vendor supplied DMG File
@@ -96,3 +98,5 @@ done
 
 # Remove the downloaded vendor supplied DMG file
 /bin/rm -f /tmp/$VendorDMG
+
+exit
