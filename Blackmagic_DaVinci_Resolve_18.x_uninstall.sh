@@ -8,7 +8,7 @@
 
 
 
-# Uninstall script for Blackmagic DaVinci Resolve 17.x (and Studio).
+# Uninstall script for Blackmagic DaVinci Resolve 18.x (and Studio).
 # Using code in script from Resolve uninstall application.
 # /Volumes/Blackmagic DaVinci Resolve/Uninstall Resolve.app/Contents/Resources/uninstall.sh
 # 
@@ -54,6 +54,22 @@ echo "userName=$userName"
 # /bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve/"
 # /bin/rm -rf "/Library/Preferences/Blackmagic Design/DaVinci Resolve/"
 
+# Proxy Generator
+if [ -e "/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/Blackmagic Proxy Generator" ]
+then
+    /bin/rm -rf "/Applications/Blackmagic Proxy Generator.app"
+else
+    if [ -e "/Applications/Blackmagic Proxy Generator Lite.app/Contents/Info.plist" ]
+    then
+        # Check to make sure the app bundle is NOT a standalone build
+        \grep ">com.blackmagic-design.BlackmagicProxyGeneratorLite<" "/Applications/Blackmagic Proxy Generator Lite.app/Contents/Info.plist" > /dev/null
+        if [ $? -eq 0 ]
+        then
+            /bin/rm -rf "/Applications/Blackmagic Proxy Generator Lite.app"
+        fi
+    fi
+fi
+
 # Application
 /bin/rm -rf "/Applications/DaVinci Resolve/"
 
@@ -61,6 +77,9 @@ echo "userName=$userName"
 /bin/rm -rf "/Library/Frameworks/DaVinciPanelAPI.framework"
 /bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve Panels/AdminUtility"
 /bin/rmdir "/Library/Application Support/Blackmagic Design/DaVinci Resolve Panels"
+
+# Fairlight Panels
+/bin/rm -rf "/Library/Frameworks/FairlightPanelAPI.framework"
 
 ##### ^^^^^ Borrowed code ends here ^^^^^ #####
 
