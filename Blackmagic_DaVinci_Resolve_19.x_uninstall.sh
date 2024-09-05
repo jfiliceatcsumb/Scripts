@@ -8,7 +8,7 @@
 
 
 
-# Uninstall script for Blackmagic DaVinci Resolve 18.x (and Studio).
+# Uninstall script for Blackmagic DaVinci Resolve 19.x (and Studio).
 # Using code in script from Resolve uninstall application.
 # /Volumes/Blackmagic DaVinci Resolve/Uninstall Resolve.app/Contents/Resources/uninstall.sh
 # 
