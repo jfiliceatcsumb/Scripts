@@ -54,13 +54,15 @@ echo "userName=$userName"
 
 
 # EnterpriseId
-EnterpriseId='02481b9e'
-# SitedId
-SiteId='vjscjfyi'
+EnterpriseId="$1"
+# SiteId
+SiteId="$2"
 # AutoRun
 AutoRun=1
 # SitedI'
 RunApp=1  
+
+echo "HOME=$HOME"
 
 # Check whether the path exists. If the path does not exist, create it
 database_path="$HOME/Library/Application Support/Yealink USB Connect/Config"
