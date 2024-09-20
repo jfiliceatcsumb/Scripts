@@ -88,6 +88,6 @@ then
 	/usr/bin/killall PrinterInstallerClient
 
 # Must run as user $userName
-	/usr/bin/sudo --user=${userName} /bin/sh -c "/usr/bin/open $(cat /etc/pl_dir)/service_interface/PrinterInstallerClient.app"
+	/usr/bin/sudo --user=${userName} /bin/sh -c "/usr/bin/open -gn /opt/PrinterInstallerClient/service_interface/PrinterInstallerClient.app"
     # su -l ${userName} -c "echo"
 fi
