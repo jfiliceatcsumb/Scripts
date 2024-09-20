@@ -22,6 +22,9 @@
 # https://help.printerlogic.com/saas/1-Printerlogic/Release_Notes/SaaS.htm
 # 
 # https://kb.printerlogic.com/s/article/Script-to-install-upgrade-Mac
+# https://help.printerlogic.com/saas/Print/Print_Mgmt/Client_Mgmt/Workstation-Install.htm
+# https://help.printerlogic.com/saas/Print/Print_Mgmt/Client_Mgmt/Additional-Client-Options.htm
+# https://help.printerlogic.com/saas/Print/Setup/Client-Install.htm
 # https://help.printerlogic.com/saas/Print/Setup/Client-Install.htm
 # https://help.printerlogic.com/saas/1-Printerlogic/Release_Notes/SaaS.htm
 # https://kb.printerlogic.com/s/article/What-Mac-OS-versions-are-supported-by-Printerlogic
@@ -33,6 +36,7 @@
 # https://kb.printerlogic.com/s/article/How-to-pull-down-and-install-the-Windows-client-using-a-script
 # https://kb.printerlogic.com/s/article/CouldnotcommunicatewiththePrinterLogicclientItmaynotbeinstalledorrunning
 # https://kb.printerlogic.com/s/article/Unable-to-install-client-Apple-cannot-check-for-malicious-software
+
 # 
 
 
