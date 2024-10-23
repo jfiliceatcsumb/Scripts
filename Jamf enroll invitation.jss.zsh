@@ -15,7 +15,7 @@
 
 
 # Change History:
-# 2022/MM/DD:	Creation.
+# 2024/10/17:	Creation.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -61,5 +61,6 @@ alias sudo=/usr/bin/sudo
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
+/usr/local/bin/jamf enroll -noPolicy -invitation "${1}"
 
 exit 0
