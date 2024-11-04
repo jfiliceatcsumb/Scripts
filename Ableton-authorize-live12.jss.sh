@@ -83,10 +83,41 @@ LIVEDEBUGOPTIONS="/Library/Preferences/Ableton/Live ${VERSION}/Options.txt"
 echo "-_DisableAutoUpdates" > "${LIVEDEBUGOPTIONS}"
 echo "-NoRestoreDocumentDialog" >> "${LIVEDEBUGOPTIONS}"
 echo "-DontLoadMaxForLiveAtStartup" >> "${LIVEDEBUGOPTIONS}"
+echo "-DontAskForAdminRights" >> "${LIVEDEBUGOPTIONS}"
+echo "-_DisableUsageData" >> "${LIVEDEBUGOPTIONS}"
 
 if [ -n "${LOGFILESDIR}" ]; then
     echo "-LogFilesDir=${LOGFILESDIR}" >> "${LIVEDEBUGOPTIONS}"
 fi
+
+# 4. Cache/ Database
+echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
+echo "-DatabaseDirectory=/Users/Shared/Database/%%USERNAME%%/"  >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
+# set permissions
+chmod 644 "/Library/Preferences/Ableton/Live $Version/Options.txt"
+
+chmod 644 "${LIVEDEBUGOPTIONS}"
+
+# 3.2 Ableton Live Packs
+# admin grou write access so the move operation works.
+# mkdir -p -m 775 "/Library/Application Support/Ableton/Factory Packs/"
+
+
+# /Users/admin/Music/Ableton/
+# Factory Packs
+# Live Recordings
+# User Library
+
+# Move the file titled Library.cfg (found in the user preferences) to the shared preferences folder (see 2.2.5). 
+# This way, information about the Ableton Live Packs you just installed will automatically be available to all users.
+# /Users/$USER/Library/Preferences/Ableton/Live $Version/
+# /Users/admin/Library/Preferences/Ableton/Live 11.1.6/
+# (Library.cfg, Options.txt, Log.txt)
+
+# /Library/Preferences/Ableton/Live $Version/Library.cfg
+# 				<ProjectPath Value="/Users/admin/Music/Ableton" />
+# to
+# 				<ProjectPath Value="/Users/%%USERNAME%%/Music/Ableton" />
 
 # # Copy Live application to /Applications for all users (macOS equivalent of Start Menu)
 # /bin/cp -f "/Applications/${EDITION}.app" "/Applications/" 2>/dev/null
