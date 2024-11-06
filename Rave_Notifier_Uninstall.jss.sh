@@ -16,6 +16,7 @@
 
 # Change History:
 # 2024/04/26:	Creation.
+# 2024/11/04:	Modified as an uninstall script.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -52,6 +53,31 @@ echo "userName=$userName"
 appBundleDefaultPath="/Applications/Rave Notifier.app"
 appBundleID="com.ale-enterprise.RaveNotifier"
 ProcNameToKill="Rave Notifier"
+
+LAUNCH_AGENT_SRC="/Applications/Rave Notifier.app/Contents/Resources/com.ale-enterprise.RaveNotifier.plist"
+LAUNCH_AGENT_DST_PATH="/Library/LaunchAgents/"
+LAUNCH_AGENT_DST="${LAUNCH_AGENT_DST_PATH}com.ale-enterprise.RaveNotifier.plist"
+
+UID_CURRENT=$(/usr/bin/id -u $userName)
+
+# If we have not already an agent it means it's the first install
+if [ ! -f "$LAUNCH_AGENT_DST" ]; then
+  
+#	 Copy new agent
+	/bin/cp "$LAUNCH_AGENT_SRC" "$LAUNCH_AGENT_DST" || true
+	/usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
+	/bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
+
+else
+
+# 	Unload and Delete old agent
+	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
+		/bin/launchctl unload "$LAUNCH_AGENT_DST"
+		/bin/launchctl bootout gui/${UID_CURRENT} "$LAUNCH_AGENT_DST"
+	fi
+
+	/bin/rm -f "$LAUNCH_AGENT_DST"
+	
 
 
 # `killall -q`
