@@ -8,6 +8,15 @@
 EDITION="Ableton Live 12 Suite"
 VERSION="12.0.20"
 
+# ##### Debugging flags #####
+# debug bash script by enabling verbose “-v” option
+# set -v
+# debug bash script using noexec (Test for syntaxt errors)
+# set -n
+# identify the unset variables while debugging bash script
+set -u
+# debug bash script using xtrace
+set -x
 
 #
 if [[ -n "$4" ]]; then
@@ -21,6 +30,9 @@ elif [[ -n "$ShortVersionString" ]]; then
 	VERSION="$ShortVersionString"
 fi
 
+echo \"${EDITION}\"
+
+echo \"${VERSION}\"
 
 #
 #
@@ -75,28 +87,28 @@ echo "userName=$userName"
 /usr/bin/touch "/Library/Application Support/Ableton/Live ${VERSION}/Unlock/Unlock.json"
 /bin/rm -f "/Library/Application Support/Ableton/Live ${VERSION}/Unlock/Unlock.cfg" 2>/dev/null
 
-/bin/mkdir -p "/Library/Preferences/Ableton/Live ${VERSION}/"
 
 # This will also force Live to use this Options.txt file, in case the current user has Options.txt files
 # from previous versions in their home directory.
-LIVEDEBUGOPTIONS="/Library/Preferences/Ableton/Live ${VERSION}/Options.txt"
-echo "-_DisableAutoUpdates" > "${LIVEDEBUGOPTIONS}"
-echo "-NoRestoreDocumentDialog" >> "${LIVEDEBUGOPTIONS}"
-echo "-DontLoadMaxForLiveAtStartup" >> "${LIVEDEBUGOPTIONS}"
-echo "-DontAskForAdminRights" >> "${LIVEDEBUGOPTIONS}"
-echo "-_DisableUsageData" >> "${LIVEDEBUGOPTIONS}"
+/bin/mkdir -p "/Library/Preferences/Ableton/Live ${VERSION}/"
+LIVE_OPTIONS="/Library/Preferences/Ableton/Live ${VERSION}/Options.txt"
+/usr/bin/touch "${LIVE_OPTIONS}"
+echo "-_DisableAutoUpdates" > "${LIVE_OPTIONS}"
+echo "-NoRestoreDocumentDialog" >> "${LIVE_OPTIONS}"
+echo "-DontLoadMaxForLiveAtStartup" >> "${LIVE_OPTIONS}"
+echo "-DontAskForAdminRights" >> "${LIVE_OPTIONS}"
+echo "-_DisableUsageData" >> "${LIVE_OPTIONS}"
 
 if [ -n "${LOGFILESDIR}" ]; then
-    echo "-LogFilesDir=${LOGFILESDIR}" >> "${LIVEDEBUGOPTIONS}"
+    echo "-LogFilesDir=${LOGFILESDIR}" >> "${LIVE_OPTIONS}"
 fi
 
 # 4. Cache/ Database
-echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
-echo "-DatabaseDirectory=/Users/Shared/Database/%%USERNAME%%/"  >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
+echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "${LIVE_OPTIONS}"
+echo "-DatabaseDirectory=/Users/Shared/Database/%%USERNAME%%/"  >> "${LIVE_OPTIONS}"
 # set permissions
-chmod 644 "/Library/Preferences/Ableton/Live $Version/Options.txt"
 
-chmod 644 "${LIVEDEBUGOPTIONS}"
+chmod 644 "${LIVE_OPTIONS}"
 
 # 3.2 Ableton Live Packs
 # admin grou write access so the move operation works.
@@ -132,9 +144,6 @@ fi
 
 # Capture the exit code
 LIVE_EXIT_CODE=$?
-
-# Rewrite Options.txt for subsequent runs
-echo "-_DisableAutoUpdates" > "${LIVEDEBUGOPTIONS}"
 
 # Check the exit code
 if [ ${LIVE_EXIT_CODE} -ne 0 ]; then
