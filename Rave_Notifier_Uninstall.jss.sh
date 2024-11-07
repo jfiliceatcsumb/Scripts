@@ -61,14 +61,8 @@ LAUNCH_AGENT_DST="${LAUNCH_AGENT_DST_PATH}com.ale-enterprise.RaveNotifier.plist"
 UID_CURRENT=$(/usr/bin/id -u $userName)
 
 # If we have not already an agent it means it's the first install
-if [ ! -f "$LAUNCH_AGENT_DST" ]; then
+if [ -f "$LAUNCH_AGENT_DST" ]; then
   
-#	 Copy new agent
-	/bin/cp "$LAUNCH_AGENT_SRC" "$LAUNCH_AGENT_DST" || true
-	/usr/sbin/chown -fv 0:0 "$LAUNCH_AGENT_DST"
-	/bin/chmod -fv 644 "$LAUNCH_AGENT_DST"
-
-else
 
 # 	Unload and Delete old agent
 	if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
