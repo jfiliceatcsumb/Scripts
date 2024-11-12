@@ -54,7 +54,6 @@ appBundleDefaultPath="/Applications/Rave Notifier.app"
 appBundleID="com.ale-enterprise.RaveNotifier"
 ProcNameToKill="Rave Notifier"
 
-LAUNCH_AGENT_SRC="/Applications/Rave Notifier.app/Contents/Resources/com.ale-enterprise.RaveNotifier.plist"
 LAUNCH_AGENT_DST_PATH="/Library/LaunchAgents/"
 LAUNCH_AGENT_DST="${LAUNCH_AGENT_DST_PATH}com.ale-enterprise.RaveNotifier.plist"
 
