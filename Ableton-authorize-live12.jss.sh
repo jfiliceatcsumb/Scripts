@@ -6,7 +6,7 @@
 # Set the following to match the Live executable you are using:
 #
 EDITION="Ableton Live 12 Suite"
-VERSION="12.0.20"
+VERSION="12.1"
 
 # ##### Debugging flags #####
 # debug bash script by enabling verbose “-v” option
@@ -105,10 +105,19 @@ fi
 
 # 4. Cache/ Database
 echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "${LIVE_OPTIONS}"
-echo "-DatabaseDirectory=/Users/Shared/Database/%%USERNAME%%/"  >> "${LIVE_OPTIONS}"
+echo "-DatabaseDirectory=/Users/Shared/Ableton/Database/%%USERNAME%%/"  >> "${LIVE_OPTIONS}"
+
+mkdir -p "/Users/Shared/Ableton/Database"
+mkdir -p "/Users/Shared/Ableton/Factory Packs"
 # set permissions
 
 chmod 644 "${LIVE_OPTIONS}"
+
+chmod 4777 "/Users/Shared/Ableton/Database"
+chmod 4777 "/Users/Shared/Ableton/Factory Packs"
+
+chown 0:0 -R "/Users/Shared/Ableton/Database"
+chown 0:0 -R "/Users/Shared/Ableton/Factory Packs"
 
 # 3.2 Ableton Live Packs
 # admin grou write access so the move operation works.
