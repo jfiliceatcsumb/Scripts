@@ -27,11 +27,11 @@ fi
 #echo "PowerPoint version is $powerpointversion"
 #echo "Word version is $wordversion"
 #
-#to check for a single app version, below will identify presence of EXCEL 16.53 through 16.99:
-#if [[ $excelversion = ^16.(5[3-9].*|[6-9][0-9].*) ]];
-#if [[ $excelversion = 16.5[3-9]* || $excelversion = 16.[6-9][0-9]* ]];
-#then echo "Excel 2021 Installed"
-#else echo "Excel 2021 Not Installed"
+#to check for a single app version, below will identify presence of EXCEL 16.89 through 16.99:
+#if [[ $excelversion = ^16.(89.*|9[0-9].*) ]];
+#if [[ $excelversion = 16.89* || $excelversion = 16.9[0-9]* ]];
+#then echo "Excel 2024 Installed"
+#else echo "Excel 2024 Not Installed"
 #fi
 ######
 
