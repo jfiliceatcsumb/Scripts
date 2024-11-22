@@ -74,6 +74,10 @@ DetectStackedLicense() {
 # Determines what type of perpetual license the machine has installed
 PerpetualLicenseType() {
 	if [ -f "$PERPETUALLICENSE" ]; then
+		if /usr/bin/grep -q "Bozo+MzVxzFzbIo+hhzTl41DwAFJEitHSg5IiCEeuI" "$PERPETUALLICENSE"; then
+			/bin/echo "Office 2024 Volume License"
+			return
+		fi
 		if /usr/bin/grep -q "Bozo+MzVxzFzbIo+hhzTl43O7w5oMsJ7M3Q4vhvz/j" "$PERPETUALLICENSE"; then
 			/bin/echo "Office 2021 Preview Volume License"
 			return
