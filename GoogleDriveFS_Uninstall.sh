@@ -14,9 +14,6 @@
 # Use as script in Jamf JSS.
 
 
-# Change History:
-# 2021/02/01:	Creation.
-#
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTPATH=`/usr/bin/dirname "$0"`
@@ -54,6 +51,7 @@ alias sudo=/usr/bin/sudo
 # /bin/ls -FlOah "${SCRIPTPATH}"
 if [[ -d "/Applications/Google Drive File Stream.app" ]]; then
 	/usr/bin/killall "Google Drive File Stream"
+	/usr/bin/killall "FinderSyncExtension"
 	rm -fR "/Applications/Google Drive File Stream.app"
 fi
 
