@@ -4,6 +4,9 @@
 : <<ABOUT_THIS_SCRIPT
 -----------------------------------------------------------------------
 
+	Modified 2024, Oct 8 per contributions on MacAdmins Slack to parse for Office 2024 Volume License.
+	https://macadmins.slack.com/archives/C07UZ1X7B/p1728398452581709?thread_ts=1727902756.545359&cid=C07UZ1X7B
+	
 	Written by: Paul Bowden
 	Software Engineer
 	Microsoft Corporation
@@ -74,6 +77,10 @@ DetectStackedLicense() {
 # Determines what type of perpetual license the machine has installed
 PerpetualLicenseType() {
 	if [ -f "$PERPETUALLICENSE" ]; then
+		if /usr/bin/grep -q "Bozo+MzVxzFzbIo+hhzTl4hlrSMvpMqJ/gUHjvPE8/" "$PERPETUALLICENSE"; then
+            /bin/echo "Office 2024 Preview Volume License"
+            return
+        fi
 		if /usr/bin/grep -q "Bozo+MzVxzFzbIo+hhzTl41DwAFJEitHSg5IiCEeuI" "$PERPETUALLICENSE"; then
 			/bin/echo "Office 2024 Volume License"
 			return
@@ -83,7 +90,16 @@ PerpetualLicenseType() {
 			return
 		fi
 		if /usr/bin/grep -q "Bozo+MzVxzFzbIo+hhzTl4xkRZSjOUX8J8nIgpXuMa" "$PERPETUALLICENSE"; then
+			if [ "$STACKED" = "Yes" ]; then
+                /bin/echo "Office 2024/2021 Volume License (Stacked)"
+                return
+            else
 			/bin/echo "Office 2021 Volume License"
+				return
+            fi
+		fi
+		if /usr/bin/grep -q "Bozo+MzVxzFzbIo+hhzTl43O7w5oMsJ7M3Q4vhvz/j" "$PERPETUALLICENSE"; then
+			/bin/echo "Office 2021 Preview Volume License"
 			return
 		fi
 		if /usr/bin/grep -q "A7vRjN2l/dCJHZOm8LKan11/zCYPCRpyChB6lOrgfi" "$PERPETUALLICENSE"; then
