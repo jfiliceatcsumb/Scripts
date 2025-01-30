@@ -9,9 +9,6 @@
 
 # https://community.jamf.com/t5/jamf-pro/bulk-unmanage-computers/m-p/307595/highlight/true#M268354
 
-# Change History:
-# 2022/MM/DD:	Creation.
-#
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTDIR=`/usr/bin/dirname "$0"`
