@@ -17,7 +17,7 @@ SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTDIR=`/usr/bin/dirname "$0"`
 
 # ################### Variables ###################
-URL="https://k400-1a.pro.jamf.training"
+URL=""
 client_id=""
 client_secret=""
 
