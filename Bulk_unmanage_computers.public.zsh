@@ -22,7 +22,9 @@ client_id=""
 client_secret=""
 
 # Paste in a list of Mac SNs to be removed from management:
-unmanage=(
+# Create an empty array to store the data
+unmanage_array=()
+unmanage_array=(
 SN#####
 SN#####
 SN#####
@@ -71,6 +73,18 @@ invalidateToken() {
 	fi
 }
 
+# Read the CSV file line by line
+readCSVtoArray() {
+while read line; do
+  # Split the line into an array using comma as the delimiter
+  row=(${(s:,:)line})
+
+  # Append the row to the data array
+  unmanage_array+=($row)
+done < "$csv_file"
+}
+
+
 
 # ##### Debugging flags #####
 # debug bash script by enabling verbose “-v” option
@@ -93,13 +107,16 @@ echo "API client ID:"
 read client_id
 echo "API client secret:"
 read -s client_secret
+echo "Enter file path to CSV file with list of Mac serial numbers to be removed from management:"
+read csv_file
  
 checkTokenExpiration
 curl -H "Authorization: Bearer ${access_token}" $url/api/v1/jamf-pro-version -X GET
 checkTokenExpiration
 
+readCSVtoArray
 
-for SERIAL in ${unmanage[@]}
+for SERIAL in ${unmanage_array[@]}
 do
  
 	# This next commented code is to get the serial number of the Mac from which the script 
@@ -113,7 +130,7 @@ do
 	# /bin/echo "Serial number is $SERIAL"
 	 
 	# Get JAMF ID of device from API looked by SN found locally or provided in
-	# $unmanage array:
+	# $unmanage_array array:
 	JAMF_ID=$(curl -X GET "${url}/JSSResource/computers/serialnumber/$SERIAL" -H "accept: application/xml" -H "Authorization: Bearer ${access_token}" | xmllint --xpath '/computer/general/id/text()' -)
 	 
 	# API call to de-select "Allow Jamf Pro to perform management tasks" in the JSS for this device:
