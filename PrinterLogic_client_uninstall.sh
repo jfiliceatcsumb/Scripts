@@ -36,6 +36,8 @@
 
 # Change History:
 # 2025/01/21:	Creation.
+# 2025/02/20:	Improved checks for existing files.
+# 				Forcing return exit 0 so that policies do not detect a false fail condition.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -63,15 +65,24 @@ echo userName=$userName
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
 # Echo 
-clientVers="$(cat /opt/PrinterInstallerClient/VERSION)"
-echo "PrinterLogic client version=$clientVers"
-
+if [ -f /opt/PrinterInstallerClient/VERSION ]; then
+	clientVers="$(cat /opt/PrinterInstallerClient/VERSION)"
+	echo "PrinterLogic client version=${clientVers}"
+else
+		echo "PrinterLogic client Not Installed"
+fi
 
 if [[ "$userName" != "" ]]
 then
 # As root
-	/usr/bin/killall PrinterInstallerClient
+	/usr/bin/killall PrinterInstallerClient > /dev/null 2>&1
 
 fi
+if [ -f /opt/PrinterInstallerClient/bin/uninstall.sh ]; then
+	echo "Running uninstall script /opt/PrinterInstallerClient/bin/uninstall.sh ..."
+	/opt/PrinterInstallerClient/bin/uninstall.sh
+else
+		echo "Uninstall script not found at /opt/PrinterInstallerClient/bin/uninstall.sh"
+fi
 
-/opt/PrinterInstallerClient/bin/uninstall.sh
+exit 0
