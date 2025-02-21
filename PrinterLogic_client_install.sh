@@ -43,6 +43,7 @@
 
 # Change History:
 # 2021/12/15:	Creation.
+# 2025/02/20:	Arm64 download link. Variables
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -68,11 +69,29 @@ echo userName=$userName
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
+# 
 
 HOMEURL="${1}"
 AUTHCODE="${2}"
-/usr/bin/curl "https://${HOMEURL}/client/setup/PrinterInstallerClientSetup.pkg" --location --silent --show-error  --output /tmp/PrinterInstallerClientSetup.pkg 
-/usr/sbin/installer -allowUntrusted -pkg /tmp/PrinterInstallerClientSetup.pkg -target /
+
+PKG_URL="https://${HOMEURL}/client/setup/PrinterInstallerClientSetup.pkg"
+PKG_URL_arm64="https://${HOMEURL}/client/setup/PrinterInstallerClientSetup_arm64.pkg"
+PKGfile="PrinterInstallerClientSetup.pkg"
+
+CPUarch=$(/usr/bin/uname -m)
+# Expected results: arm64 | i386 | x86_64
+
+if [[ "$CPUarch" = "arm64" ]]; then
+	PKG_URL="$PKG_URL_arm64"
+	PKGfile="PrinterInstallerClientSetup_arm64.pkg"
+fi
+
+if [[ -e /tmp/"${PKGfile}" ]]; then
+	rm -fR /tmp/"${PKGfile}"
+fi
+
+/usr/bin/curl "${PKG_URL}" --location --silent --show-error  --output /tmp/"${PKGfile}"
+/usr/sbin/installer -allowUntrusted -pkg /tmp/"${PKGfile}" -target /
 /opt/PrinterInstallerClient/bin/set_home_url.sh https ${HOMEURL}
 /opt/PrinterInstallerClient/bin/use_authorization_code.sh ${AUTHCODE}
 
@@ -88,6 +107,8 @@ then
 	/usr/bin/killall PrinterInstallerClient
 
 # Must run as user $userName
-	/usr/bin/sudo --user=${userName} /bin/sh -c "/usr/bin/open -gn /opt/PrinterInstallerClient/service_interface/PrinterInstallerClient.app"
+	/usr/bin/sudo --user=${userName} /bin/sh -c "/usr/bin/open -gn $(cat /etc/pl_dir)/service_interface/PrinterInstallerClient.app"
     # su -l ${userName} -c "echo"
+    sleep 2
+    
 fi
