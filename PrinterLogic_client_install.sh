@@ -120,3 +120,5 @@ then
     sleep 2
     
 fi
+
+exit
