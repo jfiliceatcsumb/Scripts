@@ -72,15 +72,13 @@ else
 		echo "PrinterLogic client Not Installed"
 fi
 
-if [[ "$userName" != "" ]]
-then
-# As root
-	/usr/bin/killall PrinterInstallerClient > /dev/null 2>&1
-fi
-
 if [[ -f "/Library/LaunchDaemons/com.printerlogic.client.plist" ]]; then
 	/bin/launchctl bootout system "/Library/LaunchDaemons/com.printerlogic.client.plist"
 fi
+
+# As root
+/usr/bin/killall PrinterInstallerClient > /dev/null 2>&1
+
 
 if [ -f /opt/PrinterInstallerClient/bin/uninstall.sh ]; then
 	echo "Running uninstall script /opt/PrinterInstallerClient/bin/uninstall.sh ..."
