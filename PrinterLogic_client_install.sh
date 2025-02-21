@@ -100,17 +100,26 @@ fi
 clientVers="$(cat /opt/PrinterInstallerClient/VERSION)"
 echo "PrinterLogic client version=$clientVers"
 
+echo "Safari feature fix..."
+
 if [[ -f "${launchdPlistPath}" ]]; then
-	/bin/launchctl bootstrap system "${launchdPlistPath}" 
+	/bin/launchctl bootout system "${launchdPlistPath}" 2>&1
 fi
 
 sleep 1
-# Safari feature
+
+if [[ -f "${launchdPlistPath}" ]]; then
+	/bin/launchctl bootstrap system "${launchdPlistPath}" 2>&1
+fi
+
+sleep 1
+
 
 if [[ "$userName" != "" ]]
 then
 # As root
-	/usr/bin/killall PrinterInstallerClient
+	/usr/bin/killall PrinterInstallerClient > /dev/null 2>&1
+	sleep 1
 	/usr/bin/open -gn "$(cat /etc/pl_dir)/service_interface/PrinterInstallerClient.app"
 
 # 
