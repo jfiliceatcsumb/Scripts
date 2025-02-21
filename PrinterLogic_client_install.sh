@@ -77,6 +77,7 @@ AUTHCODE="${2}"
 PKG_URL="https://${HOMEURL}/client/setup/PrinterInstallerClientSetup.pkg"
 PKG_URL_arm64="https://${HOMEURL}/client/setup/PrinterInstallerClientSetup_arm64.pkg"
 PKGfile="PrinterInstallerClientSetup.pkg"
+launchdPlistPath="/Library/LaunchDaemons/com.printerlogic.client.plist"
 
 CPUarch=$(/usr/bin/uname -m)
 # Expected results: arm64 | i386 | x86_64
@@ -99,15 +100,22 @@ fi
 clientVers="$(cat /opt/PrinterInstallerClient/VERSION)"
 echo "PrinterLogic client version=$clientVers"
 
+if [[ -f "${launchdPlistPath}" ]]; then
+	/bin/launchctl bootstrap system "${launchdPlistPath}" 
+fi
+
+sleep 1
 # Safari feature
 
 if [[ "$userName" != "" ]]
 then
 # As root
 	/usr/bin/killall PrinterInstallerClient
+	/usr/bin/open -gn "$(cat /etc/pl_dir)/service_interface/PrinterInstallerClient.app"
 
-# Must run as user $userName
-	/usr/bin/sudo --user=${userName} /bin/sh -c "/usr/bin/open -gn $(cat /etc/pl_dir)/service_interface/PrinterInstallerClient.app"
+# 
+# # Must run as user $userName
+# 	/usr/bin/sudo --user=${userName} /bin/sh -c "/usr/bin/open -gn $(cat /etc/pl_dir)/service_interface/PrinterInstallerClient.app"
     # su -l ${userName} -c "echo"
     sleep 2
     
