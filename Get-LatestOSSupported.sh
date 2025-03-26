@@ -118,11 +118,11 @@ model_check() {
 	elif [[ $model =~ $not_ventura_regex ]]; then
 		echo "Monterey"
 	elif [[ $model =~ $not_sonoma_regex ]]; then
-		echo "Ventura*"
+		echo "Ventura"
 	elif [[ $model =~ $not_sequoia_regex ]]; then
-		echo "Sonoma*"
+		echo "Sonoma"
 	else
-		echo "Sequoia*"
+		echo "Sequoia"
 	fi
 }
 
@@ -141,20 +141,20 @@ os_check() {
 		# For all models except MacPro5,1...
 
 		if [[
-			"${validate_os}" == "Sequoia*" && \
+			"${validate_os}" == "Sequoia" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
 		]]; then
-			echo "Sequoia*"
+			echo "Sequoia"
 		elif [[
-			"${validate_os}" == "Sonoma*" && \
+			"${validate_os}" == "Sonoma" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
 		]]; then
-			echo "Sonoma*"
+			echo "Sonoma"
 		elif [[
-			"${validate_os}" == "Ventura*" && \
+			"${validate_os}" == "Ventura" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
 		]]; then
-			echo "Ventura*"
+			echo "Ventura"
 		elif [[
 			"${validate_os}" == "Monterey" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
@@ -351,21 +351,21 @@ storage_check() {
 	# Set the required free space to compare.
 	# Set space requirement in bytes:  /usr/bin/bc <<< "<space in GB> * 1073741824"
 	case "${validate_os}" in
-		"Sequoia*"* )
+		"Sequoia"* )
 			# Value's inherited from Monterey, Apple has not defined these requirements
 			required_free_space_newer="27917287424" # 26GB if Sierra or later
 			os_newer="10.12.0"
 			required_free_space_older="47244640256" # 44GB if El Capitan or earlier
 			os_older="10.11.0"
 		;;
-		"Sonoma*"* )
+		"Sonoma"* )
 			# Value's inherited from Monterey, Apple has not defined these requirements
 			required_free_space_newer="27917287424" # 26GB if Sierra or later
 			os_newer="10.12.0"
 			required_free_space_older="47244640256" # 44GB if El Capitan or earlier
 			os_older="10.11.0"
 		;;
-		"Ventura*"* )
+		"Ventura"* )
 			# Value's inherited from Monterey, Apple has not defined these requirements
 			required_free_space_newer="27917287424" # 26GB if Sierra or later
 			os_newer="10.12.0"
@@ -462,13 +462,13 @@ fi
 model_result=$( model_check "${mac_model}" )
 
 case "${model_result}" in
-	"Sequoia*" )
+	"Sequoia" )
 		version_string="15"
 	;;
-	"Sonoma*" )
+	"Sonoma" )
 		version_string="14"
 	;;
-	"Ventura*" )
+	"Ventura" )
 		version_string="13"
 	;;
 	"Monterey" )
@@ -520,6 +520,6 @@ else
 	model_result="${ram_check_results}${storage_check_results}"
 fi
 
-echo "<result>${report_result}</result>"
+echo "<result>${version_string} ${report_result}</result>"
 write_to_ea_history "latest_os_supported" "${model_result}"
 exit 0
