@@ -55,5 +55,6 @@ echo "read GlobalPreferences.plist"
 /usr/bin/defaults read "/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist"
 
 
-exit 0
+exit 
+
 
