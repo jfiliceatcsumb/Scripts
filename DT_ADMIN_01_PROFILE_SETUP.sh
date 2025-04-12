@@ -75,6 +75,9 @@ AdminHOME=/Users/admin
 
 echo "Copying User Template/English.lproj into ${AdminHOME}..."
 ditto -V "/Library/User Template/English.lproj" "${AdminHOME}"
+echo "Copying User Template/Non_localized into ${AdminHOME}..."
+ditto -V "/Library/User Template/Non_localized" "${AdminHOME}"
+
 
 ########## LAUNCH SERVICES ##########
 echo "Adding LSHandlers for textwrangler: plist and sh"
