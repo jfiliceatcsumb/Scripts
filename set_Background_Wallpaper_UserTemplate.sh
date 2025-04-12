@@ -56,18 +56,42 @@ fi
 # 
 # If you want just the background color, set NoImage-bool to 'true'
 
+osXversion=$(sw_vers -productVersion)
+echo "osXversion=$osXversion"
+# Just get the second version value after 10.
+macOSversionMajor=$(echo $osXversion | awk -F. '{print $1}')
+macOSversionMinor=$(echo $osXversion | awk -F. '{print $2}')
+echo "macOSversionMajor=$macOSversionMajor"
+echo "macOSversionMinor=$macOSversionMinor"
+
+# if 
+# macOS 11.x or newer
+# or
+# macOS 10.15.x or newer
+
+if [ $macOSversionMajor -gt 10 ] || [ $macOSversionMajor -eq 10 -a $macOSversionMinor -ge 15 ]; then
+	echo "10.15 and newer"
+	USER_TEMPL='/Library/User Template/Non_localized'
+else
+	echo "older than 10.15"
+	USER_TEMPL='/System/Library/User Template/Non_localized'
+fi
+
+echo "USER_TEMPL=$USER_TEMPL"
+
+mkdir -pv -m 755 "${USER_TEMPL}/Library/Preferences"
 
 
 echo "Setting desktop background picture to ${ImageFilePath}..."
-defaults write "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.desktop.plist" Background -dict "default" "<dict> <key>BackgroundColor</key> <array> <real>${BackgroundColorReal1}</real> <real>${BackgroundColorReal2}</real> <real>${BackgroundColorReal3}</real> </array> <key>Change</key> <string>Never</string> <key>ChangePath</key> <string>${ChangePath}</string> <key>ChangeTime</key> <real>1800</real> <key>DSKDesktopPrefPane</key> <dict> <key>UserFolderPaths</key> <array> ${UserFolderPaths} </array> </dict> <key>DrawBackgroundColor</key> <true/> <key>ImageFilePath</key> <string>${ImageFilePath}</string> <key>NewChangePath</key> <string>${NewChangePath}</string> <key>NewImageFilePath</key> <string>${NewImageFilePath}</string> <key>NoImage</key> <${NoImage_bool}/> <key>Placement</key> <string>${ImagePlacement}</string> <key>Random</key> <false/> </dict>"
+defaults write "${USER_TEMPL}/Library/Preferences/com.apple.desktop.plist" Background -dict "default" "<dict> <key>BackgroundColor</key> <array> <real>${BackgroundColorReal1}</real> <real>${BackgroundColorReal2}</real> <real>${BackgroundColorReal3}</real> </array> <key>Change</key> <string>Never</string> <key>ChangePath</key> <string>${ChangePath}</string> <key>ChangeTime</key> <real>1800</real> <key>DSKDesktopPrefPane</key> <dict> <key>UserFolderPaths</key> <array> ${UserFolderPaths} </array> </dict> <key>DrawBackgroundColor</key> <true/> <key>ImageFilePath</key> <string>${ImageFilePath}</string> <key>NewChangePath</key> <string>${NewChangePath}</string> <key>NewImageFilePath</key> <string>${NewImageFilePath}</string> <key>NoImage</key> <${NoImage_bool}/> <key>Placement</key> <string>${ImagePlacement}</string> <key>Random</key> <false/> </dict>"
 
 echo "Checking com.apple.desktop.plist with plutil..."
-/usr/bin/plutil "/System/Library/User Template/English.lproj/Library/Preferences/com.apple.desktop.plist"
+/usr/bin/plutil "${USER_TEMPL}/Library/Preferences/com.apple.desktop.plist"
 echo "Displaying com.apple.desktop.plist in XML..."
-/usr/bin/plutil -convert xml1 -o - "/System/Library/User Template/English.lproj/Library/Preferences/com.apple.desktop.plist"
+/usr/bin/plutil -convert xml1 -o - "${USER_TEMPL}/Library/Preferences/com.apple.desktop.plist"
 
 # Delete the desktoppicture.db to force the plist to be used.
-/bin/rm -fv "/System/Library/User Template/English.lproj/Library/Application Support/Dock/desktoppicture.db"
+/bin/rm -fv "${USER_TEMPL}/Library/Application Support/Dock/desktoppicture.db"
 
 
 echo "***End $SCRIPTNAME script***"
