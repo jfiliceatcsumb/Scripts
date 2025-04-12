@@ -70,7 +70,7 @@ mkdir -pv -m 755 "${USER_TEMPL}/Library/Preferences"
 # 
 
 Audacity_cfg="${USER_TEMPL}/Library/Application Support/Audacity/audacity.cfg"
-mkdir -pv -m 755 $(/usr/bin/dirname "${Audacity_cfg}")
+mkdir -pv -m 755 "$(/usr/bin/dirname ${Audacity_cfg})"
 
 touch "${Audacity_cfg}"
 
