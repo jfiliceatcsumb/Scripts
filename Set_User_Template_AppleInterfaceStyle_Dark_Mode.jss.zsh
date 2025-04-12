@@ -51,6 +51,9 @@ echo "userName=$userName"
 /usr/bin/defaults write "/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist" AppleInterfaceStyle -string "Dark"
 /usr/sbin/chown 0:0 "/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist"
 
+echo "read GlobalPreferences.plist"
+/usr/bin/defaults read "/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist"
+
 
 exit 0
 
