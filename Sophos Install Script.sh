@@ -34,8 +34,12 @@ echo "userName=$userName"
 
 SOPHOS_DIR=$(/usr/bin/mktemp -d -t Sophos_Install)
 SOPHOS_INSTALLER_URL=$1
-# Sanitize by deleting this directory at the beginning if it already exists. 
-# Unfortunately, this script does not do any checksum of the Sophos installer, so this is critical.
+# Sanitize by deleting this temporary directory at the beginning if it already exists. 
+# Unfortunately, this script does not do any checksum of the Sophos installer, so this is helps mitigate the risk.
+if [[ -e "${SOPHOS_DIR}" ]]; then
+	/bin/rm -rf "${SOPHOS_DIR}"
+fi
+
 trap '/bin/rm -rf ${SOPHOS_DIR}' EXIT
 cd $SOPHOS_DIR
 
@@ -51,7 +55,7 @@ $SOPHOS_DIR/Sophos\ Installer.app/Contents/MacOS/Sophos\ Installer --quiet
 
 echo "Removing Sophos installer..."
 
-/bin/rm -rf $SOPHOS_DIR
+/bin/rm -rf "${SOPHOS_DIR}"
 
 # Removing this step because the updater fails until full reboot. Simply allow it to update per normal scheudule.
 # echo "Waiting 5 minutes before updating Sophos..."
@@ -65,7 +69,8 @@ echo "Removing Sophos installer..."
 echo "Read Sophos product info..."
 /usr/bin/defaults read "/Library/Sophos Anti-Virus/product-info.plist"
 
-exit 0
+exit
+
 
 # #####################
 # Install Sophos Script.txt
