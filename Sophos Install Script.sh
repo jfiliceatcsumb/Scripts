@@ -34,13 +34,8 @@ echo "userName=$userName"
 
 SOPHOS_DIR=$(/usr/bin/mktemp -d -t Sophos_Install)
 SOPHOS_INSTALLER_URL=$1
-# Sanitize by deleting this temporary directory at the beginning if it already exists. 
-# Unfortunately, this script does not do any checksum of the Sophos installer, so this is helps mitigate the risk.
-if [[ -e "${SOPHOS_DIR}" ]]; then
-	/bin/rm -rf "${SOPHOS_DIR}"
-fi
 
-trap '/bin/rm -rf ${SOPHOS_DIR}' EXIT
+# trap '/bin/rm -rf ${SOPHOS_DIR}' EXIT
 cd $SOPHOS_DIR
 
 
