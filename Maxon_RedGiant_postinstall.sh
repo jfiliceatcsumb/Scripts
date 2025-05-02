@@ -20,6 +20,39 @@
 # https://support.maxon.net/hc/en-us/articles/4667400822044-Setting-up-your-Client-Machines-
 
 
+# Red Giant 2025.4.1
+# Usage:
+# 
+#  --help                                      Display the list of valid options
+# 
+#  --version                                   Display product information
+# 
+#  --unattendedmodeui <unattendedmodeui>       Unattended Mode UI
+#                                              Default: minimalWithDialogs
+#                                              Allowed: none minimal minimalWithDialogs
+# 
+#  --optionfile <optionfile>                   Installation option file
+#                                              Default: 
+# 
+#  --debuglevel <debuglevel>                   Debug information level of verbosity
+#                                              Default: 2
+#                                              Allowed: 0 1 2 3 4
+# 
+#  --mode <mode>                               Installation mode
+#                                              Default: unattended
+#                                              Allowed: osx text unattended
+# 
+#  --debugtrace <debugtrace>                   Debug filename
+#                                              Default: 
+# 
+#  --installer-language <installer-language>   Language selection
+#                                              Default: en
+#                                              Allowed: sq ar es_AR az eu pt_BR bg ca hr cs da nl en et fi fr de el he hu id it ja kk ko lv lt no fa pl pt ro ru sr zh_CN sk sl es sv th zh_TW tr tk uk va vi cy
+# 
+#  --errortrace <errortrace>                   Error trace filename
+#                                              Default: 
+# 
+
 # Change History:
 # 2021/08/25:	Creation.
 #
@@ -32,23 +65,8 @@ pathToPackage=$1
 targetLocation=$2
 targetVolume=$3
 
-
-
-# set alias for PlistBuddy and several others so I don't have to specify full path.
-# 
-alias PlistBuddy="/usr/libexec/PlistBuddy"
-alias chown="/usr/sbin/chown"
-alias chmod="/bin/chmod"
-alias ditto="/usr/bin/ditto"
-alias defaults="/usr/bin/defaults"
-alias rm="/bin/rm"
-alias cp="/bin/cp"
-alias mkdir="/bin/mkdir"
-alias sudo=/usr/bin/sudo
-
-
 /bin/ls -FlOah "${SCRIPTPATH}"
 # Run script found in the application bundle included alongside this postinstall script.
-"${SCRIPTPATH}"/*.app/Contents/Scripts/install.sh
+"${SCRIPTPATH}"/*.app/Contents/Scripts/install.sh --version --mode unattended --unattendedmodeui minimal
 
 exit 0
