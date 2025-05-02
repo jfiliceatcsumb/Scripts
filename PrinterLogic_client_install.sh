@@ -130,4 +130,6 @@ then
     
 fi
 
+/opt/PrinterInstallerClient/bin/refresh.sh
+
 exit
