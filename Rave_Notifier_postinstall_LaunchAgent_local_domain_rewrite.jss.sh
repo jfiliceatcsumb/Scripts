@@ -121,7 +121,7 @@ echo "Reading the ${LAUNCH_AGENT_DST} values..."
 echo "Load new agent in current user domain context..."
 set -x
 if [ "${UID_CURRENT}" != "0" -a "${UID_CURRENT}" != "" ]; then
-# 	bootstrap is the modern launchctl subcommand for macOS 10.10 and newer.
+# 	 is the modern launchctl subcommand for macOS 10.10 and newer.
 	/bin/launchctl enable gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
 	/bin/launchctl bootstrap gui/${UID_CURRENT} "${LAUNCH_AGENT_DST}"
 # 	/bin/launchctl kickstart -kp gui/${UID_CURRENT}/${LAUNCH_AGENT_Label}
