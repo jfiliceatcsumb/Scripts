@@ -45,10 +45,14 @@ echo "userName=$userName"
 ##### vvvvv Borrowed code starts here vvvvv #####
 
 # unconfigure panel
-"/Library/Application Support/Blackmagic Design/DaVinci Resolve/configure-panel.sh" none
+if [[ -e "/Library/Application Support/Blackmagic Design/DaVinci Resolve/configure-panel.sh" ]]; then
+	"/Library/Application Support/Blackmagic Design/DaVinci Resolve/configure-panel.sh" none
+fi
 
 # unconfigure dp
-"/Library/Application Support/Blackmagic Design/DaVinci Resolve/configure-dp.sh" off
+if [[ -e "/Library/Application Support/Blackmagic Design/DaVinci Resolve/configure-dp.sh" ]]; then
+	"/Library/Application Support/Blackmagic Design/DaVinci Resolve/configure-dp.sh" off
+fi
 
 # DO NOT blow away application support and prefs
 # /bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve/"
