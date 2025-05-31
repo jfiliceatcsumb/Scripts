@@ -53,21 +53,36 @@ echo "userName=$userName"
 # set -x
 
 
-ServerUrl="${1}"
-FileID="${2}"
-OrganizationID="${3}"
+readonly ServerUrl="${1}"
+readonly FileID="${2}"
+readonly OrganizationID="${3}"
 
-readonly configFile="/Library/Application Support/JAMF/Waiting Room/com.faronics.cloudagent.plist"
+readonly configFileWaitingRoom="/Library/Application Support/JAMF/Waiting Room/com.faronics.cloudagent.plist"
+
+readonly configFileDownloads="/Library/Application Support/JAMF/Downloads/com.faronics.cloudagent.plist"
 
 # if file exists, Removes all default information
-if [[ -e "${configFile}" ]];then
-	/usr/bin/defaults delete "${configFile}"
+if [[ -e "${configFileWaitingRoom}" ]];then
+	/usr/bin/defaults delete "${configFileWaitingRoom}"
 fi
 
-/usr/bin/defaults write "${configFile}" ServerUrl "$ServerUrl"
-/usr/bin/defaults write "${configFile}" FileID "$FileID"
-/usr/bin/defaults write "${configFile}" OrganizationID "$OrganizationID"
-/usr/bin/defaults read "${configFile}"
+# if file exists, Removes all default information
+if [[ -e "${configFileDownloads}" ]];then
+	/usr/bin/defaults delete "${configFileDownloads}"
+fi
+
+/usr/bin/defaults write "${configFileWaitingRoom}" ServerUrl "$ServerUrl"
+/usr/bin/defaults write "${configFileDownloads}" ServerUrl "$ServerUrl"
+/usr/bin/defaults write "${configFileWaitingRoom}" FileID "$FileID"
+/usr/bin/defaults write "${configFileDownloads}" FileID "$FileID"
+/usr/bin/defaults write "${configFileWaitingRoom}" OrganizationID "$OrganizationID"
+/usr/bin/defaults write "${configFileDownloads}" OrganizationID "$OrganizationID"
+# Check the property list file for syntax errors
+/usr/bin/plutil "${configFileWaitingRoom}"
+/usr/bin/plutil "${configFileDownloads}"
+# debugging: print plist file
+# /usr/bin/plutil -p "${configFileWaitingRoom}"
+# /usr/bin/plutil -p "${configFileDownloads}"
 
 exit 0
 
