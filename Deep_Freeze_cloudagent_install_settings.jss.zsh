@@ -72,13 +72,17 @@ if [[ -e "${configFileDownloads}" ]];then
 fi
 
 /usr/bin/defaults write "${configFileWaitingRoom}" ServerUrl "$ServerUrl"
-/usr/bin/defaults write "${configFileDownloads}" ServerUrl "$ServerUrl"
 /usr/bin/defaults write "${configFileWaitingRoom}" FileID "$FileID"
-/usr/bin/defaults write "${configFileDownloads}" FileID "$FileID"
 /usr/bin/defaults write "${configFileWaitingRoom}" OrganizationID "$OrganizationID"
+/bin/chmod 644 "${configFileWaitingRoom}"
+/usr/bin/defaults write "${configFileDownloads}" ServerUrl "$ServerUrl"
+/usr/bin/defaults write "${configFileDownloads}" FileID "$FileID"
 /usr/bin/defaults write "${configFileDownloads}" OrganizationID "$OrganizationID"
+/bin/chmod 644 "${configFileDownloads}"
 # Check the property list file for syntax errors
+ls -la "${configFileWaitingRoom}"
 /usr/bin/plutil "${configFileWaitingRoom}"
+ls -la "${configFileDownloads}"
 /usr/bin/plutil "${configFileDownloads}"
 # debugging: print plist file
 # /usr/bin/plutil -p "${configFileWaitingRoom}"
