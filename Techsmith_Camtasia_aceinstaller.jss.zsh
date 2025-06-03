@@ -10,9 +10,11 @@
 # Install the System Audio Component for End Users
 
 # This script requires one argument: AppVersionSuffix.
-# Include the space after the app name and before the .app filepath sufix.
-# for example, for /Applications/Camtasia 2023.app' 
+# Include any space and version numbers (if any) after the app name and before the .app filepath sufix.
+# For example, for '/Applications/Camtasia 2023.app' 
 # the argument value would be " 2023"
+# For example, for '/Applications/Camtasia.app' 
+# the argument value would be ""
 # 
 # Use as script in Jamf JSS.
 
@@ -53,10 +55,9 @@ echo "userName=$userName"
 # /bin/ls -FlOah "${SCRIPTDIR}"
 AppVersionSuffix=""
 AppVersionSuffix="${1}"
-SaveWorkingDirectory="$PWD"
+
 cd "/Applications/Camtasia${AppVersionSuffix}.app/Contents/Resources"
 "/Applications/Camtasia${AppVersionSuffix}.app/Contents/Resources/aceinstaller" install
-cd "${SaveWorkingDirectory}"
 
 exit 0
 
