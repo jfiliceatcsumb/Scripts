@@ -9,7 +9,6 @@
 
 
 # This script requires one argument: LicenseKey value.
-# Run it with no arguments. 
 # 
 # Use as script in Jamf JSS.
 
