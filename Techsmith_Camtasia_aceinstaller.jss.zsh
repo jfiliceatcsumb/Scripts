@@ -9,6 +9,7 @@
 
 # Install the System Audio Component for End Users
 
+# This script requires Camtasia to be installed already.
 # This script requires one argument: AppVersionSuffix.
 # Include any space and version numbers (if any) after the app name and before the .app filepath sufix.
 # For example, for '/Applications/Camtasia 2023.app' 
