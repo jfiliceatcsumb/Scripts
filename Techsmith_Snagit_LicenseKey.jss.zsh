@@ -13,8 +13,8 @@
 # 
 # Use as script in Jamf JSS.
 
-# https://support.techsmith.com/hc/en-us/articles/203727638-Enterprise-Install-Guidelines-For-Camtasia-on-macOS
-# key file path: /Users/Shared/TechSmith/Camtasia/LicenseKey
+# https://support.techsmith.com/hc/en-us/articles/115007344888-Enterprise-Install-Guidelines-for-Snagit-on-MacOS
+# key file path: /Users/Shared/TechSmith/Snagit/LicenseKey
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -54,10 +54,10 @@ export LANG=en_US.UTF-8
 echo $LANG
 
 LicenseKey="${1}"
-/bin/mkdir -pv -m 777 "/Users/Shared/TechSmith/Camtasia"
-echo "$LicenseKey" > "/Users/Shared/TechSmith/Camtasia/LicenseKey"
-/bin/chmod -fv 644 "/Users/Shared/TechSmith/Camtasia/LicenseKey"
-ls -FlOah "/Users/Shared/TechSmith/Camtasia"
+/bin/mkdir -pv -m 777 "/Users/Shared/TechSmith/Snagit"
+echo "$LicenseKey" > "/Users/Shared/TechSmith/Snagit/LicenseKey"
+/bin/chmod -fv 644 "/Users/Shared/TechSmith/Snagit/LicenseKey"
+ls -FlOah "/Users/Shared/TechSmith/Snagit"
 
 exit 0
 
