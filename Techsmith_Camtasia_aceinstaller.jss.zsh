@@ -8,6 +8,10 @@
 
 
 # Install the System Audio Component for End Users
+# *** System audio is built-in to macOS 13 and later ***
+# https://support.techsmith.com/hc/en-us/articles/360053260571-Camtasia-and-Apple-Silicon-Compatibility-Info
+# *** Camtasia 2022.4.0 and later on macOS 13 (Ventura) do not require the System Audio extension ***
+# https://support.techsmith.com/hc/en-us/articles/360055945312-M1-M2-Chip-and-the-Camtasia-System-Audio-Capture-Component
 
 # This script requires Camtasia to be installed already.
 # This script requires one argument: AppVersionSuffix.
