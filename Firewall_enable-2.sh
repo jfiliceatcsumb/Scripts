@@ -111,7 +111,7 @@ if [ "$enableFirewall" == "" ]; then
 	exit 1
 fi
 
-# OS=`/usr/bin/defaults read /System/Library/CoreServices/SystemVersion ProductVersion | awk '{print substr($1,1,5)}'`
+OS=$(/usr/bin/defaults read /System/Library/CoreServices/SystemVersion ProductVersion | awk '{print substr($1,1,5)}')
 
 # if [[ "$OS" == "10.4" ]]
 # then
@@ -130,21 +130,21 @@ fi
 # then
 case $enableFirewall in 
 "true" | "TRUE" | "yes" | "YES")
-		echo "Enabling Firewall for OS $OS ..."
+		echo "Enabling Firewall for macOS $OS ..."
 		/usr/bin/defaults write /Library/Preferences/com.apple.alf globalstate -int 1
 		/usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
-		/bin/launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
-		/bin/launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
-		/bin/launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
-		/bin/launchctl load /System/Library/LaunchAgents/com.apple.alf.useragent.plist;;
+		/bin/launchctl bootout /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+		/bin/launchctl bootout /System/Library/LaunchAgents/com.apple.alf.useragent.plist
+		/bin/launchctl bootstrap /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+		/bin/launchctl bootstrap /System/Library/LaunchAgents/com.apple.alf.useragent.plist;;
 "false" | "FALSE" | "no" | "NO")
-		echo "Disabling Firewall for OS $OS ..."
+		echo "Disabling Firewall for macOS $OS ..."
 		/usr/bin/defaults write /Library/Preferences/com.apple.alf globalstate -int 0
 		/usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
-		/bin/launchctl unload /System/Library/LaunchDaemons/com.apple.alf.agent.plist
-		/bin/launchctl unload /System/Library/LaunchAgents/com.apple.alf.useragent.plist
-		/bin/launchctl load /System/Library/LaunchDaemons/com.apple.alf.agent.plist
-		/bin/launchctl load /System/Library/LaunchAgents/com.apple.alf.useragent.plist;;
+		/bin/launchctl bootout /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+		/bin/launchctl bootout /System/Library/LaunchAgents/com.apple.alf.useragent.plist
+		/bin/launchctl bootstrap /System/Library/LaunchDaemons/com.apple.alf.agent.plist
+		/bin/launchctl bootstrap /System/Library/LaunchAgents/com.apple.alf.useragent.plist;;
 esac
 # fi
 
