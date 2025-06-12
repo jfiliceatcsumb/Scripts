@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?><extensionAttribute>
+<displayName>Bootstrap Token Escrow Status EA Full Output</displayName>
+<description>Extension attribute to report inventory information about whether or not a macOS Catalina+ device has been Bootstrapped.&#13;
+https://travellingtechguy.blog/jamf-pro-extension-attribute-bootstrap/&#13;
+&#13;
+jfilice@csumb.edu: Modified 2022/12/14&#13;
+</description>
+<dataType>string</dataType>
+<scriptContentsMac>#!/bin/bash
+# very simple Extension Attribute to collect Bootstrap information
+# copy script to an EA in Jamf Pro Settings -&gt; Computer -&gt; Extension Attribute
+# EA input type: script
+# 28th of January 2020 - By Travelling Tech Guy
+# https://travellingtechguy.blog
+bootstrap=$(profiles status -type bootstraptoken)
+echo "&lt;result&gt;$bootstrap&lt;/result&gt;"
+</scriptContentsMac>
+</extensionAttribute>
