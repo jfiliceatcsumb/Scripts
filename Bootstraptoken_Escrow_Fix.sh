@@ -13,9 +13,6 @@
 # 
 # Use as script in Jamf JSS.
 
-
-# Change History:
-# 2022/MM/DD:	Creation.
 #
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
@@ -62,13 +59,22 @@ alias sudo=/usr/bin/sudo
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
-/usr/bin/profiles status -type bootstraptoken
-
-/usr/bin/profiles install -type bootstraptoken -user $1 -password $2
-
-sleep 1
-
-/usr/bin/profiles status -type bootstraptoken
+bootstrap=$(profiles status -type bootstraptoken)
+echo $bootstrap
+if [[ $bootstrap == *"supported on server: YES"* ]]; then
+    if [[ $bootstrap == *"escrowed to server: YES"* ]]; then
+		echo "Bootstrap escrowed. Exit script."
+    else
+		echo "Bootstrap not escrowed."
+		echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
+        /usr/bin/profiles install -type bootstraptoken -user $1 -password $2
+		sleep 1	
+		/usr/bin/profiles status -type bootstraptoken
+  fi
+else
+	echo "Bootstrap token not supported on server"
+	result="NOT SUPPORTED"
+fi
 
 
 exit 0
