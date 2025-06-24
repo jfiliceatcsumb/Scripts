@@ -8,12 +8,11 @@
 
 
 
-# This script requires .
-# Run it with 3 arguments:
+# This script requires 3 arguments as Jamf Pro script parameters:
 # 
-# ServerUrl
-# FileID=
-# OrganizationID
+# Parameter 4: ServerUrl
+# Parameter 5: FileID=
+# Parameter 6: OrganizationID
 
 # 
 # Use as script in Jamf JSS.
@@ -71,15 +70,17 @@ if [[ -e "${configFileDownloads}" ]];then
 	/usr/bin/defaults delete "${configFileDownloads}"
 fi
 
+# Write plist file to Jamf Waiting Room
 /usr/bin/defaults write "${configFileWaitingRoom}" ServerUrl "$ServerUrl"
 /usr/bin/defaults write "${configFileWaitingRoom}" FileID "$FileID"
 /usr/bin/defaults write "${configFileWaitingRoom}" OrganizationID "$OrganizationID"
 /bin/chmod 644 "${configFileWaitingRoom}"
+# Write plist file to Jamf Downloads
 /usr/bin/defaults write "${configFileDownloads}" ServerUrl "$ServerUrl"
 /usr/bin/defaults write "${configFileDownloads}" FileID "$FileID"
 /usr/bin/defaults write "${configFileDownloads}" OrganizationID "$OrganizationID"
 /bin/chmod 644 "${configFileDownloads}"
-# Check the property list file for syntax errors
+# Check the property list files for syntax errors
 ls -la "${configFileWaitingRoom}"
 /usr/bin/plutil "${configFileWaitingRoom}"
 ls -la "${configFileDownloads}"
