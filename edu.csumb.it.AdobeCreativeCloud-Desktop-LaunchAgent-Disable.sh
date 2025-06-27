@@ -1,10 +1,10 @@
-﻿#!/bin/sh
+﻿#!/bin/bash
 
 # Jason Filice
 # jfilice@csumb.edu
 # Technology Support Services in IT
 # California State University, Monterey Bay
-# http://it.csumb.edu
+# http://csumb.edu/it
 
 
 
@@ -13,10 +13,12 @@
 # 
 
 # Script to prevent auto launch of Adobe Creative Cloud application by disabling
-#  /Library/LaunchAgents/com.adobe.AdobeCreativeCloud.plist Launch Agent.
+#  LaunchAgents:
+# com.adobe.AdobeCreativeCloud.plist
+# com.adobe.ccxprocess.plist
+# com.adobe.GC.AGM.plist
+# com.adobe.GC.Invoker-1.0.plist
 # 
-# History:
-# 2015/03/11:	Creation
 
 # 
 
@@ -31,21 +33,36 @@ SCRIPTPATH=`/usr/bin/dirname "$0"`
 # set alias for PlistBuddy and several others so I don't have to specify full path.
 # Prefix sudo path because I'm using it here for all commands.
 # If I want to run a command without the alias, then specify the full path.
-alias PlistBuddy="/usr/bin/sudo /usr/libexec/PlistBuddy"
-alias chown="/usr/bin/sudo /usr/sbin/chown"
-alias chmod="/usr/bin/sudo /bin/chmod"
-alias ditto="/usr/bin/sudo /usr/bin/ditto"
-alias defaults="/usr/bin/sudo /usr/bin/defaults"
-alias rm="/usr/bin/sudo /bin/rm"
-alias cp="/usr/bin/sudo /bin/cp"
-alias mkdir="/usr/bin/sudo /bin/mkdir"
-alias sudo=/usr/bin/sudo
 
-echo "Script to prevent auto launch of Adobe Creative Cloud application by disabling /Library/LaunchAgents/com.adobe.AdobeCreativeCloud.plist Launch Agent."
-defaults write /Library/LaunchAgents/com.adobe.AdobeCreativeCloud.plist 'Disabled' -bool true
-# Be sure to set ownership and permissions on the plist just in case.
-chown -f 0:0 /Library/LaunchAgents/com.adobe.AdobeCreativeCloud.plist
-chmod -f 644 /Library/LaunchAgents/com.adobe.AdobeCreativeCloud.plist
+# Jamf script to prevent Adobe Creative Cloud from autolaunching at login
+# Tested on macOS 15 (Sequoia) and earlier
+
+echo "Disabling Adobe CC LaunchAgents..."
+
+# List of Adobe LaunchAgents to remove or disable
+launchAgents=(
+  "com.adobe.AdobeCreativeCloud.plist"
+  "com.adobe.ccxprocess.plist"
+  "com.adobe.GC.AGM.plist"
+  "com.adobe.GC.Invoker-1.0.plist"
+)
+
+# Remove system-wide LaunchAgents
+for agent in "${launchAgents[@]}"; do
+  if [ -f "/Library/LaunchAgents/$agent" ]; then
+    echo "Disabling /Library/LaunchAgents/$agent"
+	/bin/launchctl bootout system "/Library/LaunchAgents/$agent"
+	/usr/bin/defaults write "/Library/LaunchAgents/$agent" 'Disabled' -bool true
+	# Be sure to set ownership and permissions on the plist just in case.
+	/usr/sbin/chown -f 0:0 "/Library/LaunchAgents/$agent"
+	/bin/chmod -f 644 "/Library/LaunchAgents/$agent"
+	# Adobe CC updates will often reinstall these launch agents. 
+	# To prevent this Set file immutability
+	/usr/bin/chflags schg "/Library/LaunchAgents/$agent"
+  fi
+done
+
+
 
 /bin/echo "***End $SCRIPTNAME script***"
 /bin/date
