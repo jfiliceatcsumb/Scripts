@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -65,6 +65,4 @@ else
 	result="NOT SUPPORTED"
 fi
 
-
 exit 0
-
