@@ -46,6 +46,8 @@ echo "userName=$userName"
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
+# Show secure token status for additional info 
+sysadminctl -secureTokenStatus  "${1}"
 bootstrap=$(profiles status -type bootstraptoken)
 echo $bootstrap
 if [[ $bootstrap == *"supported on server: YES"* ]]; then
