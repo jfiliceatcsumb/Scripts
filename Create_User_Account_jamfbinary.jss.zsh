@@ -18,54 +18,41 @@ echo "userName=$userName"
 
 
 # new user account details
-username="${4:-lapsadmin}"
-displayName="${5:-LAPS Admin}"
-password="${6:-P@55w0rd}"
+# passhash is base64 encoded password
+# base64  <<< "password"
+NewAccount="${4:-lapsadmin}"
+RealName="${5:-LAPS Admin}"
+passhash="${6}"
 admin="${7:-no}"
 hidden="${8:-yes}"
-SecureToken="${9:-yes}"
+secureTokenAllowed="${9:-yes}"
+Picture="${10:-}"
 
-credentials_decoded=$(base64 -d <<< "$password")
-if [[ $(awk -F: '{print NF-1}' <<< "$credentials_decoded") -eq 1 ]]; then
-	account_shortname=$(awk -F: '{print $1}' <<< "$credentials_decoded")
-	account_password=$(awk -F: '{print $NF}' <<< "$credentials_decoded")
-else
-	writelog "[get_user_details] ERROR: Supplied credentials are in the incorrect form, so exiting..."
-	exit 1
+# append flags to command, based upon script parameters
+createAccountFlags=""
+
+if [[ "$secureTokenAllowed" = "yes" ]]; then
+	createAccountFlags="$createAccountFlags -secureTokenAllowed"
 fi
-# determine next available UID
-highestUID=$( dscl . -list /Users UniqueID | /usr/bin/awk '$2>m {m=$2} END { print m }' )
-nextUID=$(( highestUID+1 ))
-
-# create the account
-/usr/bin/dscl . create "/Users/$username"
-/usr/bin/dscl . create "/Users/$username" UserShell /bin/zsh
-/usr/bin/dscl . create "/Users/$username" RealName "$displayName" 
-/usr/bin/dscl . create "/Users/$username" UniqueID "$nextUID"
-/usr/bin/dscl . create "/Users/$username" PrimaryGroupID 20
-
-if [[ "$SecureToken" = "yes" ]]; then
-	/usr/bin/dscl . create "/Users/$username" AuthenticationAuthority ';SecureToken;'
-fi
-
-/usr/bin/dscl . passwd "/Users/$username" "$password"
-
 
 # make the account admin, if specified
 if [[ "$admin" = "yes" ]]; then
-    /usr/bin/dscl . append /Groups/admin GroupMembership "$username"
+	createAccountFlags="$createAccountFlags -admin"
 fi
 
 # hide the account, if specified
 if [[ "$hidden" = "yes" ]]; then
-    /usr/bin/dscl . create "/Users/$username" IsHidden 1
-    /usr/bin/dscl . create "/Users/$username" NFSHomeDirectory "/private/var/$username"
-else
-    /usr/bin/dscl . create "/Users/$username" NFSHomeDirectory "/Users/$username"
+	createAccountFlags="$createAccountFlags -hiddenUser -home /private/var/$NewAccount"
 fi
 
+/usr/local/bin/jamf createAccount -username "$NewAccount" -realname "$RealName" -passhash "$passhash" -picture "$Picture" -suppressSetupAssistant $createAccountFlags
+
+# Tell system to create account user profile.
+
+
 echo "Secure Token Status for $username:"
-/usr/sbin/sysadminctl -secureTokenStatus "$username"
+/usr/sbin/sysadminctl -secureTokenStatus "$NewAccount"
+
 
 echo 
 echo "Current list of volume owners:"
