@@ -25,14 +25,7 @@ admin="${7:-no}"
 hidden="${8:-yes}"
 SecureToken="${9:-yes}"
 
-credentials_decoded=$(base64 -d <<< "$password")
-if [[ $(awk -F: '{print NF-1}' <<< "$credentials_decoded") -eq 1 ]]; then
-	account_shortname=$(awk -F: '{print $1}' <<< "$credentials_decoded")
-	account_password=$(awk -F: '{print $NF}' <<< "$credentials_decoded")
-else
-	writelog "[get_user_details] ERROR: Supplied credentials are in the incorrect form, so exiting..."
-	exit 1
-fi
+
 # determine next available UID
 highestUID=$( dscl . -list /Users UniqueID | /usr/bin/awk '$2>m {m=$2} END { print m }' )
 nextUID=$(( highestUID+1 ))
