@@ -1,7 +1,7 @@
 #!/bin/zsh
 
-SCRIPTNAME=`/usr/bin/basename "$0"`
-SCRIPTDIR=`/usr/bin/dirname "$0"`
+SCRIPTNAME=$(/usr/bin/basename "$0")
+SCRIPTDIR=$(/usr/bin/dirname "$0")
 
 # Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
 
@@ -38,18 +38,18 @@ createAccountFlags=""
 # 	LS_OPTIONS=(--color=auto --group-directories-first)
 # 	ls $LS_OPTIONS
 
-if [[ "$secureTokenAllowed" = "yes" ]]; then
-	createAccountFlags=($createAccountFlags -secureTokenAllowed)
+if [[ "$secureTokenAllowed" =~ "[Yy][Ee][Ss]" ]]; then
+	createAccountFlags+=( -secureTokenAllowed)
 fi
 
 # make the account admin, if specified
-if [[ "$admin" = "yes" ]]; then
-	createAccountFlags=($createAccountFlags -admin)
+if [[ "$admin" =~ "[Yy][Ee][Ss]" ]]; then
+	createAccountFlags+=( -admin)
 fi
 
 # hide the account, if specified
-if [[ "$hidden" = "yes" ]]; then
-	createAccountFlags=($createAccountFlags -hiddenUser -home /private/var/$NewAccount)
+if [[ "$hidden" =~ "[Yy][Ee][Ss]" ]]; then
+	createAccountFlags+=( -hiddenUser -home /private/var/$NewAccount)
 fi
 
 # Apple-installed user photos have .heic or .tif file extensions. 
