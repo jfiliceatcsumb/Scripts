@@ -28,6 +28,8 @@ admin="${7:-no}"
 hidden="${8:-yes}"
 secureTokenAllowed="${9:-yes}"
 Picture="${10:-/Library/User Pictures/Nature/Zen.heic}"
+createHomeDir="${11:-no}"
+
 
 # append flags to command, based upon script parameters
 createAccountFlags=""
@@ -92,9 +94,11 @@ else
 		/usr/local/bin/jamf createAccount -stopConsoleLogs -verbose -username "$NewAccount" -realname "$RealName" -passhash "$passhash" -suppressSetupAssistant $createAccountFlags
 fi
 
+if [[ "$createHomeDir" =~ "[Yy][Ee][Ss]" ]]; then
 # Tell system to create account user profile.
-echo "Creating home directory for $NewAccount using /usr/sbin/createhomedir..."
-/usr/sbin/createhomedir -c -l -u $NewAccount
+	echo "Creating home directory for $NewAccount using /usr/sbin/createhomedir..."
+	/usr/sbin/createhomedir -c -l -u $NewAccount
+fi
 
 
 echo "Secure Token Status for $NewAccount:"
