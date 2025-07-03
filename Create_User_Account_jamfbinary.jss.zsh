@@ -16,6 +16,7 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
+# set -x
 
 # new user account details
 # passhash is base64 encoded password
@@ -31,18 +32,24 @@ Picture="${10:-/Library/User Pictures/Nature/Zen.heic}"
 # append flags to command, based upon script parameters
 createAccountFlags=""
 
+# Important Note: Zsh, by default, treats the expanded variable as a single word, even if it contains spaces, which is different from Bash's word-splitting behavior. 
+# This means sam deploy -g --guided $aws_options would likely pass --profile test-name --region eu-west-2 as a single argument
+# To handle multiple arguments correctly, especially those containing spaces, use arrays. 
+# 	LS_OPTIONS=(--color=auto --group-directories-first)
+# 	ls $LS_OPTIONS
+
 if [[ "$secureTokenAllowed" = "yes" ]]; then
-	createAccountFlags="$createAccountFlags -secureTokenAllowed"
+	createAccountFlags=($createAccountFlags -secureTokenAllowed)
 fi
 
 # make the account admin, if specified
 if [[ "$admin" = "yes" ]]; then
-	createAccountFlags="$createAccountFlags -admin"
+	createAccountFlags=($createAccountFlags -admin)
 fi
 
 # hide the account, if specified
 if [[ "$hidden" = "yes" ]]; then
-	createAccountFlags="$createAccountFlags -hiddenUser -home /private/var/$NewAccount"
+	createAccountFlags=($createAccountFlags -hiddenUser -home /private/var/$NewAccount)
 fi
 
 # Apple-installed user photos have .heic or .tif file extensions. 
@@ -51,7 +58,7 @@ if [[ ! -e "$Picture" ]]; then
 # Determine whether provided filename suffix is ".heic" 
 	FilenameSufix=$(echo "$Picture" | /usr/bin/grep --only-matching '\.heic$')
 # ### HEIC  ###
-	if [[ FilenameSufix = ".heic"]]; then
+	if [[ "$FilenameSufix" = ".heic" ]]; then
 # change pathname to .tif
 		PictureTif=$(echo "$Picture" | sed 's|.heic|.tif|' )
 # If .tif pathname exists, then we use it instead.
@@ -64,7 +71,7 @@ if [[ ! -e "$Picture" ]]; then
 	else
 #  ### TIF ###
 		FilenameSufix=$(echo "$Picture" | /usr/bin/grep --only-matching '\.tif$')
-		if [[ FilenameSufix = ".tif"]]; then
+		if [[ "$FilenameSufix" = ".tif" ]]; then
 # change pathname to .heic
 			PictureHEIC=$(echo "$Picture" | sed 's|.tif|.heic|' )
 # If .heic pathname exists, then we use it instead.
