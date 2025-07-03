@@ -26,7 +26,7 @@ passhash="${6}"
 admin="${7:-no}"
 hidden="${8:-yes}"
 secureTokenAllowed="${9:-yes}"
-Picture="${10:-}"
+Picture="${10:-/Library/User Pictures/Nature/Zen.heic}"
 
 # append flags to command, based upon script parameters
 createAccountFlags=""
@@ -45,12 +45,52 @@ if [[ "$hidden" = "yes" ]]; then
 	createAccountFlags="$createAccountFlags -hiddenUser -home /private/var/$NewAccount"
 fi
 
-/usr/local/bin/jamf createAccount -username "$NewAccount" -realname "$RealName" -passhash "$passhash" -picture "$Picture" -suppressSetupAssistant $createAccountFlags
+# Apple-installed user photos have .heic or .tif file extensions. 
+# If "$Picture" does not exist, try alternate filename extension. 
+if [[ ! -e "$Picture" ]]; then
+# Determine whether provided filename suffix is ".heic" 
+	FilenameSufix=$(echo "$Picture" | /usr/bin/grep --only-matching '\.heic$')
+# ### HEIC  ###
+	if [[ FilenameSufix = ".heic"]]; then
+# change pathname to .tif
+		PictureTif=$(echo "$Picture" | sed 's|.heic|.tif|' )
+# If .tif pathname exists, then we use it instead.
+		if [[ -e "$PictureTif" ]]; then
+			Picture="$PictureTif"
+		else
+# Or we set Picture to empty string
+			Picture=""
+		fi
+	else
+#  ### TIF ###
+		FilenameSufix=$(echo "$Picture" | /usr/bin/grep --only-matching '\.tif$')
+		if [[ FilenameSufix = ".tif"]]; then
+# change pathname to .heic
+			PictureHEIC=$(echo "$Picture" | sed 's|.tif|.heic|' )
+# If .heic pathname exists, then we use it instead.
+			if [[ -e "$PictureHEIC" ]]; then
+				Picture="$PictureHEIC"
+			else
+	# Or we set Picture to empty string
+				Picture=""
+			fi
+		fi
+	fi
+fi
+
+
+if [[ "$Picture" != "" ]]; then
+	/usr/local/bin/jamf createAccount -username "$NewAccount" -realname "$RealName" -passhash "$passhash" -picture "$Picture" -suppressSetupAssistant $createAccountFlags
+else
+		/usr/local/bin/jamf createAccount -username "$NewAccount" -realname "$RealName" -passhash "$passhash" -suppressSetupAssistant $createAccountFlags
+fi
 
 # Tell system to create account user profile.
+echo "Creating home directory for $NewAccount using /usr/sbin/createhomedir..."
+/usr/sbin/createhomedir -c -l -u $NewAccount
 
 
-echo "Secure Token Status for $username:"
+echo "Secure Token Status for $NewAccount:"
 /usr/sbin/sysadminctl -secureTokenStatus "$NewAccount"
 
 
