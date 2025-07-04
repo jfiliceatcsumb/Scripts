@@ -23,7 +23,8 @@ echo "userName=$userName"
 # base64  <<< "password"
 NewAccount="${4:-lapsadmin}"
 RealName="${5:-LAPS Admin}"
-passhash="${6}"
+# passhash="${6}"
+passcode="${6}"
 admin="${7:-no}"
 hidden="${8:-yes}"
 secureTokenAllowed="${9:-yes}"
@@ -89,9 +90,9 @@ fi
 
 
 if [[ "$Picture" != "" ]]; then
-	/usr/local/bin/jamf createAccount -stopConsoleLogs -verbose -username "$NewAccount" -realname "$RealName" -passhash "$passhash" -picture "$Picture" -suppressSetupAssistant $createAccountFlags
+	/usr/local/bin/jamf createAccount -stopConsoleLogs -verbose -username "$NewAccount" -realname "$RealName" -password "$passcode" -picture "$Picture" -suppressSetupAssistant $createAccountFlags
 else
-		/usr/local/bin/jamf createAccount -stopConsoleLogs -verbose -username "$NewAccount" -realname "$RealName" -passhash "$passhash" -suppressSetupAssistant $createAccountFlags
+		/usr/local/bin/jamf createAccount -stopConsoleLogs -verbose -username "$NewAccount" -realname "$RealName" -password "$passcode" -suppressSetupAssistant $createAccountFlags
 fi
 
 # Jamf Pro will Tell system to create account user profile.
