@@ -89,10 +89,10 @@ if [[ ! -e "$Picture" ]]; then
 fi
 
 
-if [[ "$Picture" != "" ]]; then
-	/usr/local/bin/jamf createAccount -stopConsoleLogs -verbose -username "$NewAccount" -realname "$RealName" -password "$passcode" -picture "$Picture" -suppressSetupAssistant $createAccountFlags
-else
+if [[ "$Picture" = "" ]]; then
 		/usr/local/bin/jamf createAccount -stopConsoleLogs -verbose -username "$NewAccount" -realname "$RealName" -password "$passcode" -suppressSetupAssistant $createAccountFlags
+else
+	/usr/local/bin/jamf createAccount -stopConsoleLogs -verbose -username "$NewAccount" -realname "$RealName" -password "$passcode" -picture "$Picture" -suppressSetupAssistant $createAccountFlags
 fi
 
 # Jamf Pro will Tell system to create account user profile.
