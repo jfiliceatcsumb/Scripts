@@ -56,6 +56,11 @@ if [[ $bootstrap == *"supported on server: YES"* ]]; then
     else
 		echo "Bootstrap not escrowed."
 		echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
+# 		Used to verify the password
+# 		authenticate the account without actually logging into anything
+# 		account authenticates in any way it will have a SecureToken enabled on the account
+		/usr/bin/dscl . authonly "${1}" "${2}"
+		sleep 1
         /usr/bin/profiles install -type bootstraptoken -user "${1}" -password "${2}" -verbose
 		sleep 1	
 		/usr/bin/profiles status -type bootstraptoken
