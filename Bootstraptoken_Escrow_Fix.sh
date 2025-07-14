@@ -43,13 +43,19 @@ echo "userName=$userName"
 # debug bash script using xtrace
 # set -x
 
-# Example:
-# /bin/ls -FlOah "${SCRIPTDIR}"
+# Add parameter validation
+if [[ -z "${1}" ]] || [[ -z "${2}" ]]; then
+    echo "Error: Volume owner account and password are required"
+    exit 1
+fi
+
+
 
 # Show secure token status for additional info 
-sysadminctl -secureTokenStatus  "${1}"
-bootstrap=$(profiles status -type bootstraptoken)
-echo $bootstrap
+/usr/sbin/sysadminctl -secureTokenStatus  "${1}"
+echo "Check Bootstrap Token status..."
+bootstrap=$(/usr/bin/profiles status -type bootstraptoken)
+echo ${bootstrap}
 if [[ $bootstrap == *"supported on server: YES"* ]]; then
     if [[ $bootstrap == *"escrowed to server: YES"* ]]; then
 		echo "Bootstrap escrowed. Exit script."
@@ -59,9 +65,16 @@ if [[ $bootstrap == *"supported on server: YES"* ]]; then
 # 		Used to verify the password
 # 		authenticate the account without actually logging into anything
 # 		account authenticates in any way it will have a SecureToken enabled on the account
-		/usr/bin/dscl . authonly "${1}" "${2}"
+		if ! /usr/bin/dscl . authonly "${1}" "${2}"; then
+			echo "Error: Authentication failed"
+			exit 1
+		fi
 		sleep 1
-        /usr/bin/profiles install -type bootstraptoken -user "${1}" -password "${2}" -verbose
+		# Add error handling for profiles command
+		if ! /usr/bin/profiles install -type bootstraptoken -user "${1}" -password "${2}" -verbose; then
+			echo "Error: Failed to install bootstrap token"
+			exit 1
+		fi
 		sleep 1	
 		/usr/bin/profiles status -type bootstraptoken
   fi
