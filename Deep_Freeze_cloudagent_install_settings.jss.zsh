@@ -60,34 +60,45 @@ readonly configFileWaitingRoom="/Library/Application Support/JAMF/Waiting Room/c
 
 readonly configFileDownloads="/Library/Application Support/JAMF/Downloads/com.faronics.cloudagent.plist"
 
-# if file exists, Removes all default information
-if [[ -e "${configFileWaitingRoom}" ]];then
-	/usr/bin/defaults delete "${configFileWaitingRoom}"
-fi
+readonly configFileLibraryPrefs="/Library/Preferences/com.faronics.cloudagent.plist"
 
-# if file exists, Removes all default information
-if [[ -e "${configFileDownloads}" ]];then
-	/usr/bin/defaults delete "${configFileDownloads}"
-fi
+readonly DIR_PERMS=755
+readonly FILE_PERMS=644
 
-# Write plist file to Jamf Waiting Room
-/usr/bin/defaults write "${configFileWaitingRoom}" ServerUrl "$ServerUrl"
-/usr/bin/defaults write "${configFileWaitingRoom}" FileID "$FileID"
-/usr/bin/defaults write "${configFileWaitingRoom}" OrganizationID "$OrganizationID"
-/bin/chmod 644 "${configFileWaitingRoom}"
-# Write plist file to Jamf Downloads
-/usr/bin/defaults write "${configFileDownloads}" ServerUrl "$ServerUrl"
-/usr/bin/defaults write "${configFileDownloads}" FileID "$FileID"
-/usr/bin/defaults write "${configFileDownloads}" OrganizationID "$OrganizationID"
-/bin/chmod 644 "${configFileDownloads}"
-# Check the property list files for syntax errors
-ls -la "${configFileWaitingRoom}"
-/usr/bin/plutil "${configFileWaitingRoom}"
-ls -la "${configFileDownloads}"
-/usr/bin/plutil "${configFileDownloads}"
-# debugging: print plist file
-# /usr/bin/plutil -p "${configFileWaitingRoom}"
-# /usr/bin/plutil -p "${configFileDownloads}"
+write_cloudagent_plist() {
+	local configFile=${1}
+	local ServerUrl=${2}
+	local FileID=${3}
+	local OrganizationID=${4}
+	
+	# if file exists, Removes all default information
+	if [[ -e "${configFile}" ]];then
+		/usr/bin/defaults delete "${configFile}"
+	fi
+	# Write plist file
+	/usr/bin/defaults write "${configFile}" ServerUrl "${ServerUrl}"
+	/usr/bin/defaults write "${configFile}" FileID "${FileID}"
+	/usr/bin/defaults write "${configFile}" OrganizationID "${OrganizationID}"
+	/bin/chmod $FILE_PERMS "${configFile}"
+	# Check the property list files for syntax errors
+	ls -la "${configFile}"
+	/usr/bin/plutil "${configFile}"
+	# debugging: print plist file
+	# /usr/bin/plutil -p "${configFile}"
+	
+	return 0
+
+}
+
+# Jamf Waiting Room
+# write_cloudagent_plist "${configFileWaitingRoom}" "${ServerUrl}" "${FileID}" "${OrganizationID}"
+
+# Jamf Downloads
+# write_cloudagent_plist "${configFileDownloads}" "${ServerUrl}" "${FileID}" "${OrganizationID}"
+
+# /Library/Preferences
+write_cloudagent_plist "${configFileLibraryPrefs}" "${ServerUrl}" "${FileID}" "${OrganizationID}"
+
 
 exit 0
 
