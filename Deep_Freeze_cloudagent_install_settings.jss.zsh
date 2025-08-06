@@ -13,7 +13,18 @@
 # Parameter 4: ServerUrl
 # Parameter 5: FileID=
 # Parameter 6: OrganizationID
-
+# Parameter 7: plist file path
+# 			examples:
+# Jamf Waiting Room
+# 				"/Library/Application Support/JAMF/Waiting Room/com.faronics.cloudagent.plist"
+# 
+# Jamf Downloads
+# 				"/Library/Application Support/JAMF/Downloads/com.faronics.cloudagent.plist"
+# 
+# /Library/Preferences
+# 				"/Library/Preferences/com.faronics.cloudagent.plist"
+# 
+# 
 # 
 # Use as script in Jamf JSS.
 
@@ -55,21 +66,16 @@ echo "userName=$userName"
 readonly ServerUrl="${1}"
 readonly FileID="${2}"
 readonly OrganizationID="${3}"
-
-readonly configFileWaitingRoom="/Library/Application Support/JAMF/Waiting Room/com.faronics.cloudagent.plist"
-
-readonly configFileDownloads="/Library/Application Support/JAMF/Downloads/com.faronics.cloudagent.plist"
-
-readonly configFileLibraryPrefs="/Library/Preferences/com.faronics.cloudagent.plist"
+readonly configFile="${4}"
 
 readonly DIR_PERMS=755
 readonly FILE_PERMS=644
 
 write_cloudagent_plist() {
-	local configFile=${1}
-	local ServerUrl=${2}
-	local FileID=${3}
-	local OrganizationID=${4}
+	local ServerUrl=${1}
+	local FileID=${2}
+	local OrganizationID=${3}
+	local configFile=${4}
 	
 	# if file exists, Removes all default information
 	if [[ -e "${configFile}" ]];then
@@ -90,14 +96,7 @@ write_cloudagent_plist() {
 
 }
 
-# Jamf Waiting Room
-# write_cloudagent_plist "${configFileWaitingRoom}" "${ServerUrl}" "${FileID}" "${OrganizationID}"
-
-# Jamf Downloads
-# write_cloudagent_plist "${configFileDownloads}" "${ServerUrl}" "${FileID}" "${OrganizationID}"
-
-# /Library/Preferences
-write_cloudagent_plist "${configFileLibraryPrefs}" "${ServerUrl}" "${FileID}" "${OrganizationID}"
+write_cloudagent_plist "${ServerUrl}" "${FileID}" "${OrganizationID}" "${configFile}"
 
 
 exit 0
