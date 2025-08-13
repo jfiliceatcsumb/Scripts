@@ -36,24 +36,6 @@ echo \"${VERSION}\"
 
 #
 #
-# Set the following to match your multi-seat token displayed at https://www.ableton.com/account.
-# Make sure to select the correct multi-seat license in the license chooser.
-# If you haven't yet generated a token, you can create a new one by clicking "Generate new token".
-# The token will not expire until you revoke it by generating a new one. Revoke it if you suspect
-# the token has been compromised and are observing unexpected Live authorizations.
-#
-# Note: The currently valid token is only used by Ableton Live during the authorization step below.
-# Revoking it prevents new installations of Ableton Live from being authorized with the revoked
-# token, but will not prevent existing, already authorized installations from running.
-#
-#
-#
-TOKEN="your authorization token here"
-#
-if [[ -n "$6" ]]; then
-	TOKEN="$6"
-fi
-
 #
 #
 # During authorization, Live writes to a log file called Log.txt. This file can contain
@@ -80,12 +62,6 @@ echo "computerName=$computerName"
 echo "userName=$userName"
 #
 
-# --- No further configuration below this line. ----------------------------------------------------
-
-# Create shared Unlock folder
-/bin/mkdir -p "/Library/Application Support/Ableton/Live ${VERSION}/Unlock/"
-/usr/bin/touch "/Library/Application Support/Ableton/Live ${VERSION}/Unlock/Unlock.json"
-/bin/rm -f "/Library/Application Support/Ableton/Live ${VERSION}/Unlock/Unlock.cfg" 2>/dev/null
 
 
 # This will also force Live to use this Options.txt file, in case the current user has Options.txt files
@@ -148,34 +124,3 @@ if [ -n "${LOGFILESDIR}" ]; then
     /bin/mkdir -p "${LOGFILESDIR}" 2>/dev/null
 fi
 
-# Run Ableton and capture its exit code
-"/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
-LIVE_PID=$!
-
-# Loop while the process is found
-echo "Waiting five minutes for completion."
-WHILE_COUNT1=0
-# Loop while the process is found
-while /usr/bin/pgrep "$PROCESS_NAME" > /dev/null; do
-	if [[ $WHILE_COUNT1 < 10]]
-		WHILE_COUNT1+=1
-		/bin/sleep 30 # Sleep for 30 seconds before checking again
-		
-	else
-# 		exit the loop if more than run more than 10 times (5 minutes)
-		break
-	fi
-done
-/bin/kill -KILL "$LIVE_PID"
-# Capture the exit code
-LIVE_EXIT_CODE=$?
-
-
-# Check the exit code
-if [ ${LIVE_EXIT_CODE} -ne 0 ]; then
-    echo "Ableton ${EDITION} authorization failed with exit code ${LIVE_EXIT_CODE}"
-    exit ${LIVE_EXIT_CODE}
-else
-    echo "Ableton ${EDITION} was successfully authorized."
-    exit 0
-fi
