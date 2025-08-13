@@ -149,10 +149,27 @@ if [ -n "${LOGFILESDIR}" ]; then
 fi
 
 # Run Ableton and capture its exit code
-"/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}"
+"/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+LIVE_PID=$!
 
+# Loop while the process is found
+echo "Waiting five minutes for completion."
+WHILE_COUNT1=0
+# Loop while the process is found
+while /usr/bin/pgrep "$PROCESS_NAME" > /dev/null; do
+	if [[ $WHILE_COUNT1 < 10]]
+		WHILE_COUNT1+=1
+		/bin/sleep 30 # Sleep for 30 seconds before checking again
+		
+	else
+# 		exit the loop if more than run more than 10 times (5 minutes)
+		break
+	fi
+done
+/bin/kill -KILL "$LIVE_PID"
 # Capture the exit code
 LIVE_EXIT_CODE=$?
+
 
 # Check the exit code
 if [ ${LIVE_EXIT_CODE} -ne 0 ]; then
