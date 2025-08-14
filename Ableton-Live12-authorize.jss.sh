@@ -107,17 +107,9 @@ fi
 echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "${LIVE_OPTIONS}"
 echo "-DatabaseDirectory=/Users/Shared/Ableton/Database/%%USERNAME%%/"  >> "${LIVE_OPTIONS}"
 
-mkdir -p "/Users/Shared/Ableton/Database"
-mkdir -p "/Users/Shared/Ableton/Factory Packs"
 # set permissions
 
 chmod 644 "${LIVE_OPTIONS}"
-
-chmod 4777 "/Users/Shared/Ableton/Database"
-chmod 4777 "/Users/Shared/Ableton/Factory Packs"
-
-chown 0:0 -R "/Users/Shared/Ableton/Database"
-chown 0:0 -R "/Users/Shared/Ableton/Factory Packs"
 
 # 3.2 Ableton Live Packs
 # admin grou write access so the move operation works.
@@ -154,6 +146,7 @@ LIVE_PID=$!
 
 # Loop while the process is found
 echo "Waiting five minutes for completion."
+PROCESS_NAME="Live"
 WHILE_COUNT1=0
 # Loop while the process is found
 while /usr/bin/pgrep "$PROCESS_NAME" > /dev/null; do
@@ -170,6 +163,8 @@ done
 # Capture the exit code
 LIVE_EXIT_CODE=$?
 
+# Rewrite Options.txt for subsequent runs
+echo "-_DisableAutoUpdates" > "${LIVE_OPTIONS}" 2>/dev/null
 
 # Check the exit code
 if [ ${LIVE_EXIT_CODE} -ne 0 ]; then
