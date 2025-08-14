@@ -93,6 +93,12 @@ chmod 4777 "/Users/Shared/Ableton/Factory Packs"
 chown 0:0 -R "/Users/Shared/Ableton/Database"
 chown 0:0 -R "/Users/Shared/Ableton/Factory Packs"
 
+# Create the log files directory
+if [ -n "${LOGFILESDIR}" ]; then
+    /bin/mkdir -p "${LOGFILESDIR}" 2>/dev/null
+fi
+
+
 # 3.2 Ableton Live Packs
 # admin grou write access so the move operation works.
 # mkdir -p -m 775 "/Library/Application Support/Ableton/Factory Packs/"
@@ -116,9 +122,4 @@ chown 0:0 -R "/Users/Shared/Ableton/Factory Packs"
 
 # # Copy Live application to /Applications for all users (macOS equivalent of Start Menu)
 # /bin/cp -f "/Applications/${EDITION}.app" "/Applications/" 2>/dev/null
-
-# Create the log files directory
-if [ -n "${LOGFILESDIR}" ]; then
-    /bin/mkdir -p "${LOGFILESDIR}" 2>/dev/null
-fi
 
