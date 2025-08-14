@@ -63,15 +63,13 @@ echo "userName=$userName"
 #
 
 
-
+# https://help.ableton.com/hc/en-us/articles/6003224107292-Options-txt-file
 # This will also force Live to use this Options.txt file, in case the current user has Options.txt files
 # from previous versions in their home directory.
 /bin/mkdir -p "/Library/Preferences/Ableton/Live ${VERSION}/"
 LIVE_OPTIONS="/Library/Preferences/Ableton/Live ${VERSION}/Options.txt"
 /usr/bin/touch "${LIVE_OPTIONS}"
 echo "-_DisableAutoUpdates" > "${LIVE_OPTIONS}"
-echo "-NoRestoreDocumentDialog" >> "${LIVE_OPTIONS}"
-echo "-DontLoadMaxForLiveAtStartup" >> "${LIVE_OPTIONS}"
 echo "-DontAskForAdminRights" >> "${LIVE_OPTIONS}"
 echo "-_DisableUsageData" >> "${LIVE_OPTIONS}"
 
