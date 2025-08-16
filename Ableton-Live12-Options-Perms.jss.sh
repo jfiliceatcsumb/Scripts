@@ -90,8 +90,8 @@ chmod 644 "${LIVE_OPTIONS}"
 chmod 4777 "/Users/Shared/Ableton/Database"
 chmod 4777 "/Users/Shared/Ableton/Factory Packs"
 
-chown 0:0 -R "/Users/Shared/Ableton/Database"
-chown 0:0 -R "/Users/Shared/Ableton/Factory Packs"
+chown -fR 0:0 "/Users/Shared/Ableton/Database"
+chown -fR 0:0 "/Users/Shared/Ableton/Factory Packs"
 
 # Create the log files directory
 if [ -n "${LOGFILESDIR}" ]; then
