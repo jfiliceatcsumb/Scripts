@@ -150,16 +150,18 @@ PROCESS_NAME="Live"
 WHILE_COUNT1=0
 # Loop while the process is found
 while /usr/bin/pgrep "$PROCESS_NAME" > /dev/null; do
-	if [[ $WHILE_COUNT1 -lt 10 ]]
+	if [[ $WHILE_COUNT1 -lt 10 ]]; then
 		((WHILE_COUNT1+=1))
-		/bin/sleep 30 # Sleep for 30 seconds before checking again
-		
+		 # Sleep for 30 seconds before checking again
+		 /bin/sleep 30
 	else
 # 		exit the loop if more than run more than 10 times (5 minutes)
 		break
 	fi
 done
 /bin/kill -KILL "$LIVE_PID"
+/usr/bin/killall -q -TERM Live
+
 # Capture the exit code
 LIVE_EXIT_CODE=$?
 
