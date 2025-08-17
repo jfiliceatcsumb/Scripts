@@ -58,6 +58,17 @@ log_info() {
     log_message "INFO" "$*"
 }
 
+# trap for cleanup
+cleanup() {
+    log_info "Performing cleanup..."
+    # Add cleanup actions if needed
+    if [[ -d "/Users/root" ]]; then
+        log_info "Cleaning up /Users/root directory..."
+        /bin/rm -fRx "/Users/root"
+    fi
+}
+trap 'cleanup' EXIT
+
 # Function to check if script is running as root
 check_root() {
     if [[ $EUID -ne 0 ]]; then
@@ -102,21 +113,10 @@ create_directory() {
     fi
 }
 
-# Function to write config files
-write_config_file() {
-    local file=$1
-    local content=$2
-    
-    if ! echo "$content" > "$file"; then
-        log_error "Failed to write config file: $file"
-        return 1
-    fi
-}
-
 
 # Main execution starts here
 main() {
-    log_info "Starting DaVinci Resolve Studio default user settings configuration script"
+    log_info "Starting Pro Tools Post-install Demo Files cleanup script"
     
     # Check if running as root
     check_root
@@ -156,11 +156,17 @@ main() {
     
 #   Copy files
 		log_info "Copying /Users/${USERID}/Documents/Pro Tools/Demo Sessions/ to ${USER_TEMPL}"
-		/usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sessions" "${USER_TEMPL}/Documents/Pro Tools/Demo Sessions"
-
+		if ! /usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sessions" "${USER_TEMPL}/Documents/Pro Tools/Demo Sessions"; then
+				log_error "Failed to copy Demo Sessions"
+				return 1
+		fi    
+		
 		log_info "Copying /Users/${USERID}/Documents/Pro Tools/Demo Sketches/ to ${USER_TEMPL}"
-		/usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sketches" "${USER_TEMPL}/Documents/Pro Tools/Demo Sketches"
-    
+		if ! /usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sketches" "${USER_TEMPL}/Documents/Pro Tools/Demo Sketches"; then
+				log_error "Failed to copy Demo Sketches"
+				return 1
+		fi    
+
     # Set root ownership on target directories and files
     log_info "Setting root ownership on ${USER_TEMPL}..."
     if ! /usr/sbin/chown -fR 0:0 "${USER_TEMPL}"; then
@@ -184,7 +190,7 @@ if ! main; then
     exit 1
 fi
 
-log_info "Pro Tools post install and cleanup completed successfully"
+log_info "Pro Tools Post-install Demo Files cleanup script completed successfully"
 
 exit 0
 
@@ -209,5 +215,3 @@ exit 0
 
 
 # ls -FlOahR /Users/$USERID/
-
-
