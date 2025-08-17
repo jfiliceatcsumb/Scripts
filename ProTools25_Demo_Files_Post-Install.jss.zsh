@@ -138,34 +138,42 @@ main() {
     log_info "User Template path: ${USER_TEMPL}"
     
     
-    # Create  directories
-    log_info "Creating directories..."
-    log_info "Creating directory: ${USER_TEMPL}/Documents/Pro Tools/Demo Sessions"
-    create_directory "${USER_TEMPL}/Documents/Pro Tools/Demo Sessions" || exit 1
-    
-    log_info "Creating directory: ${USER_TEMPL}/Documents/Pro Tools/Demo Sketches"
-    create_directory "${USER_TEMPL}/Documents/Pro Tools/Demo Sketches" || exit 1
+#     Not needed when we use ditto
+#     # Create  directories
+#     log_info "Creating directories..."
+#     log_info "Creating directory: ${USER_TEMPL}/Documents/Pro Tools/Demo Sessions"
+#     create_directory "${USER_TEMPL}/Documents/Pro Tools/Demo Sessions" || exit 1
+#     
+#     log_info "Creating directory: ${USER_TEMPL}/Documents/Pro Tools/Demo Sketches"
+#     create_directory "${USER_TEMPL}/Documents/Pro Tools/Demo Sketches" || exit 1
     
 #     log_info "Creating directory: ${USER_TEMPL}/Library/Preferences/Avid"
 #     create_directory "${USER_TEMPL}/Library/Preferences/Avid" || exit 1
 #     
     
-# ## Pro Tools Installation
-# /Users/$USERID/Documents/Pro Tools/Demo Sessions/
-# /Users/$USERID/Documents/Pro Tools/Demo Sketches/
     
-#   Copy files
-		log_info "Copying /Users/${USERID}/Documents/Pro Tools/Demo Sessions/ to ${USER_TEMPL}"
-		if ! /usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sessions" "${USER_TEMPL}/Documents/Pro Tools/Demo Sessions"; then
-				log_error "Failed to copy Demo Sessions"
-				return 1
-		fi    
+# ## Copy  Pro Tools Installation files
+# ## /Users/$USERID/Documents/Pro Tools/Demo Sessions/
+		if [[ -e "/Users/${USERID}/Documents/Pro Tools/Demo Sessions" ]]; then
+			log_info "Copying /Users/${USERID}/Documents/Pro Tools/Demo Sessions/ to ${USER_TEMPL}"
+			if ! /usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sessions" "${USER_TEMPL}/Documents/Pro Tools/Demo Sessions"; then
+					log_error "Failed to copy Demo Sessions"
+					return 1
+			fi    
+		else
+			log_info "Skipping source directory not found: /Users/${USERID}/Documents/Pro Tools/Demo Sessions/"
+		fi
 		
-		log_info "Copying /Users/${USERID}/Documents/Pro Tools/Demo Sketches/ to ${USER_TEMPL}"
-		if ! /usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sketches" "${USER_TEMPL}/Documents/Pro Tools/Demo Sketches"; then
-				log_error "Failed to copy Demo Sketches"
-				return 1
-		fi    
+# ## /Users/$USERID/Documents/Pro Tools/Demo Sketches/
+		if [[ -e "/Users/${USERID}/Documents/Pro Tools/Demo Sketches" ]]; then
+			log_info "Copying /Users/${USERID}/Documents/Pro Tools/Demo Sketches/ to ${USER_TEMPL}"
+			if ! /usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sketches" "${USER_TEMPL}/Documents/Pro Tools/Demo Sketches"; then
+					log_error "Failed to copy Demo Sketches"
+					return 1
+			fi    
+		else
+			log_info "Skipping source directory not found: /Users/${USERID}/Documents/Pro Tools/Demo Sketches/"
+		fi
 
     # Set root ownership on target directories and files
     log_info "Setting root ownership on ${USER_TEMPL}..."
