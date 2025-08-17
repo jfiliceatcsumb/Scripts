@@ -7,9 +7,9 @@
 # https://csumb.edu/it
 
 #
-# Purpose: moves and cleans up files installed in a current user directory 
-# Version: 2.0
-# Tested with: DaVinci Resolve Studio v.20
+# Purpose: moves and cleans up files installed in a current user directory by Pro Tools installer 
+# Version: 1.0
+# Tested with: Avid Pro Tools v.25.6 installer
 #
 # Requirements:
 # - Must be run as root
@@ -113,21 +113,6 @@ write_config_file() {
     fi
 }
 
-# Function to set permissions
-set_permissions() {
-    local path=$1
-    local perms=$2
-    
-    if ! /bin/chmod -f "$perms" "$path"; then
-        log_error "Failed to set permissions on: $path"
-        return 1
-    fi
-    
-    if ! /usr/sbin/chown -f 0:0 "$path"; then
-        log_error "Failed to set ownership on: $path"
-        return 1
-    fi
-}
 
 # Main execution starts here
 main() {
@@ -186,7 +171,7 @@ main() {
     # Delete /Users/root/ directory and files
     # Clean up after the Avid installers. We do not want a /Users/root left behind
     # If USERID was some other user, then we will just leave it behind.
-    if -d "/Users/root"; then
+    if [[ -d "/Users/root" ]]; then
     	log_info "Delete /Users/root/ directory and files..."
 	    /bin/rm -fRx "/Users/root"
     fi
