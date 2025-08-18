@@ -33,7 +33,7 @@ if [ -e /usr/local/bin/deepfreeze ]
 then
 	set -x
 
-	deepfreezeGlobalState=$(/usr/local/bin/deepfreeze status 2> /dev/null | grep "Global State") 
+	deepfreezeGlobalState=$(/usr/local/bin/deepfreeze status 2>/dev/null | grep "Global State") 
 
 	echo $deepfreezeGlobalState
 
