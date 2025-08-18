@@ -29,8 +29,6 @@
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
 
-# Enable strict error handling
-set -e
 
 # Script constants
 readonly SCRIPT_NAME=$(/usr/bin/basename "$0")
