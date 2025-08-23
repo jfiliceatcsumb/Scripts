@@ -16,7 +16,7 @@ VERSION="12.1"
 # identify the unset variables while debugging bash script
 set -u
 # debug bash script using xtrace
-set -x
+# set -x
 
 #
 if [[ -n "$4" ]]; then
