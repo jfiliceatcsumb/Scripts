@@ -5,8 +5,18 @@
 # 
 # Set the following to match the Live executable you are using:
 #
-EDITION="Ableton Live 12 Suite"
-VERSION="12.1"
+#04
+EDITION="Ableton Live 12 Suite" 
+#05
+VERSION="12.1"							
+#06
+TOKEN="your authorization token here"	
+#07
+LOGFILESDIR="/var/log/AbletonLogFiles"	
+#08
+RUNAS_UID=""							
+#09
+RUNAS_USER=""							
 
 # ##### Debugging flags #####
 # debug bash script by enabling verbose “-v” option
@@ -16,7 +26,11 @@ VERSION="12.1"
 # identify the unset variables while debugging bash script
 set -u
 # debug bash script using xtrace
-set -x
+# set -x
+# Enable tracing without trace output
+# { set -x; } 2>/dev/null
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
 
 #
 if [[ -n "$4" ]]; then
@@ -30,9 +44,36 @@ elif [[ -n "$ShortVersionString" ]]; then
 	VERSION="$ShortVersionString"
 fi
 
-echo \"${EDITION}\"
+#
+if [[ -n "$6" ]]; then
+	TOKEN="$6"
+fi
 
-echo \"${VERSION}\"
+#
+if [[ -n "$7" ]]; then
+	LOGFILESDIR="$7"
+fi
+
+if [[ -n "$8" ]]; then
+	RUNAS_UID="\#${8}"
+	SUDO_USER="${RUNAS_UID}"
+elif [[ -n "${9}" ]]; then
+	RUNAS_USER="${9}"
+	SUDO_USER="${RUNAS_USER}"
+else
+	SUDO_USER="\#501"
+fi
+
+echo \'${EDITION}\'
+
+echo \'${VERSION}\'
+
+echo \'${RUNAS_UID}\'
+
+echo \'${RUNAS_USER}\'
+
+echo \'${SUDO_USER}\'
+
 
 #
 #
@@ -48,12 +89,6 @@ echo \"${VERSION}\"
 #
 #
 #
-TOKEN="your authorization token here"
-#
-if [[ -n "$6" ]]; then
-	TOKEN="$6"
-fi
-
 #
 #
 # During authorization, Live writes to a log file called Log.txt. This file can contain
@@ -61,12 +96,6 @@ fi
 # an administrator, it may be preferrable to write this logfile somewhere else.
 # Leave empty to use the default location.
 #
-LOGFILESDIR="/var/log/AbletonLogFiles"
-# 
-#
-if [[ -n "$7" ]]; then
-	LOGFILESDIR="$7"
-fi
 
 
 pathToScript=$0
@@ -141,15 +170,19 @@ if [ -n "${LOGFILESDIR}" ]; then
 fi
 
 # Run Ableton and capture its exit code
-"/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+# "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+#
+# /usr/bin/sudo --user=${SUDO_USER} --login "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+#
+/usr/bin/sudo --user=\#501 --login "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
 LIVE_PID=$!
 
 # Loop while the process is found
-echo "Waiting five minutes for completion."
+echo "Waiting up to five minutes for completion, checking every 30 seconds..."
 PROCESS_NAME="Live"
 WHILE_COUNT1=0
 # Loop while the process is found
-while /usr/bin/pgrep "$PROCESS_NAME" > /dev/null; do
+while /usr/bin/pgrep -x "${PROCESS_NAME}" > /dev/null; do
 	if [[ $WHILE_COUNT1 -lt 10 ]]; then
 		((WHILE_COUNT1+=1))
 		 # Sleep for 30 seconds before checking again
@@ -159,8 +192,8 @@ while /usr/bin/pgrep "$PROCESS_NAME" > /dev/null; do
 		break
 	fi
 done
-/bin/kill -KILL "$LIVE_PID"
-/usr/bin/killall -q -TERM Live
+/bin/kill -KILL "$LIVE_PID" 2>/dev/null
+# /usr/bin/killall -qv -TERM "${PROCESS_NAME}"
 
 # Capture the exit code
 LIVE_EXIT_CODE=$?
