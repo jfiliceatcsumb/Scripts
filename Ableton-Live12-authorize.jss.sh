@@ -18,6 +18,8 @@ RUNAS_UID=""
 #09
 RUNAS_USER=""							
 
+# --- No further configuration below this line. ----------------------------------------------------
+
 # ##### Debugging flags #####
 # debug bash script by enabling verbose “-v” option
 # set -v
@@ -55,13 +57,13 @@ if [[ -n "$7" ]]; then
 fi
 
 if [[ -n "$8" ]]; then
-	RUNAS_UID="\#${8}"
+	RUNAS_UID="#${8}"
 	SUDO_USER="${RUNAS_UID}"
 elif [[ -n "${9}" ]]; then
 	RUNAS_USER="${9}"
 	SUDO_USER="${RUNAS_USER}"
 else
-	SUDO_USER="\#501"
+	SUDO_USER="#501"
 fi
 
 echo \'${EDITION}\'
@@ -109,7 +111,6 @@ echo "computerName=$computerName"
 echo "userName=$userName"
 #
 
-# --- No further configuration below this line. ----------------------------------------------------
 
 # Create shared Unlock folder
 /bin/mkdir -p "/Library/Application Support/Ableton/Live ${VERSION}/Unlock/"
@@ -170,11 +171,11 @@ if [ -n "${LOGFILESDIR}" ]; then
 fi
 
 # Run Ableton and capture its exit code
-# "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
-#
-# /usr/bin/sudo --user=${SUDO_USER} --login "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
-#
-/usr/bin/sudo --user=\#501 --login "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+
+/usr/bin/sudo --user=${SUDO_USER} --login "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+
+#/usr/bin/sudo --user=\#501 --login "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+
 LIVE_PID=$!
 
 # Loop while the process is found
