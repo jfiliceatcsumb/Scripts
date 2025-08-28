@@ -23,7 +23,9 @@ if [[ -n "$4" ]]; then
 	EDITION="$4"
 fi
 
+# Set version number programmatically from app.
 ShortVersionString=$(defaults read "/Applications/${EDITION}.app/Contents/Info.plist" CFBundleShortVersionString | awk '{print $1}' 2>/dev/null)
+
 if [[ -n "$5" ]]; then
 	VERSION="$5"
 elif [[ -n "$ShortVersionString" ]]; then
@@ -100,7 +102,7 @@ fi
 
 
 # 3.2 Ableton Live Packs
-# admin grou write access so the move operation works.
+# admin group write access so the move operation works.
 # mkdir -p -m 775 "/Library/Application Support/Ableton/Factory Packs/"
 
 
@@ -120,6 +122,4 @@ fi
 # to
 # 				<ProjectPath Value="/Users/%%USERNAME%%/Music/Ableton" />
 
-# # Copy Live application to /Applications for all users (macOS equivalent of Start Menu)
-# /bin/cp -f "/Applications/${EDITION}.app" "/Applications/" 2>/dev/null
 
