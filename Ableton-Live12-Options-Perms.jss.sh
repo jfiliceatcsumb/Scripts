@@ -48,8 +48,8 @@ echo \"${VERSION}\"
 LOGFILESDIR="/var/log/AbletonLogFiles"
 # 
 #
-if [[ -n "$7" ]]; then
-	LOGFILESDIR="$7"
+if [[ -n "$6" ]]; then
+	LOGFILESDIR="$6"
 fi
 
 
