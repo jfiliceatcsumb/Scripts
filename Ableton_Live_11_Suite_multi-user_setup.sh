@@ -1,20 +1,69 @@
-#!/bin/sh
+#!/bin/bash
 
 # Installing Live in a Multi-User Environment (without Sassafras)
 # https://help.ableton.com/hc/en-us/articles/209073209-Installing-Live-in-a-Multi-User-Environment-without-Sassafras-
 
-set -x 
+# Set the following variables passed to script
+# 
+# Set the following to match the Live executable you are using:
+#
+EDITION="Ableton Live 11 Suite"
+VERSION="11.1.6""
 
-Version="11.1.6"
+# ##### Debugging flags #####
+# debug bash script by enabling verbose “-v” option
+# set -v
+# debug bash script using noexec (Test for syntaxt errors)
+# set -n
+# identify the unset variables while debugging bash script
+set -u
+# debug bash script using xtrace
+# set -x
 
-AbletonLiveApp="/Applications/Ableton Live 11 Suite.app"
+#
+if [[ -n "$4" ]]; then
+	EDITION="$4"
+fi
 
 # Set version number programmatically from app.
-VersionRead=$(defaults read "$AbletonLiveApp/Contents/Info.plist" CFBundleShortVersionString | awk '{ print $1 }')
+ShortVersionString=$(defaults read "/Applications/${EDITION}.app/Contents/Info.plist" CFBundleShortVersionString | awk '{print $1}' 2>/dev/null)
 
-if [[ $VersionRead != "" ]]; then
-	Version="$VersionRead"
+if [[ -n "$5" ]]; then
+	VERSION="$5"
+elif [[ -n "$ShortVersionString" ]]; then
+	VERSION="$ShortVersionString"
 fi
+
+echo \"${EDITION}\"
+
+echo \"${VERSION}\"
+
+#
+#
+#
+#
+# During authorization, Live writes to a log file called Log.txt. This file can contain
+# useful information to diagnose issues during authorization. If this script runs as
+# an administrator, it may be preferrable to write this logfile somewhere else.
+# Leave empty to use the default location.
+#
+LOGFILESDIR="/var/log/AbletonLogFiles"
+# 
+#
+if [[ -n "$7" ]]; then
+	LOGFILESDIR="$7"
+fi
+
+
+pathToScript=$0
+mountPoint=$1
+computerName=$2
+userName=$3
+
+echo "pathToScript=$pathToScript"
+echo "mountPoint=$mountPoint"
+echo "computerName=$computerName"
+echo "userName=$userName"
 
 # 2.2.2 Create the Shared Unlock Folder
 mkdir -p -m 755 "/Library/Application Support/Ableton/Live $Version/Unlock/"
@@ -28,17 +77,45 @@ mkdir -p -m 755 "/Library/Application Support/Ableton/Live $Version/Unlock/"
 # 2.2.4 Shared Preferences and Options.txt
 # 6.2 Example Options.txt
 
-mkdir -p -m 755 "/Library/Preferences/Ableton/Live $Version/"
-touch "/Library/Preferences/Ableton/Live $Version/Options.txt"
-echo "-_DisableAutoUpdates" >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
-echo "-DontAskForAdminRights"  >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
-echo "-_DisableUsageData"  >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
+# https://help.ableton.com/hc/en-us/articles/6003224107292-Options-txt-file
+# This will also force Live to use this Options.txt file, in case the current user has Options.txt files
+# from previous versions in their home directory.
+/bin/mkdir -p "/Library/Preferences/Ableton/Live ${VERSION}/"
+LIVE_OPTIONS="/Library/Preferences/Ableton/Live ${VERSION}/Options.txt"
+/usr/bin/touch "${LIVE_OPTIONS}"
+echo "-_DisableAutoUpdates" > "${LIVE_OPTIONS}"
+echo "-DontAskForAdminRights" >> "${LIVE_OPTIONS}"
+echo "-_DisableUsageData" >> "${LIVE_OPTIONS}"
+
+if [ -n "${LOGFILESDIR}" ]; then
+    echo "-LogFilesDir=${LOGFILESDIR}" >> "${LIVE_OPTIONS}"
+fi
+
+# 4. Cache/ Database
+echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "${LIVE_OPTIONS}"
+echo "-DatabaseDirectory=/Users/Shared/Ableton/Database/%%USERNAME%%/"  >> "${LIVE_OPTIONS}"
+
+mkdir -p "/Users/Shared/Ableton/Database"
+mkdir -p "/Users/Shared/Ableton/Factory Packs"
 # set permissions
-chmod 644 "/Library/Preferences/Ableton/Live $Version/Options.txt"
+
+chmod 644 "${LIVE_OPTIONS}"
+
+chmod 4777 "/Users/Shared/Ableton/Database"
+chmod 4777 "/Users/Shared/Ableton/Factory Packs"
+
+chown -fR 0:0 "/Users/Shared/Ableton/Database"
+chown -fR 0:0 "/Users/Shared/Ableton/Factory Packs"
+
+# Create the log files directory
+if [ -n "${LOGFILESDIR}" ]; then
+    /bin/mkdir -p "${LOGFILESDIR}" 2>/dev/null
+fi
+
 
 # 3.2 Ableton Live Packs
-# admin grou write access so the move operation works.
-mkdir -p -m 775 "/Library/Application Support/Ableton/Factory Packs/"
+# admin group write access so the move operation works.
+# mkdir -p -m 775 "/Library/Application Support/Ableton/Factory Packs/"
 
 
 # /Users/admin/Music/Ableton/
@@ -58,8 +135,3 @@ mkdir -p -m 775 "/Library/Application Support/Ableton/Factory Packs/"
 # 				<ProjectPath Value="/Users/%%USERNAME%%/Music/Ableton" />
 
 
-# 4. Cache/ Database
-echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
-echo "-DatabaseDirectory=/Users/Shared/Database/%%USERNAME%%/"  >> "/Library/Preferences/Ableton/Live $Version/Options.txt"
-# set permissions
-chmod 644 "/Library/Preferences/Ableton/Live $Version/Options.txt"
