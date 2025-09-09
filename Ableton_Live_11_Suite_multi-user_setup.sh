@@ -8,7 +8,7 @@
 # Set the following to match the Live executable you are using:
 #
 EDITION="Ableton Live 11 Suite"
-VERSION="11.1.6""
+VERSION="11.1.6"
 
 # ##### Debugging flags #####
 # debug bash script by enabling verbose “-v” option
