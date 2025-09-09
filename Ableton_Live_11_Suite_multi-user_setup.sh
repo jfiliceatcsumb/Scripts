@@ -66,12 +66,12 @@ echo "computerName=$computerName"
 echo "userName=$userName"
 
 # 2.2.2 Create the Shared Unlock Folder
-mkdir -p -m 755 "/Library/Application Support/Ableton/Live $Version/Unlock/"
+/bin/mkdir -p -m 755 "/Library/Application Support/Ableton/Live ${VERSION}/Unlock/"
 
 # 2.2.3 Paste the Master Unlock.cfg file into the shared Unlock folder that you created in the step above.
 # 
 # Now, delete the Unlock folder in the default location. 
-# /Users/$USER/Library/Application Support/Ableton/Live $Version/Unlock/
+# /Users/$USER/Library/Application Support/Ableton/Live ${VERSION}/Unlock/
 # /Users/admin/Library/Application Support/Ableton/Live 11.1.6/Unlock/
 
 # 2.2.4 Shared Preferences and Options.txt
@@ -99,13 +99,13 @@ mkdir -p "/Users/Shared/Ableton/Database"
 mkdir -p "/Users/Shared/Ableton/Factory Packs"
 # set permissions
 
-chmod 644 "${LIVE_OPTIONS}"
+/bin/chmod 644 "${LIVE_OPTIONS}"
 
-chmod 4777 "/Users/Shared/Ableton/Database"
-chmod 4777 "/Users/Shared/Ableton/Factory Packs"
+/bin/chmod 1777 "/Users/Shared/Ableton/Database"
+/bin/chmod 1777 "/Users/Shared/Ableton/Factory Packs"
 
-chown -fR 0:0 "/Users/Shared/Ableton/Database"
-chown -fR 0:0 "/Users/Shared/Ableton/Factory Packs"
+/usr/sbin/chown -fR root:wheel "/Users/Shared/Ableton/Database"
+/usr/sbin/chown -fR root:wheel "/Users/Shared/Ableton/Factory Packs"
 
 # Create the log files directory
 if [ -n "${LOGFILESDIR}" ]; then
@@ -125,11 +125,11 @@ fi
 
 # Move the file titled Library.cfg (found in the user preferences) to the shared preferences folder (see 2.2.5). 
 # This way, information about the Ableton Live Packs you just installed will automatically be available to all users.
-# /Users/$USER/Library/Preferences/Ableton/Live $Version/
+# /Users/$USER/Library/Preferences/Ableton/Live ${VERSION}/
 # /Users/admin/Library/Preferences/Ableton/Live 11.1.6/
 # (Library.cfg, Options.txt, Log.txt)
 
-# /Library/Preferences/Ableton/Live $Version/Library.cfg
+# /Library/Preferences/Ableton/Live ${VERSION}/Library.cfg
 # 				<ProjectPath Value="/Users/admin/Music/Ableton" />
 # to
 # 				<ProjectPath Value="/Users/%%USERNAME%%/Music/Ableton" />
