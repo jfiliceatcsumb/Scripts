@@ -15,14 +15,14 @@
 # Parameter 6: OrganizationID
 # Parameter 7: plist file path
 # 			examples:
-# Jamf Waiting Room
+# /Library/Preferences
+# 				"/Library/Preferences/com.faronics.cloudagent.plist"
+#
+# # Jamf Waiting Room
 # 				"/Library/Application Support/JAMF/Waiting Room/com.faronics.cloudagent.plist"
 # 
 # Jamf Downloads
 # 				"/Library/Application Support/JAMF/Downloads/com.faronics.cloudagent.plist"
-# 
-# /Library/Preferences
-# 				"/Library/Preferences/com.faronics.cloudagent.plist"
 # 
 # Use as script in Jamf JSS.
 
