@@ -95,8 +95,8 @@ fi
 echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "${LIVE_OPTIONS}"
 echo "-DatabaseDirectory=/Users/Shared/Ableton/Database/%%USERNAME%%/"  >> "${LIVE_OPTIONS}"
 
-mkdir -p "/Users/Shared/Ableton/Database"
-mkdir -p "/Users/Shared/Ableton/Factory Packs"
+/bin/mkdir -p "/Users/Shared/Ableton/Database"
+/bin/mkdir -p "/Users/Shared/Ableton/Factory Packs"
 # set permissions
 
 /bin/chmod 644 "${LIVE_OPTIONS}"
