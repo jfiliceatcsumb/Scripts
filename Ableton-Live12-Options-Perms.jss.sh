@@ -83,17 +83,17 @@ fi
 echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "${LIVE_OPTIONS}"
 echo "-DatabaseDirectory=/Users/Shared/Ableton/Database/%%USERNAME%%/"  >> "${LIVE_OPTIONS}"
 
-mkdir -p "/Users/Shared/Ableton/Database"
-mkdir -p "/Users/Shared/Ableton/Factory Packs"
+/bin/mkdir -p "/Users/Shared/Ableton/Database"
+/bin/mkdir -p "/Users/Shared/Ableton/Factory Packs"
 # set permissions
 
-chmod 644 "${LIVE_OPTIONS}"
+/bin/chmod 644 "${LIVE_OPTIONS}"
 
-chmod 1777 "/Users/Shared/Ableton/Database"
-chmod 1777 "/Users/Shared/Ableton/Factory Packs"
+/bin/chmod 1777 "/Users/Shared/Ableton/Database"
+/bin/chmod 1777 "/Users/Shared/Ableton/Factory Packs"
 
-chown -fR 0:0 "/Users/Shared/Ableton/Database"
-chown -fR 0:0 "/Users/Shared/Ableton/Factory Packs"
+/usr/sbin/chown -fR 0:0 "/Users/Shared/Ableton/Database"
+/usr/sbin/chown -fR 0:0 "/Users/Shared/Ableton/Factory Packs"
 
 # Create the log files directory
 if [ -n "${LOGFILESDIR}" ]; then
