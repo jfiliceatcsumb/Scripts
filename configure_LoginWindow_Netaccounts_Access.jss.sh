@@ -1,8 +1,35 @@
-#!/bin/bash
+#!/bin/bash --noprofile --norc
 # 
 # https://raw.githubusercontent.com/amsysuk/public_scripts/master/configureLoginWindowAccess.sh
 # https://dazwallace.wordpress.com/2017/12/14/limit-access-to-the-login-window-using-a-script/
 # 
+
+# Ff using an AD group, the device must be bound to AD before running this script.
+# Run it with two arguments. 
+# Parameter 4 
+# Name of group that is allowed to log into the Mac (AD, OD or Local)
+# 
+# Parameter 5
+# Should local users also have access? 
+# Acceptable Answers: "admin" "all" "no" (all lower case)
+# 
+# Use as script in Jamf JSS.
+
+SCRIPTNAME=$(/usr/bin/basename "$0")
+SCRIPTDIR=$(/usr/bin/dirname "$0")
+
+# Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
+
+pathToScript=$0
+mountPoint=$1
+computerName=$2
+userName=$3
+
+echo "pathToScript=$pathToScript"
+echo "mountPoint=$mountPoint"
+echo "computerName=$computerName"
+echo "userName=$userName"
+
 #########################################################################################
 # Author:   Darren Wallace - Amsys
 # Name:     configureLoginWindowAccess.sh
@@ -29,14 +56,14 @@
 ##################################### Set variables #####################################
 
 # Name of the script
-scriptName="configureLoginWindowAccess.sh"
+scriptName="${SCRIPTNAME}"
 # Location of the LogFile to save output to
-logFile="/Library/Logs/${scriptName}"
+logFile="/Library/Logs/${scriptName}.log"
 # Name of group that is allowed to log into the Mac (AD, OD or Local)
-allowGroup="AllowedMacUsers"
+allowGroup="${4}"
 # Should local users also have access? 
 # Acceptable Answers: "admin" "all" "no" (all lower case)
-extraUsers="admin"
+extraUsers="${5}"
 
 ################################## Declare functions ####################################
 
@@ -52,16 +79,22 @@ writeLog ()
 	writeLog "Starting script: ${scriptName}"
 
 # Create the two required groups to limit AD access at the login window
+writeLog "Checking for existence of com.apple.loginwindow.netaccounts group"
+CHECK_netaccounts=$(/usr/sbin/dseditgroup -q -o read com.apple.loginwindow.netaccounts 2>&1 | grep --only-matching "Group not found" )
+if [[ -n "${CHECK_netaccounts}" ]]
+then
 	writeLog "Creating the com.apple.loginwindow.netaccounts group"
-	/usr/bin/dscl . -create /Groups/com.apple.loginwindow.netaccounts
-# Figure out the next free GID
-	nextGID=$(/usr/bin/dscl . -list /Groups PrimaryGroupID | /usr/bin/awk 'BEGIN{i=0}{if($2>i)i=$2}END{print i+1}')
-	/usr/bin/dscl . -create /Groups/com.apple.loginwindow.netaccounts PrimaryGroupID "${nextGID}"
+	/usr/sbin/dseditgroup -v -o create com.apple.loginwindow.netaccounts
+fi
+
+writeLog "Checking for existence of com.apple.access_loginwindow group"
+CHECK_access_loginwindow=$(/usr/sbin/dseditgroup -q -o read com.apple.access_loginwindow 2>&1 | grep --only-matching "Group not found" )
+if [[ -n "${CHECK_access_loginwindow}" ]]
+then
 	writeLog "Creating the com.apple.access_loginwindow group"
-	/usr/bin/dscl . -create /Groups/com.apple.access_loginwindow
-# Figure out the next free GID
-	nextGID=$(/usr/bin/dscl . -list /Groups PrimaryGroupID | /usr/bin/awk 'BEGIN{i=0}{if($2>i)i=$2}END{print i+1}')
-	/usr/bin/dscl . -create /Groups/com.apple.access_loginwindow PrimaryGroupID "${nextGID}"
+	/usr/sbin/dseditgroup -v -o create com.apple.access_loginwindow
+fi
+
 
 # Add the primary group ($allowGroup) to the 'allow' login list
 	writeLog "Adding the primary group to the login allow list"
