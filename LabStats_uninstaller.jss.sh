@@ -7,14 +7,14 @@
 # California State University, Monterey Bay
 # https://csumb.edu/it
 
-# This script requires .
+# This script removes components of the LabStats client.
 # Run it with no arguments. 
-# 
 # Use as script in Jamf JSS.
-
+# Orignal source:
+# https://support.labstats.com/knowledge-base/uninstall-the-labstats-client/
 
 # Change History:
-# 2022/MM/DD:	Creation.
+# 2025/09/11:	Creation.
 #
 
 SCRIPTNAME=$(/usr/bin/basename "$0")
@@ -37,31 +37,31 @@ echo "userName=$userName"
 
 
 if [ -f /Library/LaunchDaemons/labstatsgo.plist ]; then
-  launchctl unload /Library/LaunchDaemons/labstatsgo.plist
+  /bin/launchctl unload /Library/LaunchDaemons/labstatsgo.plist
 fi
 
 if [ -f /Library/LaunchAgents/labstatsgo.plist ]; then
-  sudo -u daemon launchctl unload /Library/LaunchAgents/labstatsgo.plist
+  /usr/bin/sudo -u daemon launchctl unload /Library/LaunchAgents/labstatsgo.plist
 fi
 
 if [ -f /Library/LaunchDaemons/labstatsgo.plist ]; then
-  rm -f /Library/LaunchDaemons/labstatsgo.plist
+  /bin/rm -f /Library/LaunchDaemons/labstatsgo.plist
 fi
 
 if [ -f /Library/LaunchAgents/labstatsgo.plist ]; then
-  rm -f /Library/LaunchAgents/labstatsgo.plist
+  /bin/rm -f /Library/LaunchAgents/labstatsgo.plist
 fi
 
-pkill LabStatsGoUserSpace
+/usr/bin/pkill LabStatsGoUserSpace
 
 if [ -f /usr/local/bin/LabStatsGoClient ]; then
-  rm -f /usr/local/bin/LabStatsGoClient
+  /bin/rm -f /usr/local/bin/LabStatsGoClient
 fi
 
 if [ -f /usr/local/bin/LabStatsGoUserSpace ]; then
-  rm -f /usr/local/bin/LabStatsGoUserSpace
+  /bin/rm -f /usr/local/bin/LabStatsGoUserSpace
 fi
 
-rm -rf /Library/Application\ Support/LabStatsGo
+/bin/rm -rf /Library/Application\ Support/LabStatsGo
 
 echo "Uninstall successful!"
