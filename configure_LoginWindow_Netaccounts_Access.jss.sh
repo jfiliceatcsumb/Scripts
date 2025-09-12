@@ -74,9 +74,35 @@ writeLog ()
 	/bin/echo "$(date) - ${1}" >> "${logFile}"
 }
 
+################################## Parameter Input Checks ################################
+
+# Check if allowGroup (Parameter 4) is provided
+if [[ -z "${allowGroup}" ]]; then
+    writeLog "ERROR: No group specified in parameter 4 (allowGroup)."
+    writeLog "Usage: Run this script with parameter 4 set as the name of the group allowed to log in."
+    writeLog "Script exiting due to missing parameter."
+    exit 1
+fi
+
+# Check if extraUsers (Parameter 5) is provided
+if [[ -z "${extraUsers}" ]]; then
+    writeLog "ERROR: No local user access option specified in parameter 5 (extraUsers)."
+    writeLog "Usage: Run this script with parameter 5 set as one of: admin, all, no"
+    writeLog "Script exiting due to missing parameter."
+    exit 1
+fi
+
+# Validate extraUsers input
+if [[ "${extraUsers}" != "admin" && "${extraUsers}" != "all" && "${extraUsers}" != "no" ]]; then
+    writeLog "ERROR: Parameter 5 (extraUsers) must be one of: admin, all, no"
+    writeLog "You provided: '${extraUsers}'"
+    writeLog "Script exiting due to invalid parameter."
+    exit 1
+fi
+
 ##################################### Run Script #######################################
 
-	writeLog "Starting script: ${scriptName}"
+writeLog "Starting script: ${scriptName}"
 
 # Create the two required groups to limit AD access at the login window
 writeLog "Checking for existence of com.apple.loginwindow.netaccounts group"
@@ -97,27 +123,27 @@ fi
 
 
 # Add the primary group ($allowGroup) to the 'allow' login list
-	writeLog "Adding the primary group to the login allow list"
+writeLog "Adding the primary group to the login allow list"
 	/usr/sbin/dseditgroup -o edit -n /Local/Default -a "${allowGroup}" -t group com.apple.loginwindow.netaccounts
 
 # Adding the netaccounts group to the access group
-	writeLog "Adding the netaccounts group to the access group"
+writeLog "Adding the netaccounts group to the access group"
 	/usr/sbin/dseditgroup -o edit -n /Local/Default -a com.apple.loginwindow.netaccounts -t group com.apple.access_loginwindow
 	
 # Check if there are additional groups to be added
-	writeLog "Check if there are additional groups to be added"
-	if [[ "${extraUsers}" == "admin" ]]; then
-		writeLog "Adding the admin group to the access list"
-		/usr/sbin/dseditgroup -o edit -n /Local/Default -a admin -t group com.apple.access_loginwindow
-	elif [[ "${extraUsers}" == "all" ]]; then
-		writeLog "Adding all local users group (localaccounts) to the access list"
-		/usr/sbin/dseditgroup -o edit -n /Local/Default -a localaccounts -t group com.apple.access_loginwindow
-	else
-		writeLog "No additional users to add"
-	fi
+writeLog "Check if there are additional groups to be added"
+if [[ "${extraUsers}" == "admin" ]]; then
+	writeLog "Adding the admin group to the access list"
+	/usr/sbin/dseditgroup -o edit -n /Local/Default -a admin -t group com.apple.access_loginwindow
+elif [[ "${extraUsers}" == "all" ]]; then
+	writeLog "Adding all local users group (localaccounts) to the access list"
+	/usr/sbin/dseditgroup -o edit -n /Local/Default -a localaccounts -t group com.apple.access_loginwindow
+else
+	writeLog "No additional users to add"
+fi
 
-	writeLog "Script Complete"
+writeLog "Script Complete"
 
-	exit
+exit
 
 ##################################### End Script #######################################
