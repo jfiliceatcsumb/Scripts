@@ -1,0 +1,22 @@
+{
+  "title": "Rave Notifier (com.ale-enterprise.raveNotifier)",
+  "description": "Preference settings for Rave Notifier application.",
+  "properties": {
+    "com.ale.rave.activationkey": {
+      "title": "Activation key",
+      "description": "Your organization's unique Rave Notifier activation key",
+      "property_order": 5,
+      "type": "string",
+      "pattern": "[a-zA-Z0-9]{32}",
+      "options": {
+        "infoText": "Keyword: com.ale.rave.activationkey"
+      }
+    },
+    "com.ale.rave.autoupdate": {
+      "type": "string",
+      "title": "Auto Update",
+      "description": "Autoupdate for RAVE Notifier, set to true or false. Must be string value.",
+      "property_order": 10
+    }
+  }
+}
