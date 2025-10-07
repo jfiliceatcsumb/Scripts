@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile --norc
 
 
 # Set the following variables passed to script
@@ -12,11 +12,9 @@ VERSION="12.1"
 #06
 TOKEN="your authorization token here"	
 #07
-LOGFILESDIR="/var/log/AbletonLogFiles"	
+LOGFILESDIR="/var/log/AbletonLogFiles"
 #08
-RUNAS_UID=""							
-#09
-RUNAS_USER=""							
+USER_HOME="/Users/admin"							
 
 # --- No further configuration below this line. ----------------------------------------------------
 
@@ -30,7 +28,7 @@ set -u
 # debug bash script using xtrace
 # set -x
 # Enable tracing without trace output
-# { set -x; } 2>/dev/null
+#  { set -x; } 2>/dev/null
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
 
@@ -57,24 +55,17 @@ if [[ -n "$7" ]]; then
 fi
 
 if [[ -n "$8" ]]; then
-	RUNAS_UID="#${8}"
-	SUDO_USER="${RUNAS_UID}"
-elif [[ -n "${9}" ]]; then
-	RUNAS_USER="${9}"
-	SUDO_USER="${RUNAS_USER}"
-else
-	SUDO_USER="#501"
+	USER_HOME="${8}"
 fi
 
 echo \'${EDITION}\'
 
 echo \'${VERSION}\'
 
-echo \'${RUNAS_UID}\'
+echo \'${LOGFILESDIR}\'
 
-echo \'${RUNAS_USER}\'
+echo \'${USER_HOME}\'
 
-echo \'${SUDO_USER}\'
 
 
 #
@@ -129,7 +120,11 @@ echo "-DontLoadMaxForLiveAtStartup" >> "${LIVE_OPTIONS}"
 echo "-DontAskForAdminRights" >> "${LIVE_OPTIONS}"
 echo "-_DisableUsageData" >> "${LIVE_OPTIONS}"
 
+# Create the log files directory
 if [ -n "${LOGFILESDIR}" ]; then
+    /bin/mkdir -p "${LOGFILESDIR}" 2>/dev/null
+    LOGFILE="${LOGFILESDIR}/Log.txt"
+    /usr/bin/touch "${LOGFILE}"
     echo "-LogFilesDir=${LOGFILESDIR}" >> "${LIVE_OPTIONS}"
 fi
 
@@ -165,36 +160,13 @@ chmod 644 "${LIVE_OPTIONS}"
 # # Copy Live application to /Applications for all users (macOS equivalent of Start Menu)
 # /bin/cp -f "/Applications/${EDITION}.app" "/Applications/" 2>/dev/null
 
-# Create the log files directory
-if [ -n "${LOGFILESDIR}" ]; then
-    /bin/mkdir -p "${LOGFILESDIR}" 2>/dev/null
-fi
 
 # Run Ableton and capture its exit code
 
-/usr/bin/sudo --user=${SUDO_USER} --login "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+# /usr/bin/sudo --user=${SUDO_USER} --command-timeout=1 --set-home "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}"
 
-#/usr/bin/sudo --user=\#501 --login "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}" &
+/usr/bin/sudo --user=root --set-home HOME=${USER_HOME} "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}"
 
-LIVE_PID=$!
-
-# Loop while the process is found
-echo "Waiting up to five minutes for completion, checking every 30 seconds..."
-PROCESS_NAME="Live"
-WHILE_COUNT1=0
-# Loop while the process is found
-while /usr/bin/pgrep -x "${PROCESS_NAME}" > /dev/null; do
-	if [[ $WHILE_COUNT1 -lt 10 ]]; then
-		((WHILE_COUNT1+=1))
-		 # Sleep for 30 seconds before checking again
-		 /bin/sleep 30
-	else
-# 		exit the loop if more than run more than 10 times (5 minutes)
-		break
-	fi
-done
-/bin/kill -KILL "$LIVE_PID" 2>/dev/null
-# /usr/bin/killall -qv -TERM "${PROCESS_NAME}"
 
 # Capture the exit code
 LIVE_EXIT_CODE=$?
@@ -208,5 +180,5 @@ if [ ${LIVE_EXIT_CODE} -ne 0 ]; then
     exit ${LIVE_EXIT_CODE}
 else
     echo "Ableton ${EDITION} was successfully authorized."
-    exit 0
+		exit ${LIVE_EXIT_CODE}
 fi
