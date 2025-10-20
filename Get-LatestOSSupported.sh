@@ -538,7 +538,7 @@ else
 	report_result="${ram_check_results}${storage_check_results}"
 	model_result="${ram_check_results}${storage_check_results}"
 fi
-
+report_result=$(echo "${report_result}" | sed 's/\*//g')
 echo "<result>${version_string} ${report_result}</result>"
 write_to_ea_history "latest_os_supported" "${model_result}"
 exit 0
