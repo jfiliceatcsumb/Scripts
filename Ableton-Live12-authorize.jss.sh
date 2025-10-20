@@ -14,6 +14,8 @@ TOKEN="your authorization token here"
 #07
 LOGFILESDIR="/var/log/AbletonLogFiles"
 #08
+USER="admin"							
+#09
 USER_HOME="/Users/admin"							
 
 # --- No further configuration below this line. ----------------------------------------------------
@@ -55,7 +57,11 @@ if [[ -n "$7" ]]; then
 fi
 
 if [[ -n "$8" ]]; then
-	USER_HOME="${8}"
+	USER="${8}"
+fi
+
+if [[ -n "$9" ]]; then
+	USER_HOME="${9}"
 fi
 
 echo \'${EDITION}\'
@@ -164,8 +170,9 @@ chmod 644 "${LIVE_OPTIONS}"
 # Run Ableton and capture its exit code
 
 # /usr/bin/sudo --user=${SUDO_USER} --command-timeout=1 --set-home "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}"
-
-/usr/bin/sudo --user=root --set-home HOME=${USER_HOME} "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}"
+# /usr/sbin/createhomedir -l -u ${USER}
+# Need to create the user's login keychain here to prevent hanging.
+/usr/bin/sudo --user=root --login --set-home HOME=${USER_HOME} "/Applications/${EDITION}.app/Contents/MacOS/Live" --authorization-token="${TOKEN}"
 
 
 # Capture the exit code
