@@ -4,7 +4,7 @@
 ####################################################################################################
 # Script Name:  Get-LatestOSSupported.sh
 # By:  Zack Thompson / Created:  9/26/2017
-# Version:  2.6.1 / Updated:  6/11/2024 / By:  ZT
+# Version:  2.7.0 / Updated:  6/11/2025 / By:  @HowardGMac
 #
 # Description:  A Jamf Pro Extension Attribute to check the latest compatible version of macOS.
 #
@@ -22,7 +22,8 @@
 #			updated.
 #
 #	System Requirements can be found here:
-#		Sequoia (Preview) - https://www.apple.com/macos/macos-sequoia-preview/
+#		Tahoe - https://support.apple.com/en-us/122867
+#		Sequoia - https://support.apple.com/en-us/120282
 #		Sonoma - https://support.apple.com/en-us/105113
 #		Ventura - https://support.apple.com/en-us/102861
 #			* Apple has never publicly posted storage requirements for Ventura, which is why this
@@ -77,6 +78,7 @@ not_monterey_regex="^(MacPro[1-5],[0-9]|iMac([1-9]|1[0-5]),[0-9]|(Macmini|MacBoo
 not_ventura_regex="^(MacPro[1-6],[0-9]|iMac([1-9]|1[0-7]),[0-9]|(Macmini|MacBookAir)[1-7],[0-9]|MacBook[1-9],[0-9]|MacBookPro([1-9]|1[0-3]),[0-9])$"
 not_sonoma_regex="^(MacPro[1-6],[0-9]|iMac([1-9]|1[0-8]),[0-9]|(Macmini|MacBookAir)[1-7],[0-9]|MacBook[0-9,]+|MacBookPro([1-9]|1[0-4]),[0-9])$"
 not_sequoia_regex="^(MacPro[1-6],[0-9]|iMac([1-9]|1[0-8]),[0-9]|Macmini[1-7],[0-9]|MacBookAir[1-8],[0-9]|MacBookPro([1-9]|1[0-4]),[0-9])$"
+not_tahoe_regex="^(MacPro[1-6],[0-9]|iMac([1-9]|1[0-9]),[0-9]|iMacPro1,1|Macmini[1-8],[0-9]|MacBookAir[1-9],[0-9]|MacBookPro((16,3)|([1-9]|1[0-5]),[0-9]))$"
 
 ##################################################
 # Setup Functions
@@ -118,11 +120,13 @@ model_check() {
 	elif [[ $model =~ $not_ventura_regex ]]; then
 		echo "Monterey"
 	elif [[ $model =~ $not_sonoma_regex ]]; then
-		echo "Ventura"
+		echo "Ventura*"
 	elif [[ $model =~ $not_sequoia_regex ]]; then
-		echo "Sonoma"
+		echo "Sonoma*"
+	elif [[ $model =~ $not_tahoe_regex ]]; then
+		echo "Sequoia*"
 	else
-		echo "Sequoia"
+		echo "Tahoe*"
 	fi
 }
 
@@ -141,20 +145,25 @@ os_check() {
 		# For all models except MacPro5,1...
 
 		if [[
-			"${validate_os}" == "Sequoia" && \
+			"${validate_os}" == "Tahoe*" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
 		]]; then
-			echo "Sequoia"
+			echo "Tahoe*"
+   		elif [[
+			"${validate_os}" == "Sequoia*" && \
+			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
+		]]; then
+			echo "Sequoia*"
 		elif [[
-			"${validate_os}" == "Sonoma" && \
+			"${validate_os}" == "Sonoma*" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
 		]]; then
-			echo "Sonoma"
+			echo "Sonoma*"
 		elif [[
-			"${validate_os}" == "Ventura" && \
+			"${validate_os}" == "Ventura*" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
 		]]; then
-			echo "Ventura"
+			echo "Ventura*"
 		elif [[
 			"${validate_os}" == "Monterey" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
@@ -261,7 +270,7 @@ ram_check() {
 	system_ram=$(( $( /usr/sbin/sysctl -n hw.memsize ) / bytes_in_gigabytes ))
 
 	if [[
-		"${validate_os}" =~ ^(Catalina|Big[[:space:]]Sur|Monterey|(Ventura|Sonoma|Sequoia)\*)$
+		"${validate_os}" =~ ^(Catalina|Big[[:space:]]Sur|Monterey|(Ventura|Sonoma|Sequoia|Tahoe)\*)$
 	]]; then
 		# OS version requires 4GB RAM minimum.  For Ventura and newer, value's are inherited from
 		# Monterey as Apple has not publicly defined these requirements.
@@ -351,21 +360,28 @@ storage_check() {
 	# Set the required free space to compare.
 	# Set space requirement in bytes:  /usr/bin/bc <<< "<space in GB> * 1073741824"
 	case "${validate_os}" in
-		"Sequoia"* )
+ 		"Tahoe*"* )
 			# Value's inherited from Monterey, Apple has not defined these requirements
 			required_free_space_newer="27917287424" # 26GB if Sierra or later
 			os_newer="10.12.0"
 			required_free_space_older="47244640256" # 44GB if El Capitan or earlier
 			os_older="10.11.0"
 		;;
-		"Sonoma"* )
+		"Sequoia*"* )
 			# Value's inherited from Monterey, Apple has not defined these requirements
 			required_free_space_newer="27917287424" # 26GB if Sierra or later
 			os_newer="10.12.0"
 			required_free_space_older="47244640256" # 44GB if El Capitan or earlier
 			os_older="10.11.0"
 		;;
-		"Ventura"* )
+		"Sonoma*"* )
+			# Value's inherited from Monterey, Apple has not defined these requirements
+			required_free_space_newer="27917287424" # 26GB if Sierra or later
+			os_newer="10.12.0"
+			required_free_space_older="47244640256" # 44GB if El Capitan or earlier
+			os_older="10.11.0"
+		;;
+		"Ventura*"* )
 			# Value's inherited from Monterey, Apple has not defined these requirements
 			required_free_space_newer="27917287424" # 26GB if Sierra or later
 			os_newer="10.12.0"
@@ -462,13 +478,16 @@ fi
 model_result=$( model_check "${mac_model}" )
 
 case "${model_result}" in
-	"Sequoia" )
+	"Tahoe*" )
+		version_string="26"
+	;;
+	"Sequoia*" )
 		version_string="15"
 	;;
-	"Sonoma" )
+	"Sonoma*" )
 		version_string="14"
 	;;
-	"Ventura" )
+	"Ventura*" )
 		version_string="13"
 	;;
 	"Monterey" )
