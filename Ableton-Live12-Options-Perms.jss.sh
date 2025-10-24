@@ -69,6 +69,8 @@ echo "-DatabaseDirectory=/Users/Shared/Ableton/Database/%%USERNAME%%/"  >> "${LI
 # set permissions
 
 /bin/chmod 644 "${LIVE_OPTIONS}"
+echo "${LIVE_OPTIONS}..."
+cat "${LIVE_OPTIONS}"
 
 /bin/chmod 1777 "/Users/Shared/Ableton/Database"
 /bin/chmod 1777 "/Users/Shared/Ableton/Factory Packs"
