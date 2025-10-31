@@ -39,21 +39,6 @@ echo \"${EDITION}\"
 echo \"${VERSION}\"
 
 #
-#
-#
-#
-# During authorization, Live writes to a log file called Log.txt. This file can contain
-# useful information to diagnose issues during authorization. If this script runs as
-# an administrator, it may be preferrable to write this logfile somewhere else.
-# Leave empty to use the default location.
-#
-LOGFILESDIR="/var/log/AbletonLogFiles"
-# 
-#
-if [[ -n "$6" ]]; then
-	LOGFILESDIR="$6"
-fi
-
 
 pathToScript=$0
 mountPoint=$1
@@ -87,10 +72,6 @@ echo "-_DisableAutoUpdates" > "${LIVE_OPTIONS}"
 echo "-DontAskForAdminRights" >> "${LIVE_OPTIONS}"
 echo "-_DisableUsageData" >> "${LIVE_OPTIONS}"
 
-if [ -n "${LOGFILESDIR}" ]; then
-    echo "-LogFilesDir=${LOGFILESDIR}" >> "${LIVE_OPTIONS}"
-fi
-
 # 4. Cache/ Database
 echo "-DefaultsBaseFolder=/tmp/AbletonData/%%USERNAME%%/" >> "${LIVE_OPTIONS}"
 echo "-DatabaseDirectory=/Users/Shared/Ableton/Database/%%USERNAME%%/"  >> "${LIVE_OPTIONS}"
@@ -107,10 +88,6 @@ echo "-DatabaseDirectory=/Users/Shared/Ableton/Database/%%USERNAME%%/"  >> "${LI
 /usr/sbin/chown -fR root:wheel "/Users/Shared/Ableton/Database"
 /usr/sbin/chown -fR root:wheel "/Users/Shared/Ableton/Factory Packs"
 
-# Create the log files directory
-if [ -n "${LOGFILESDIR}" ]; then
-    /bin/mkdir -p "${LOGFILESDIR}" 2>/dev/null
-fi
 
 
 # 3.2 Ableton Live Packs
