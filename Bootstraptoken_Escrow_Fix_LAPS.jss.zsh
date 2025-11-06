@@ -294,6 +294,14 @@ if [[ -z "${computerLocalAdminUsername}" ]] || [[ -z "${LAPSpassword}" ]]; then
     exit 1
 fi
 
+# 		Used to verify the password
+# 		authenticate the account without actually logging into anything
+# 		account authenticates in any way it will have a SecureToken enabled on the account
+		if ! /usr/bin/dscl . authonly "${computerLocalAdminUsername}" "${LAPSpassword}"; then
+			echo "Error: Authentication test failed"
+			exit 1
+		fi
+
 
 # Show secure token status for additional info 
 /usr/sbin/sysadminctl -secureTokenStatus  "${computerLocalAdminUsername}"
@@ -306,13 +314,6 @@ if [[ $bootstrap == *"supported on server: YES"* ]]; then
     else
 		echo "Bootstrap not escrowed."
 		echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
-# 		Used to verify the password
-# 		authenticate the account without actually logging into anything
-# 		account authenticates in any way it will have a SecureToken enabled on the account
-		if ! /usr/bin/dscl . authonly "${computerLocalAdminUsername}" "${LAPSpassword}"; then
-			echo "Error: Authentication failed"
-			exit 1
-		fi
 		sleep 1
 		# Add error handling for profiles command
 		if ! /usr/bin/profiles install -type bootstraptoken -user "${computerLocalAdminUsername}" -password "${LAPSpassword}" -verbose; then
