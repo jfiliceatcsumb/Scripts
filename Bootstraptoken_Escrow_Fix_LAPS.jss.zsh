@@ -297,8 +297,10 @@ fi
 # 		Used to verify the password
 # 		authenticate the account without actually logging into anything
 # 		account authenticates in any way it will have a SecureToken enabled on the account
-		if ! /usr/bin/dscl . authonly "${computerLocalAdminUsername}" "${LAPSpassword}"; then
-			echo "Error: Authentication test failed"
+		if /usr/bin/dscl . authonly "${computerLocalAdminUsername}" "${LAPSpassword}"; then
+    		echo "Authentication test passed"
+        else
+            echo "Error: Authentication test failed"
 			exit 1
 		fi
 
