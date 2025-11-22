@@ -65,7 +65,7 @@ echo userName=$userName
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
 # Echo 
-if [ -f /opt/PrinterInstallerClient/VERSION ]; then
+if [[ -f /opt/PrinterInstallerClient/VERSION ]]; then
 	clientVers="$(cat /opt/PrinterInstallerClient/VERSION)"
 	echo "PrinterLogic client version=${clientVers}"
 else
@@ -80,7 +80,7 @@ fi
 /usr/bin/killall PrinterInstallerClient > /dev/null 2>&1
 
 
-if [ -f /opt/PrinterInstallerClient/bin/uninstall.sh ]; then
+if [[ -f /opt/PrinterInstallerClient/bin/uninstall.sh ]]; then
 	echo "Running uninstall script /opt/PrinterInstallerClient/bin/uninstall.sh ..."
 	/opt/PrinterInstallerClient/bin/uninstall.sh
 else
