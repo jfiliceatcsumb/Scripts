@@ -92,13 +92,37 @@ if [[ -e /tmp/"${PKGfile}" ]]; then
 fi
 
 /usr/bin/curl "${PKG_URL}" --location --silent --show-error  --output /tmp/"${PKGfile}"
-/usr/sbin/installer -allowUntrusted -pkg /tmp/"${PKGfile}" -target /
-/opt/PrinterInstallerClient/bin/set_home_url.sh https ${HOMEURL}
-/opt/PrinterInstallerClient/bin/use_authorization_code.sh ${AUTHCODE}
+
+if [[ -e "${PKGfile}" ]]; then
+	/usr/sbin/installer -allowUntrusted -pkg /tmp/"${PKGfile}" -target / 
+else 
+	echo "ERROR: ${PKGfile} not found"
+	exit 1
+fi 
+
+if [[ -f /opt/PrinterInstallerClient/VERSION ]]; then
+	clientVers="$(cat /opt/PrinterInstallerClient/VERSION)"
+	echo "PrinterLogic client version=${clientVers}"
+else
+		echo "ERROR: PrinterLogic client Not Installed"
+		exit 1
+fi
+
+if [[ -e /opt/PrinterInstallerClient/bin/set_home_url.sh ]]; then
+	/opt/PrinterInstallerClient/bin/set_home_url.sh https ${HOMEURL}
+else
+	echo "ERROR: /opt/PrinterInstallerClient/bin/set_home_url.sh not found"
+	exit 1
+fi
+
+if [[ -e /opt/PrinterInstallerClient/bin/use_authorization_code.sh ]]; then
+	/opt/PrinterInstallerClient/bin/use_authorization_code.sh ${AUTHCODE}
+else
+	echo "ERROR: /opt/PrinterInstallerClient/bin/use_authorization_code.sh not found"
+	exit 1
+fi	
 
 # Echo 
-clientVers="$(cat /opt/PrinterInstallerClient/VERSION)"
-echo "PrinterLogic client version=$clientVers"
 
 echo "Safari feature fix..."
 
@@ -115,7 +139,7 @@ fi
 sleep 1
 
 
-if [[ "$userName" != "" ]]
+if [[ "$userName" != "" ]] && [[ -e /etc/pl_dir ]]
 then
 # As root
 	/usr/bin/killall PrinterInstallerClient > /dev/null 2>&1
@@ -130,6 +154,8 @@ then
     
 fi
 
-/opt/PrinterInstallerClient/bin/refresh.sh
+if [[ -f /opt/PrinterInstallerClient/bin/refresh.sh ]]; then
+	/opt/PrinterInstallerClient/bin/refresh.sh
+fi
 
 exit
