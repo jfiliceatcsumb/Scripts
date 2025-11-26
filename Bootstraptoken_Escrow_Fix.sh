@@ -5,11 +5,11 @@
 # Technology Support Services in IT
 # California State University, Monterey Bay
 # https://csumb.edu/it
-
-
-
-# This script requires .
-# Run it with no arguments. 
+#
+# This script requires a supervised Mac managed by MDM server.
+# Run it with 2 arguments:
+# volume owner account
+# volume owner password
 # 
 # Use as script in Jamf JSS.
 
@@ -57,27 +57,28 @@ echo "Check Bootstrap Token status..."
 bootstrap=$(/usr/bin/profiles status -type bootstraptoken)
 echo ${bootstrap}
 if [[ $bootstrap == *"supported on server: YES"* ]]; then
-    if [[ $bootstrap == *"escrowed to server: YES"* ]]; then
-		echo "Bootstrap escrowed. Exit script."
-    else
+	if [[ $bootstrap == *"escrowed to server: YES"* ]]; then
+		echo "Bootstrap escrowed." 
+		echo "Updating the Bootstrap Token APFS record and escrowing to the MDM server..."
+	else
 		echo "Bootstrap not escrowed."
 		echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
+	fi
 # 		Used to verify the password
 # 		authenticate the account without actually logging into anything
 # 		account authenticates in any way it will have a SecureToken enabled on the account
-		if ! /usr/bin/dscl . authonly "${1}" "${2}"; then
-			echo "Error: Authentication failed"
-			exit 1
-		fi
-		sleep 1
-		# Add error handling for profiles command
-		if ! /usr/bin/profiles install -type bootstraptoken -user "${1}" -password "${2}" -verbose; then
-			echo "Error: Failed to install bootstrap token"
-			exit 1
-		fi
-		sleep 1	
-		/usr/bin/profiles status -type bootstraptoken
-  fi
+	if ! /usr/bin/dscl . authonly "${1}" "${2}"; then
+		echo "Error: Authentication failed"
+		exit 1
+	fi
+	sleep 1
+	# Add error handling for profiles command
+	if ! /usr/bin/profiles install -type bootstraptoken -user "${1}" -password "${2}" -verbose; then
+		echo "Error: Failed to install bootstrap token"
+		exit 1
+	fi
+	sleep 1	
+	/usr/bin/profiles status -type bootstraptoken
 else
 	echo "Bootstrap token not supported on server"
 	result="NOT SUPPORTED"
