@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+﻿#!/bin/bash  --noprofile --norc
 
 # Jason Filice
 # jfilice@csumb.edu
