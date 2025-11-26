@@ -311,20 +311,21 @@ echo "Check Bootstrap Token status..."
 bootstrap=$(/usr/bin/profiles status -type bootstraptoken)
 echo ${bootstrap}
 if [[ $bootstrap == *"supported on server: YES"* ]]; then
-    if [[ $bootstrap == *"escrowed to server: YES"* ]]; then
-		echo "Bootstrap escrowed. Exit script."
-    else
+	if [[ $bootstrap == *"escrowed to server: YES"* ]]; then
+		echo "Bootstrap escrowed." 
+		echo "Updating the Bootstrap Token APFS record and escrowing to the MDM server..."
+	else
 		echo "Bootstrap not escrowed."
 		echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
-		sleep 1
+	fi
+	sleep 1
 		# Add error handling for profiles command
-		if ! /usr/bin/profiles install -type bootstraptoken -user "${computerLocalAdminUsername}" -password "${LAPSpassword}" -verbose; then
-			echo "Error: Failed to install bootstrap token"
-			exit 1
-		fi
-		sleep 1	
-		/usr/bin/profiles status -type bootstraptoken
-  fi
+	if ! /usr/bin/profiles install -type bootstraptoken -user "${computerLocalAdminUsername}" -password "${LAPSpassword}" -verbose; then
+		echo "Error: Failed to install bootstrap token"
+		exit 1
+	fi
+	sleep 1	
+	/usr/bin/profiles status -type bootstraptoken
 else
 	echo "Bootstrap token not supported on server"
 	result="NOT SUPPORTED"
