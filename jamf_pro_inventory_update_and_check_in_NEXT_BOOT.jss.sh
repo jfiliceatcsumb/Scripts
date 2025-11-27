@@ -82,50 +82,7 @@ jamfpro_server_port="443"
 
 jamf_binary="/usr/local/jamf/bin/jamf"
 
-CheckSiteNetwork (){
  
-  #  CheckSiteNetwork function adapted from Facebook's check_corp function script.
-  #  check_corp script available on Facebook's IT-CPE Github repo:
-  #
-  # check_corp:
-  #   This script verifies a system is on the corporate network.
-  #   Input: CORP_URL= set this to a hostname on your corp network
-  #   Optional ($1) contains a parameter that is used for testing.
-  #   Output: Returns a check_corp variable that will return "True" if on 
-  #   corp network, "False" otherwise.
-  #   If a parameter is passed ($1), the check_corp variable will return it
-  #   This is useful for testing scripts where you want to force check_corp
-  #   to be either "True" or "False"
-  # USAGE: 
-  #   check_corp        # No parameter passed
-  #   check_corp "True"  # Parameter of "True" is passed and returned
-  
- 
-  site_network="False"
-  ping=$(host -W .5 $jamfpro_server_address)
- 
-  # If the ping fails - site_network="False"
-  [[ $? -eq 0 ]] && site_network="True"
- 
-  # Check if we are using a test
-  [[ -n "$1" ]] && site_network="$1"
-}
- 
-CheckTomcat (){
- 
-# Verifies that the JSS's Tomcat service is responding.
- 
- 
-tomcat_chk=$(nc -z -w 5 $jamfpro_server_address $jamfpro_server_port > /dev/null; echo $?)
- 
-if [ "$tomcat_chk" -eq 0 ]; then
-       /usr/bin/logger "Machine can connect to $jamfpro_server_address. Proceeding."
-else
-       /usr/bin/logger "Machine cannot connect to $jamfpro_server_address. Exiting."
-       exit 0
-fi
- 
-}
  
 CheckLogAge (){
  
@@ -182,20 +139,12 @@ if [[ -n $(/bin/launchctl list | grep "com.github.runjamfprocheckin") ]]; then
 fi
 }
  
-CheckSiteNetwork
- 
-if [[ "$site_network" == "False" ]]; then
-    /usr/bin/logger "Unable to verify access to site network. Exiting."
-fi 
  
  
-if [[ "$site_network" == "True" ]]; then
-    /usr/bin/logger "Access to site network verified"
-    CheckTomcat
-    CheckLogAge
-    UpdateInventoryAndRunCheckin
-    SelfDestruct
-fi
+CheckLogAge
+UpdateInventoryAndRunCheckin
+SelfDestruct
+
 exit 0
 JAMF_PRO_CHECKIN_SCRIPT
  
