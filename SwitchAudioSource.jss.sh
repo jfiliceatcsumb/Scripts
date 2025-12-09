@@ -95,7 +95,7 @@ zstyle ':case' GLOB_CASE_SENSITIVE true
 echo "Script parameters are valid. Proceeding..."
 
 
-###
+### TESTING
 # PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.SwitchAudioSource.output.plist"
 PathToLaunchAgent="$HOME/edu.csumb.it.SwitchAudioSource.${device_type}.plist"
 Label=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
@@ -180,7 +180,7 @@ chmod -fv 644 "${PathToLaunchAgent}"
 
 /usr/bin/defaults read "${PathToLaunchAgent}"
 
-####
+#### TESTING
 # /bin/launchctl load "${PathToLaunchAgent}"
 
 
