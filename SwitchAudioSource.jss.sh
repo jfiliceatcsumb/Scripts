@@ -14,11 +14,13 @@
 # Run by Jamf Pro.
 # 
 # PARAMETERS:
-# 4: device type (input/output/system).  Defaults to output
+# 4: device type (input/output/system/all).  Defaults to output
 # 5: Audio device name or UID (grep matching)
+# 6: (NOT IMPLEMENTED YET) sets the mute status (mute/unmute/toggle).  For input/output only.
+
 # 
 # Change History:
-# 2022/MM/DD:	Creation.
+# 2025/12/10:	Creation.
 #
 
 
@@ -55,6 +57,7 @@ echo "userName=$userName"
 
 device_type=${1:="output"}
 device_name_uid=${2:="builtin"}
+mute_mode=${3:="unmute"}
 
 # --- Validation Logic ---
 
@@ -81,11 +84,44 @@ case "${device_type}" in
         device_type="system"
         echo "Valid device_type: $device_type"
         ;;
+    all)
+        # Valid value, assign the value as lower-case. 
+				# SwitchAudioSource is case-senstive
+        device_type="all"
+        echo "Valid device_type: $device_type"
+        ;;
     *)
         # Invalid value, print error and exit
         echo "Error: Invalid device_type value: '$device_type'" >&2
         echo "Allowed values are: input, output, system." >&2
         exit 1
+        ;;
+esac
+
+case "${mute_mode}" in
+    mute)
+        # Valid value, assign the value as lower-case. 
+				# SwitchAudioSource is case-senstive
+        mute_mode="mute"
+        echo "Valid device_type: $device_type"
+        ;;
+    unmute)
+        # Valid value, assign the value as lower-case. 
+				# SwitchAudioSource is case-senstive
+        mute_mode="unmute"
+        echo "Valid device_type: $device_type"
+        ;;
+    toggle)
+        # Valid value, assign the value as lower-case. 
+				# SwitchAudioSource is case-senstive
+        mute_mode="toggle"
+        echo "Valid device_type: $device_type"
+        ;;
+    *)
+        # Valid value, assign the value as lower-case. 
+				# SwitchAudioSource is case-senstive
+        mute_mode=""
+        echo "No mute_mode set"
         ;;
 esac
 
