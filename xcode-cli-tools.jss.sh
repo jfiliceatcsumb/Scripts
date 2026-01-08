@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+﻿#!/bin/bash --noprofile --norc
 
 # https://github.com/timsutton/osx-vm-templates/blob/master/scripts/xcode-cli-tools.sh
 
