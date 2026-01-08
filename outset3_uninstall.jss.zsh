@@ -48,7 +48,7 @@ echo "userName=$userName"
 # debug bash script using xtrace
 # set -x
 # Enable tracing without trace output
-# { set -x; } 2>/dev/null
+{ set -x; } 2>/dev/null
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
 
