@@ -54,12 +54,17 @@ echo "userName=$userName"
 
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
+
+/usr/bin/sudo /bin/launchctl bootout  system/com.github.outset.boot 2>&1
 /usr/bin/sudo /bin/launchctl unload "/Library/LaunchDaemons/com.github.outset.boot.plist" 2>&1
 /usr/bin/sudo /bin/rm -fv "/Library/LaunchDaemons/com.github.outset.boot.plist" 2>&1
+/usr/bin/sudo /bin/launchctl bootout  system/com.github.outset.cleanup 2>&1
 /usr/bin/sudo /bin/launchctl unload "/Library/LaunchDaemons/com.github.outset.cleanup.plist" 2>&1
 /usr/bin/sudo /bin/rm -fv "/Library/LaunchDaemons/com.github.outset.cleanup.plist" 2>&1
+/usr/bin/sudo /bin/launchctl bootout  system/com.github.outset.login 2>&1
 /usr/bin/sudo /bin/launchctl unload "/Library/LaunchAgents/com.github.outset.login.plist" 2>&1
 /usr/bin/sudo /bin/rm -fv "/Library/LaunchAgents/com.github.outset.login.plist" 2>&1
+/usr/bin/sudo /bin/launchctl bootout  system/com.github.outset.on-demand 2>&1
 /usr/bin/sudo /bin/launchctl unload "/Library/LaunchAgents/com.github.outset.on-demand.plist" 2>&1
 /usr/bin/sudo /bin/rm -fv "/Library/LaunchAgents/com.github.outset.on-demand.plist" 2>&1
 /usr/bin/sudo /bin/rm -rfv /usr/local/outset 2>&1
