@@ -71,4 +71,4 @@ else
     rm -rf "$TMPMOUNT"
     rm "$TOOLS"
 fi
-exit
+exit 0
