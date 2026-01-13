@@ -24,10 +24,10 @@ echo "macOSversionMinor=$macOSversionMinor"
 if [ $macOSversionMajor -gt 11 ] || [ $macOSversionMajor -eq 10 -a $macOSversionMinor -ge 9 ]; then
 	# https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
 	echo "Check if command line tools are installed..."
-	/usr/bin/xcode-select -p 2>&1
-	/usr/bin/xcode-select -p 1>/dev/null
+	/usr/bin/xcode-select -p 1>/dev/null 2>&1 
 	CommandLineToolsCheck=${?}
-	echo ${?}
+# 	echo ${CommandLineToolsCheck}
+# 	/usr/bin/xcode-select -p 2>&1
 	if [[ ${CommandLineToolsCheck} -ne 0 ]]
 	then
 		echo "Xcode Command Line Tools not found..."
@@ -38,6 +38,7 @@ if [ $macOSversionMajor -gt 11 ] || [ $macOSversionMajor -eq 10 -a $macOSversion
 		/usr/bin/touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
 	else
 		echo "Xcode Command Line Tools already installed..."
+		/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress 2>/dev/null
 		echo "Checking for Xcode Command Line Tools updates..."
 	fi
 	PROD=$(/usr/sbin/softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
