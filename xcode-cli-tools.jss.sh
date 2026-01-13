@@ -1,4 +1,4 @@
-﻿#!/bin/bash --noprofile --norc
+#!/bin/zsh --no-rcs
 
 # https://github.com/timsutton/osx-vm-templates/blob/master/scripts/xcode-cli-tools.sh
 
@@ -22,17 +22,31 @@ echo "macOSversionMinor=$macOSversionMinor"
 
 # on 10.9+, we can leverage SUS to get the latest CLI tools
 if [ $macOSversionMajor -gt 11 ] || [ $macOSversionMajor -eq 10 -a $macOSversionMinor -ge 9 ]; then
-    # create the placeholder file that's checked by CLI updates' .dist code
-    # in Apple's SUS catalog
-    touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-    # find the CLI Tools update
-    PROD=$(softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+	# https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
+	echo "Check if command line tools are installed..."
+	/usr/bin/xcode-select -p 2>&1
+	/usr/bin/xcode-select -p 1>/dev/null
+	CommandLineToolsCheck=${?}
+	echo ${?}
+	if [[ ${CommandLineToolsCheck} -ne 0 ]]
+	then
+		echo "Xcode Command Line Tools not found..."
+		echo "Installing Xcode Command Line Tools..."
+		
+		# create the placeholder file that's checked by CLI updates' .dist code
+		# in Apple's SUS catalog
+		/usr/bin/touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+	else
+		echo "Xcode Command Line Tools already installed..."
+		echo "Checking for Xcode Command Line Tools updates..."
+	fi
+	PROD=$(/usr/sbin/softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
 # 	Strip "Label: "
-    PROD=$(echo "$PROD" | sed -e 's/Label: //')
+	PROD=$(echo "$PROD" | sed -e 's/Label: //')
 
     # install it
-    softwareupdate -i "$PROD" --verbose
-    rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+	/usr/sbin/softwareupdate -i "$PROD" --verbose
+	/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress 2>/dev/null
 
 # on 10.7/10.8, we instead download from public download URLs, which can be found in
 # the dvtdownloadableindex:
@@ -55,5 +69,5 @@ else
     hdiutil detach "$TMPMOUNT"
     rm -rf "$TMPMOUNT"
     rm "$TOOLS"
-    exit
 fi
+exit
