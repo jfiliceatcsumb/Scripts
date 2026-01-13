@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+﻿#!/bin/zsh --no-rcs
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -145,7 +145,7 @@ fi
 # https://github.com/munki/munki/wiki/Xcode
 echo "Installing all Xcode resource packages, such as mobile device support..."
 for PKG in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
-    /usr/sbin/installer -dumplog -verbose -pkg "$PKG" -target /
+    /usr/sbin/installer -verbose -pkg "$PKG" -target /
 done
 
 
@@ -176,24 +176,31 @@ echo "Download and install all device platform simulators: iOS Simulator, watchO
 
 # https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
 echo "Check if command line tools are installed..."
-/usr/bin/xcode-select -p 2>&1
-/usr/bin/xcode-select -p 1>/dev/null;echo $?
-
-# #####
-echo "(Re)Install Command Line Tools..."
-# 
-# create the placeholder file that's checked by CLI updates' .dist code
-# in Apple's SUS catalog
-/usr/bin/touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-# find the CLI Tools update
+/usr/bin/xcode-select -p 1>/dev/null 2>&1 
+CommandLineToolsCheck=${?}
+# 	echo ${CommandLineToolsCheck}
+# 	/usr/bin/xcode-select -p 2>&1
+if [[ ${CommandLineToolsCheck} -ne 0 ]]
+then
+	echo "Xcode Command Line Tools not found..."
+	echo "Installing Xcode Command Line Tools..."
+	
+	# create the placeholder file that's checked by CLI updates' .dist code
+	# in Apple's SUS catalog
+	/usr/bin/touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+else
+	echo "Xcode Command Line Tools already installed..."
+	/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress 2>/dev/null
+	echo "Checking for Xcode Command Line Tools updates..."
+fi
 PROD=$(/usr/sbin/softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
 # 	Strip "Label: "
 PROD=$(echo "$PROD" | sed -e 's/Label: //')
 
-# install it
+	# install it
 /usr/sbin/softwareupdate -i "$PROD" --verbose
-/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-# 
+/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress 2>/dev/null
+
 # 
 # #####
 
