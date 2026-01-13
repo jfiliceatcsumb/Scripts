@@ -145,7 +145,11 @@ fi
 # https://github.com/munki/munki/wiki/Xcode
 echo "Installing all Xcode resource packages, such as mobile device support..."
 for PKG in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
+    # Enable tracing without trace output
+		{ set -x; } 2>/dev/null
     /usr/sbin/installer -verbose -pkg "$PKG" -target /
+		# Disable tracing without trace output
+		{ set +x; } 2>/dev/null
 done
 
 
