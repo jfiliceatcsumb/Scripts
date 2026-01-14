@@ -349,7 +349,7 @@ if [[ $(/usr/bin/arch) == "arm64" ]]; then
     fi
 fi
 VERSION="10.9beta"
-VERSIONDATE="2025-12-01"
+VERSIONDATE="2025-12-23"
 
 # MARK: Functions
 
@@ -1886,8 +1886,14 @@ aircall)
 airflow)
     name="Air"
     type="dmg"
-    downloadURL="$(downloadURLFromGit AirLabsTeam desktop-releases)"
-    appNewVersion="$(versionFromGit AirLabsTeam desktop-releases)"
+    if [[ $(arch) == "arm64" ]]; then
+        archiveName="Air-arm64.dmg"
+
+    elif [[ $(arch) == "i386" ]]; then
+        archiveName="Air-x64.dmg"
+    fi
+    downloadURL="$(downloadURLFromGit AirLabsTeam airflow-releases)"
+    appNewVersion="$(versionFromGit AirLabsTeam airflow-releases)"
     expectedTeamID="8RBYE8TY7T"
     ;;
 airserver)
@@ -4050,7 +4056,7 @@ diskspace)
     ;;
 displaylinkmanager)
     name="DisplayLink Manager"
-    type="pkgInZip"
+    type="pkg"
     #packageID="com.displaylink.displaylinkmanagerapp"
     downloadURL=https://www.synaptics.com$(redirect=$(curl -sfL https://www.synaptics.com/products/displaylink-graphics/downloads/macos | grep -m 1 'class="download-link">Download' | sed 's/.*href="//' | sed 's/".*//') && curl -sfL "https://www.synaptics.com$redirect" | grep 'class="no-link"' | awk -F 'href="' '{print $2}' | awk -F '"' '{print $1}')
     appNewVersion=$(curl -sfL https://www.synaptics.com/products/displaylink-graphics/downloads/macos | grep -m 1 "Release:" | cut -d ' ' -f2)
