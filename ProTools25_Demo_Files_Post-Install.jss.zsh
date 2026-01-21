@@ -34,6 +34,7 @@
 readonly SCRIPT_NAME=$(/usr/bin/basename "$0")
 readonly SCRIPT_DIR=$(/usr/bin/dirname "$0")
 readonly TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+readonly IOPlatformUUID=$(/usr/sbin/ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}')
 
 # File Structure Constants
 readonly DIR_PERMS=755
@@ -60,6 +61,10 @@ log_info() {
 cleanup() {
     log_info "Performing cleanup..."
     # Add cleanup actions if needed
+    # Delete /Users/root/ directory and files
+    # Clean up after the Avid installers. We do not want a /Users/root left behind
+    # If USERID was some other user, then we will just leave it behind.
+
     if [[ -d "/Users/root" ]]; then
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
@@ -179,14 +184,8 @@ main() {
         log_error "Failed to set ownership on: $USER_TEMPL"
         return 1
     fi
-
-    # Delete /Users/root/ directory and files
-    # Clean up after the Avid installers. We do not want a /Users/root left behind
-    # If USERID was some other user, then we will just leave it behind.
-    if [[ -d "/Users/root" ]]; then
-    	log_info "Delete /Users/root/ directory and files..."
-	    /bin/rm -fRx "/Users/root"
-    fi
+    
+    cleanup
     
 }
 
