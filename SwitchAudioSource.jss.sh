@@ -16,7 +16,7 @@
 # PARAMETERS:
 # 4: device type (input/output/system/all).  Defaults to output
 # 5: Audio device name or UID (grep matching)
-# 6: (NOT IMPLEMENTED YET) sets the mute status (mute/unmute/toggle).  For input/output only.
+# 6: sets the mute status (mute/unmute/toggle).  For input/output only.
 
 # 
 # Change History:
@@ -130,11 +130,12 @@ zstyle ':case' GLOB_CASE_SENSITIVE true
 
 echo "Script parameters are valid. Proceeding..."
 
+### Production path:
+# PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.SwitchAudioSource.output.plist"
+### TESTING locally path:
+PathToLaunchDaemon="$HOME/edu.csumb.it.SwitchAudioSource.${device_type}.plist"
 
-### TESTING
-# PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.SwitchAudioSource.output.plist"
-PathToLaunchAgent="$HOME/edu.csumb.it.SwitchAudioSource.${device_type}.plist"
-Label=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
+Label=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 
 # Usage: 
 # SwitchAudioSource [-a] [-c] [-t type] [-n] -s device_name | -i device_id | -u device_uid
@@ -149,7 +150,7 @@ Label=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
 # 	-s device_name : sets the audio device to the given device by name
 # 
 
-echo "https://github.com/deweller/switchaudio-osx"
+echo 'https://github.com/deweller/switchaudio-osx'
 echo "Show  current ${device_type} device, cli format..."
 /usr/local/bin/SwitchAudioSource -c -f cli -t ${device_type}
 echo "List  all ${device_type} devices, cli format..."
@@ -173,16 +174,21 @@ then
 	/usr/local/bin/SwitchAudioSource -t "${device_type}" -s "${selectAudioSource}"
 fi
 
-LABEL=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
+LABEL=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 
-echo "Creating LaunchAgent plist file ${PathToLaunchAgent}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LABEL}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "/usr/local/bin/SwitchAudioSource" \
+#### TESTING--comment out bootout command
+# /bin/launchctl bootout system/${LABEL} "${PathToLaunchDaemon}"
+
+echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LABEL}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "/usr/local/bin/SwitchAudioSource" \
 "-t" "${device_type}" \
-"-s" "\"${selectAudioSource}\""
-/usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "LoginWindow" "Aqua"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'KeepAlive' -bool false
-/usr/bin/defaults write "${PathToLaunchAgent}" 'RunAtLoad' -bool true
+"-s" "\"${selectAudioSource}\"" \
+"-m" "${mute_mode}"
+# /usr/bin/defaults write "${PathToLaunchDaemon}" 'LimitLoadToSessionType' -array "LoginWindow" "Aqua"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'LimitLoadToSessionType' "LoginWindow"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'KeepAlive' -bool false
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'RunAtLoad' -bool true
 
 # If you set LimitLoadToSessionType to an array, be aware that each instance of your agent runs independently. For example, if you set up your agent to run in LoginWindow and Aqua, the system will first run an instance of your agent in the loginwindow context. When a user logs in, that instance will be terminated and a second instance will launch in the standard GUI context.
 # https://developer.apple.com/library/archive/technotes/tn2083/_index.html#//apple_ref/doc/uid/DTS10003794-CH1-SUBSECTION44
@@ -211,13 +217,13 @@ echo "Creating LaunchAgent plist file ${PathToLaunchAgent}"
 # -f	Do not display a diagnostic message if chmod could not modify the mode for file.
 # -h	If the file is a symbolic link, change the mode of the link itself rather than the file that the link points to.
 # -v	Cause chmod to be verbose, showing filenames as the mode is modified.  
-chown -fv 0:0 "${PathToLaunchAgent}"
-chmod -fv 644 "${PathToLaunchAgent}"
+chown -fv 0:0 "${PathToLaunchDaemon}"
+chmod -fv 644 "${PathToLaunchDaemon}"
 
-/usr/bin/defaults read "${PathToLaunchAgent}"
+/usr/bin/defaults read "${PathToLaunchDaemon}"
 
-#### TESTING
-# /bin/launchctl load "${PathToLaunchAgent}"
+#### TESTING--comment out bootstrap command
+# /bin/launchctl bootstrap system/${LABEL} "${PathToLaunchDaemon}"
 
 
 echo "***End $SCRIPTNAME script***"
