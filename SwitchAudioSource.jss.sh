@@ -33,7 +33,10 @@
 # set -u
 # debug bash script using xtrace
 # set -x
-
+# Enable tracing without trace output
+# { set -x; } 2>/dev/null
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
 
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTDIR=`/usr/bin/dirname "$0"`
@@ -131,9 +134,9 @@ zstyle ':case' GLOB_CASE_SENSITIVE true
 echo "Script parameters are valid. Proceeding..."
 
 ### Production path:
-# PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.SwitchAudioSource.output.plist"
+PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.SwitchAudioSource.output.plist"
 ### TESTING locally path:
-PathToLaunchDaemon="$HOME/edu.csumb.it.SwitchAudioSource.${device_type}.plist"
+# PathToLaunchDaemon="$HOME/edu.csumb.it.SwitchAudioSource.${device_type}.plist"
 
 Label=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 
@@ -176,8 +179,8 @@ fi
 
 LABEL=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 
-#### TESTING--comment out bootout command
-# /bin/launchctl bootout system/${LABEL} "${PathToLaunchDaemon}"
+#### TESTING--comment out bootout command 
+/bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}"
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LABEL}"
@@ -212,6 +215,8 @@ echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}"
 # </dict>
 # </plist>
 
+# Enable tracing without trace output
+{ set -x; } 2>/dev/null
 
 # chmod flags:
 # -f	Do not display a diagnostic message if chmod could not modify the mode for file.
@@ -220,11 +225,15 @@ echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}"
 chown -fv 0:0 "${PathToLaunchDaemon}"
 chmod -fv 644 "${PathToLaunchDaemon}"
 
-/usr/bin/defaults read "${PathToLaunchDaemon}"
+/usr/bin/plutil -lint "${PathToLaunchDaemon}"
+/usr/bin/plutil -p "${PathToLaunchDaemon}"
 
 #### TESTING--comment out bootstrap command
-# /bin/launchctl bootstrap system/${LABEL} "${PathToLaunchDaemon}"
+/bin/launchctl enable system/${LABEL}
+/bin/launchctl bootstrap system "${PathToLaunchDaemon}"
 
+# Disable tracing without trace output
+{ set +x; } 2>/dev/null
 
 echo "***End $SCRIPTNAME script***"
 
