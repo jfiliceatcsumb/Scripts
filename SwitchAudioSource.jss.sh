@@ -5,9 +5,7 @@
 # Technology Support Services in IT
 # California State University, Monterey Bay
 # https://csumb.edu/it
-
-
-
+# 
 # This script requires /usr/local/bin/SwitchAudioSource version 1.1.0 or newer.
 # Sets  audio output to script input parameter. 
 # If multiple values are provided, the script will stop after setting it to the first match. 
