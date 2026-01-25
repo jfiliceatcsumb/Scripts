@@ -63,6 +63,18 @@ mute_mode="${3:-unmute}"
 
 # --- Validation Logic ---
 
+# Validate executable file at /usr/local/bin/SwitchAudioSource
+
+Switch_Audio_Source="/usr/local/bin/SwitchAudioSource"
+
+if command -v "$Switch_Audio_Source" &>/dev/null; then
+    echo "$Switch_Audio_Source is installed and can be run."
+else
+    echo "Error: $Switch_Audio_Source is not installed." >&2
+    exit 1
+fi
+
+
 # Validate device_type using a case statement
 # Temporarily set the style for case-insensitivity for 'case' comparisons
 zstyle ':case' GLOB_CASE_SENSITIVE false
@@ -107,11 +119,12 @@ zstyle ':case' GLOB_CASE_SENSITIVE true
 echo "Script parameters are valid. Proceeding..."
 
 ### Production path:
-PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.SwitchAudioSource.${device_type}.plist"
+PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.SwitchAudioSource.${device_type}.agent.plist"
+PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.SwitchAudioSource.${device_type}.daemon.plist"
+
 ### TESTING locally path:
 # PathToLaunchAgent="$HOME/edu.csumb.it.SwitchAudioSource.${device_type}.plist"
 
-Label=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
 
 # Usage: 
 # SwitchAudioSource [-a] [-c] [-t type] [-n] -s device_name | -i device_id | -u device_uid
@@ -128,13 +141,12 @@ Label=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
 
 echo 'https://github.com/deweller/switchaudio-osx'
 echo "Show  current ${device_type} device, cli format..."
-/usr/local/bin/SwitchAudioSource -c -f cli -t ${device_type}
+${Switch_Audio_Source} -c -f cli -t ${device_type}
 echo "List  all ${device_type} devices, cli format..."
 # /usr/local/bin/SwitchAudioSource -a -f cli -t output
 
 
-# allAudioSources=$(/usr/local/bin/SwitchAudioSource -a -f cli -t output | grep --ignore-case -e "builtin")
-allAudioSources=$(/usr/local/bin/SwitchAudioSource -a -f cli -t ${device_type})
+allAudioSources=$(${Switch_Audio_Source} -a -f cli -t ${device_type})
 
 echo "${allAudioSources}"
 
@@ -152,23 +164,25 @@ selectAudioSourceName=$(echo "${allAudioSources}" | grep --ignore-case --max-cou
 # echo	"/usr/local/bin/SwitchAudioSource -t ${device_type} -u ${selectAudioSourceUID} -m ${mute_mode}"
 # /usr/local/bin/SwitchAudioSource -t "${device_type}" -u "${selectAudioSourceUID}" -m "${mute_mode}"
 
-LABEL=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
+LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
+LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 
-#### TESTING--comment out bootout command 
-/bin/launchctl bootout system "${PathToLaunchAgent}" 2>/dev/null
+/bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
+/bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
+
+# #### Create LaunchAgent ####
 echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
 if [[ -n $selectAudioSourceName ]]; then
-then
     /usr/bin/defaults delete "${PathToLaunchAgent}"
     /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array \
-    "/usr/local/bin/SwitchAudioSource" \
+    "${Switch_Audio_Source}" \
     "-t" "${device_type}" \
     "-s" "${selectAudioSourceName}"
 elif [[ -n $selectAudioSourceUID ]]; then
     /usr/bin/defaults delete "${PathToLaunchAgent}"
     /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array \
-    "/usr/local/bin/SwitchAudioSource" \
+    "${Switch_Audio_Source}" \
     "-t" "${device_type}" \
     "-u" "${selectAudioSourceUID}"
 else
@@ -176,14 +190,40 @@ else
 	exit 1
 fi
 
-/usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LABEL}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LABEL}_stdout.log"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardErrorPath' -string "/private/var/log/${LABEL}_stderr.log"
+/usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LaunchAgentLabel}"
+/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LaunchAgentLabel}_stdout.log"
+/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardErrorPath' -string "/private/var/log/${LaunchAgentLabel}_stderr.log"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "LoginWindow"
+/usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'KeepAlive' -bool false
 /usr/bin/defaults write "${PathToLaunchAgent}" 'RunAtLoad' -bool true
 /usr/bin/defaults write "${PathToLaunchAgent}" 'Debug' -bool true
+
+# #### Create LaunchDaemon ####
+echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
+if [[ -n $selectAudioSourceName ]]; then
+    /usr/bin/defaults delete "${PathToLaunchDaemon}"
+    /usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array \
+    "${Switch_Audio_Source}" \
+    "-t" "${device_type}" \
+    "-s" "${selectAudioSourceName}"
+elif [[ -n $selectAudioSourceUID ]]; then
+    /usr/bin/defaults delete "${PathToLaunchDaemon}"
+    /usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array \
+    "${Switch_Audio_Source}" \
+    "-t" "${device_type}" \
+    "-u" "${selectAudioSourceUID}"
+else
+	echo "Error: No device found for ${device_name_uid}" >&2
+	exit 1
+fi
+
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}_stdout.log"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardErrorPath' -string "/private/var/log/${LaunchDaemonLabel}_stderr.log"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'KeepAlive' -bool false
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'RunAtLoad' -bool true
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'Debug' -bool true
 
 # If you set LimitLoadToSessionType to an array, be aware that each instance of your agent runs independently. For example, if you set up your agent to run in LoginWindow and Aqua, the system will first run an instance of your agent in the loginwindow context. When a user logs in, that instance will be terminated and a second instance will launch in the standard GUI context.
 # https://developer.apple.com/library/archive/technotes/tn2083/_index.html#//apple_ref/doc/uid/DTS10003794-CH1-SUBSECTION44
@@ -210,20 +250,27 @@ fi
 # Enable tracing without trace output
 # { set -x; } 2>/dev/null
 
-# chmod flags:
-# -f	Do not display a diagnostic message if chmod could not modify the mode for file.
-# -h	If the file is a symbolic link, change the mode of the link itself rather than the file that the link points to.
-# -v	Cause chmod to be verbose, showing filenames as the mode is modified.  
+# Set file ownership and privileges
+
 /usr/sbin/chown -fv 0:0 "${PathToLaunchAgent}"
 /bin/chmod -fv 644 "${PathToLaunchAgent}"
+/usr/sbin/chown -fv 0:0 "${PathToLaunchDaemon}"
+/bin/chmod -fv 644 "${PathToLaunchDaemon}"
+
 # Remove quarantine extended attributes
 /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
 /usr/bin/plutil -lint "${PathToLaunchAgent}"
 /usr/bin/plutil -p "${PathToLaunchAgent}"
+/usr/bin/xattr -d com.apple.quarantine "${PathToLaunchDaemon}"
+/usr/bin/plutil -lint "${PathToLaunchDaemon}"
+/usr/bin/plutil -p "${PathToLaunchDaemon}"
 
-#### TESTING--comment out bootstrap command
-/bin/launchctl enable system/${LABEL}
-/bin/launchctl bootstrap system "${PathToLaunchAgent}" 2>/dev/null
+
+/bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
+/bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
+/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
+/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
+/bin/launchctl kickstart system/${LaunchDaemonLabel} 2>&1
 
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
