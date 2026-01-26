@@ -1,4 +1,4 @@
-﻿#!/bin/bash  --noprofile --norc
+﻿#!/bin/zsh --no-rcs
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -59,7 +59,7 @@ userName=$3
 shift 3
 # Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
 
-set -x
+# set -x
 
 echo pathToScript=$pathToScript
 echo mountPoint=$mountPoint
@@ -71,30 +71,33 @@ echo userName=$userName
 # /bin/ls -FlOah "${SCRIPTDIR}"
 # 
 
-HOMEURL="${1}"
-AUTHCODE="${2}"
+readonly HOMEURL="${1}"
+readonly AUTHCODE="${2}"
 
-PKG_URL="https://${HOMEURL}/client/setup/PrinterInstallerClientSetup.pkg"
-PKG_URL_arm64="https://${HOMEURL}/client/setup/PrinterInstallerClientSetup_arm64.pkg"
-PKGfile="PrinterInstallerClientSetup.pkg"
-launchdPlistPath="/Library/LaunchDaemons/com.printerlogic.client.plist"
+readonly PKG_EXPECTED_TEAMID='25DQ8HVJ3B'
+readonly launchdPlistPath="/Library/LaunchDaemons/com.printerlogic.client.plist"
 
-CPUarch=$(/usr/bin/uname -m)
+readonly CPUarch=$(/usr/bin/uname -m)
 # Expected results: arm64 | i386 | x86_64
 
-if [[ "$CPUarch" = "arm64" ]]; then
-	PKG_URL="$PKG_URL_arm64"
-	PKGfile="PrinterInstallerClientSetup_arm64.pkg"
+if [[ "${CPUarch}" = "arm64" ]]; then
+	readonly PKGfile="PrinterInstallerClientSetup_arm64.pkg"
+else
+	readonly PKGfile="PrinterInstallerClientSetup.pkg"
 fi
 
+readonly PKG_URL="https://${HOMEURL}/client/setup/${PKGfile}"
+
 if [[ -e /tmp/"${PKGfile}" ]]; then
-	rm -fR /tmp/"${PKGfile}"
+	/bin/rm -fR /tmp/"${PKGfile}"
 fi
 
 /usr/bin/curl "${PKG_URL}" --location --silent --show-error  --output /tmp/"${PKGfile}"
 
-if [[ -e "${PKGfile}" ]]; then
-	/usr/sbin/installer -allowUntrusted -pkg /tmp/"${PKGfile}" -target / 
+if [[ -e /tmp/"${PKGfile}" ]]; then
+	/usr/sbin/pkgutil --check-signature /tmp/"${PKGfile}"
+	
+	/usr/sbin/installer -pkg /tmp/"${PKGfile}" -target / 
 else 
 	echo "ERROR: ${PKGfile} not found"
 	exit 1
@@ -139,23 +142,14 @@ fi
 sleep 1
 
 
-if [[ "$userName" != "" ]] && [[ -e /etc/pl_dir ]]
+if [[ "$userName" != "" ]] && [[ -x /opt/PrinterInstallerClient/bin/refresh.sh ]]
 then
 # As root
-	/usr/bin/killall PrinterInstallerClient > /dev/null 2>&1
-	sleep 1
-	/usr/bin/open -gn "$(cat /etc/pl_dir)/service_interface/PrinterInstallerClient.app"
-
-# 
-# # Must run as user $userName
-# 	/usr/bin/sudo --user=${userName} /bin/sh -c "/usr/bin/open -gn $(cat /etc/pl_dir)/service_interface/PrinterInstallerClient.app"
-    # su -l ${userName} -c "echo"
-    sleep 2
-    
-fi
-
-if [[ -f /opt/PrinterInstallerClient/bin/refresh.sh ]]; then
+	/usr/bin/killall -KILL -v PrinterInstallerClient 2>&1
+	sleep 2
+	echo "running /opt/PrinterInstallerClient/bin/refresh.sh to restart the Printer Installer Client Menu Bar..."
 	/opt/PrinterInstallerClient/bin/refresh.sh
 fi
 
-exit
+
+exit 0
