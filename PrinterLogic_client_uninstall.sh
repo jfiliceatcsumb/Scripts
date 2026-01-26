@@ -1,4 +1,4 @@
-﻿#!/bin/bash  --noprofile --norc
+﻿#!/bin/zsh --no-rcs
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -53,7 +53,7 @@ userName=$3
 shift 3
 # Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
 
-set -x
+# set -x
 
 echo pathToScript=$pathToScript
 echo mountPoint=$mountPoint
@@ -77,7 +77,7 @@ if [[ -f "/Library/LaunchDaemons/com.printerlogic.client.plist" ]]; then
 fi
 
 # As root
-/usr/bin/killall PrinterInstallerClient > /dev/null 2>&1
+/usr/bin/killall -KILL PrinterInstallerClient > /dev/null 2>&1
 
 
 if [[ -f /opt/PrinterInstallerClient/bin/uninstall.sh ]]; then
