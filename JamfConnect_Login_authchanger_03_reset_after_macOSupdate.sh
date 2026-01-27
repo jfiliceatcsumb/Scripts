@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/zsh --no-rcs
 
 # Modified from
 # https://gist.github.com/sgmills/0a708fa4eb857ac7bf8ba84dc2b59f90#file-re-enable-jamf-connect-login-sh
@@ -26,24 +26,31 @@ fi
 
 }
 
+main() {
 # If the macOS Build plist key does not exist, create it and write the local os into it
-if ! /usr/libexec/PlistBuddy -c 'print "macOSBuild"' $buildPlist &> /dev/null; then
+if ! /usr/libexec/PlistBuddy -c 'print "macOSBuild"' ${buildPlist} &> /dev/null; then
 	echo "macOS Build plist does not exist. Creating now..."
-	defaults write $buildPlist macOSBuild $localOS
-    ReEnableJamfConnect
+	/bin/mkdir -pm 755 $(/usr/bin/dirname "${buildPlist}")
+	/usr/bin/defaults write ${buildPlist} macOSBuild ${localOS}
+	/usr/sbin/chown -fR 0:0 $(/usr/bin/dirname "${buildPlist}")
+	/bin/chmod -fR 755 $(/usr/bin/dirname "${buildPlist}")
+	/bin/chmod -f 644 "${buildPlist}"
+	ReEnableJamfConnect
 else
 	echo "macOS Build plist already exists. Skipping creation..."
 fi
 
 # Get the os from the macOS build plist now that we have ensured it exists
-plistOS=$( defaults read $buildPlist macOSBuild )
+plistOS=$( /usr/bin/defaults read ${buildPlist} macOSBuild )
 
 # If the local OS does not match the plist OS do some maintainance
-if [[ $localOS != $plistOS ]]; then
+if [[ ${localOS} != ${plistOS} ]]; then
 	ReEnableJamfConnect
 	
 	# Update the local plist file for next time
-	defaults write $buildPlist macOSBuild $localOS
+	/usr/bin/defaults write ${buildPlist} macOSBuild ${localOS}
+	/bin/chmod -f 644 "${buildPlist}"
 else
 	echo "macOS was not updated. Nothing to do here."
 fi
+}
