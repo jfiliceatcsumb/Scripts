@@ -17,6 +17,7 @@ ReEnableJamfConnect() {
 # Check for Jamf Connect Login status and re-enable if needed
 if [[ ! $( /usr/local/bin/authchanger -print | grep JamfConnectLogin ) ]]; then
 # If JCL is disabled, re-enable it with a policy (scope carefully)
+	echo "Re-enable Jamf Connect Login.."
 	/usr/local/bin/jamf policy -event enable-jamfconnectlogin
 else
 	echo "Jamf Connect Login is enabled on this device. Nothing to do here..."
@@ -26,15 +27,18 @@ fi
 
 }
 
+SetFilePermissions(){
+	/usr/sbin/chown -fR 0:0 $(/usr/bin/dirname "${buildPlist}")
+	/bin/chmod -fR 755 $(/usr/bin/dirname "${buildPlist}")
+	/bin/chmod -f 644 "${buildPlist}"
+}
+
 main() {
 # If the macOS Build plist key does not exist, create it and write the local os into it
 if ! /usr/libexec/PlistBuddy -c 'print "macOSBuild"' ${buildPlist} &> /dev/null; then
 	echo "macOS Build plist does not exist. Creating now..."
 	/bin/mkdir -pm 755 $(/usr/bin/dirname "${buildPlist}")
 	/usr/bin/defaults write ${buildPlist} macOSBuild ${localOS}
-	/usr/sbin/chown -fR 0:0 $(/usr/bin/dirname "${buildPlist}")
-	/bin/chmod -fR 755 $(/usr/bin/dirname "${buildPlist}")
-	/bin/chmod -f 644 "${buildPlist}"
 	ReEnableJamfConnect
 else
 	echo "macOS Build plist already exists. Skipping creation..."
@@ -45,12 +49,18 @@ plistOS=$( /usr/bin/defaults read ${buildPlist} macOSBuild )
 
 # If the local OS does not match the plist OS do some maintainance
 if [[ ${localOS} != ${plistOS} ]]; then
+	
 	ReEnableJamfConnect
 	
 	# Update the local plist file for next time
 	/usr/bin/defaults write ${buildPlist} macOSBuild ${localOS}
-	/bin/chmod -f 644 "${buildPlist}"
 else
 	echo "macOS was not updated. Nothing to do here."
 fi
+
+SetFilePermissions
 }
+
+main "$@"
+
+exit
