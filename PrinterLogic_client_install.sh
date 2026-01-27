@@ -127,6 +127,8 @@ fi
 
 # Echo 
 
+sleep 5
+
 echo "Safari feature fix..."
 
 if [[ -f "${launchdPlistPath}" ]]; then
