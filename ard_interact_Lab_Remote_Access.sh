@@ -17,7 +17,10 @@ addARDgroup="MyDomain\Domain Users"
 KICKSTART="/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart"
 
 # test if ard_interact group exists already
-test_ard_interact=$(/usr/sbin/dseditgroup ard_interact) 2>/dev/null
+if ! test_ard_interact=$(/usr/sbin/dseditgroup ard_interact 2>/dev/null); then
+	echo "Failed to query ard_interact group status."
+	exit 1
+fi
 # If $test_ard_interact string is emtpy, the group does not exist.
 if [ -z "$test_ard_interact" ] 
 then
