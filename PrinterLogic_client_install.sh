@@ -125,8 +125,6 @@ else
 	exit 1
 fi	
 
-# Echo 
-
 sleep 5
 
 echo "Safari feature fix..."
