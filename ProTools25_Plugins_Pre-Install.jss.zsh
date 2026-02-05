@@ -212,10 +212,12 @@ main() {
 #     log_info "Creating directory: ${USER_TEMPL}/Library/Preferences/Avid"
 #     create_directory "${USER_TEMPL}/Library/Preferences/Avid" || exit 1
 #     
-    
-	# ##  Move files back from temporary ${IOPlatformUUID} location
-	# ## 
+# 	remove any files already in /Users/root
+    cleanup
 # 	Delete files from temporary ${IOPlatformUUID} location
+# hide temporary ${IOPlatformUUID} location
+	# ##  Move files to temporary ${IOPlatformUUID} location
+	# ## 
     
     # Set root ownership on target directories and files
     log_info "Setting root ownership on ${USER_TEMPL}..."
