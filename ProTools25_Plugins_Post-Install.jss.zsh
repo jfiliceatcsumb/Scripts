@@ -33,7 +33,7 @@
 # Script constants
 readonly SCRIPT_NAME=$(/usr/bin/basename "$0")
 readonly SCRIPT_DIR=$(/usr/bin/dirname "$0")
-readonly TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+readonly TIMESTAMP=$(/bin/date +"%Y-%m-%d %H:%M:%S")
 readonly IOPlatformUUID=$(/usr/sbin/ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}')
 
 # File Structure Constants
@@ -87,6 +87,13 @@ get_macos_version() {
     echo "$version"
 }
 
+# Function to get IOPlatformUUID 
+get_UUID() {
+    local UUID
+    UUID=$(/usr/sbin/ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}')
+    echo "$UUID"
+}
+
 # Function to determine template location based on OS version
 set_user_templ() {
     local version=$1
@@ -109,99 +116,128 @@ set_user_templ() {
 
 # Function to create directory with proper permissions
 create_directory() {
-    local dir=$1
+    local dir="${1}"
     if ! /bin/mkdir -pvm ${DIR_PERMS} "$dir"; then
         log_error "Failed to create directory: $dir"
         return 1
     fi
 }
 
+# Function to copy files to the user template.
+ditto_files() {
+		local SOURCEPATH="${1}"
+		local DESTINATIONPATH="${2}" 
+		if [[ -e "${SOURCEPATH}" ]]; then
+			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
+			if ! /usr/bin/ditto --noacl --noqtn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
+					log_error "Failed to copy ${SOURCEPATH}"
+					return 1
+			fi    
+		else
+			log_info "Skipping source directory not found: ${SOURCEPATH}"
+		fi
+}
+
+# Function to move files back to their original path after copying or moving files to user template
+move_files() {
+		local SOURCEPATH="${1}"
+		local DESTINATIONPATH="${2}" 
+		local DESTINATIONDIRECTORY="$(/usr/bin/dirname "$2")"
+		if [[ -e "${SOURCEPATH}" ]]; then
+			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
+			create_directory "${DESTINATIONDIRECTORY}"
+			if ! /bin/mv -hn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
+					log_error "Failed to move ${SOURCEPATH}"
+					return 1
+			fi    
+		else
+			log_info "Skipping source directory not found: ${SOURCEPATH}"
+		fi
+
+}
 
 # Main execution starts here
 main() {
-    log_info "Starting Pro Tools Plugins Post-install cleanup script"
-    
-    # Check if running as root
-    check_root
-    
-# Use similar method as the stupid Avid installer scripts to determine the userID (typically "root")
-#	Determine currently loggged in user because this is what the Avid installers use to create the user directory.
-		loggedInUser=$(stat -f "%Su" /dev/console) 2>/dev/null
-		if [[ "${loggedInUser}" == "root" || "${loggedInUser}" == "" ]]; then
-			USERID="root"
-		else
-  	  USERID="${loggedInUser}"
-		fi
-
-    # Get and validate macOS version
-    local os_version
-    os_version=$(get_macos_version)
-    typeset -g USER_TEMPL
-    set_user_templ "$os_version"
-    log_info "User Template path: ${USER_TEMPL}"
-    
-    
-#     Not needed when we use ditto
-#     # Create  directories
-#     log_info "Creating directories..."
-#     log_info "Creating directory: ${USER_TEMPL}/Documents/Pro Tools/Demo Sessions"
-#     create_directory "${USER_TEMPL}/Documents/Pro Tools/Demo Sessions" || exit 1
-#     
-#     log_info "Creating directory: ${USER_TEMPL}/Documents/Pro Tools/Demo Sketches"
-#     create_directory "${USER_TEMPL}/Documents/Pro Tools/Demo Sketches" || exit 1
-    
+	
+	# Directories to create and copy to User Template:
+	# "/Users/$userid/Documents/Pro Tools/Track Presets/Avid/AIR Instruments Bundle/Xpand!2\"
+	# 
+	# "/Users/$userid/Library/Preferences/com.airmusictech.Xpand\!2.plist"
+	# "/Users/$userid/Library/Preferences/com.airmusictech.Boom.plist"
+	# "/Users/$userid/Library/Preferences/com.airmusictech.Mini Grand.plist"
+	# "/Users/$userid/Library/Preferences/com.airmusictech.Structure.plist"
+	
+	# $homedir = $ENV{'HOME'}
+	# $userid = basename($homedir)
+	# return $userid;
+	
+	# Strange postinstall: 
+	# ${HOME}/Music/K-Devices/Presets/*
+	# /Users/$userid/Documents/Pro Tools/Plug-In Settings/*"
+	
+	# /Users/$userid/Documents/Pro Tools/Track Presets/Avid/AIR Instruments Bundle/*"
+	# /Users/$userid/Documents/Pro Tools/Track Presets/*"
+	# /Users/$userid/Library/Preferences/com.airmusictech.*.plist"
+	# 
+	# "$HOME/Library/Audio/Presets/"
+	# 
+	# AIR Effects Bundle 26.1.0.5 Mac (DMG) 424.47 MB
+	# 
+	
+	log_info "Starting Pro Tools Plugins Post-install cleanup script"
+	
+	readonly IOPlatformUUID=$(get_UUID)
+	
+	# Check if running as root
+	check_root
+	
+	# Use similar method as the stupid Avid installer scripts to determine the userID (typically "root")
+	#	Determine currently loggged in user because this is what the Avid installers use to create the user directory.
+	readonly loggedInUser=$(stat -f "%Su" /dev/console) 2>/dev/null
+	if [[ "${loggedInUser}" == "root" || "${loggedInUser}" == "" ]]; then
+		readonly USERID="root"
+	else
+		readonly USERID="${loggedInUser}"
+	fi
+	
+	# Get and validate macOS version
+	local os_version
+	os_version=$(get_macos_version)
+	typeset -g USER_TEMPL
+	set_user_templ "$os_version"
+	log_info "User Template path: ${USER_TEMPL}"
+	
+		
+	
 #     log_info "Creating directory: ${USER_TEMPL}/Library/Preferences/Avid"
 #     create_directory "${USER_TEMPL}/Library/Preferences/Avid" || exit 1
 #     
-    
-    
-# ## Copy  Pro Tools Installation files
-# ## /Users/$USERID/Documents/Pro Tools/Demo Sessions/
-		if [[ -e "/Users/${USERID}/Documents/Pro Tools/Demo Sessions" ]]; then
-			log_info "Copying /Users/${USERID}/Documents/Pro Tools/Demo Sessions/ to ${USER_TEMPL}"
-			if ! /usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sessions" "${USER_TEMPL}/Documents/Pro Tools/Demo Sessions"; then
-					log_error "Failed to copy Demo Sessions"
-					return 1
-			fi    
-		else
-			log_info "Skipping source directory not found: /Users/${USERID}/Documents/Pro Tools/Demo Sessions/"
-		fi
 		
-# ## /Users/$USERID/Documents/Pro Tools/Demo Sketches/
-		if [[ -e "/Users/${USERID}/Documents/Pro Tools/Demo Sketches" ]]; then
-			log_info "Copying /Users/${USERID}/Documents/Pro Tools/Demo Sketches/ to ${USER_TEMPL}"
-			if ! /usr/bin/ditto --noacl --noqtn "/Users/${USERID}/Documents/Pro Tools/Demo Sketches" "${USER_TEMPL}/Documents/Pro Tools/Demo Sketches"; then
-					log_error "Failed to copy Demo Sketches"
-					return 1
-			fi    
-		else
-			log_info "Skipping source directory not found: /Users/${USERID}/Documents/Pro Tools/Demo Sketches/"
-		fi
+	# ##  Move files back from temporary ${IOPlatformUUID} location
+	# ## 
+# 	Delete files from temporary ${IOPlatformUUID} location
 
-    # Set root ownership on target directories and files
-    log_info "Setting root ownership on ${USER_TEMPL}..."
-    if ! /usr/sbin/chown -fR 0:0 "${USER_TEMPL}"; then
-        log_error "Failed to set ownership on: $USER_TEMPL"
-        return 1
-    fi
-    
-    cleanup
-    
+	# Set root ownership on target directories and files
+	log_info "Setting root ownership on ${USER_TEMPL}..."
+	if ! /usr/sbin/chown -fR 0:0 "${USER_TEMPL}"; then
+			log_error "Failed to set ownership on: $USER_TEMPL"
+			return 1
+	fi
+	
+	cleanup
+	
 }
 
 # Execute main function with error handling
 if ! main; then
-    log_error "Script failed to complete successfully"
+    log_error "${SCRIPT_NAME} script failed to complete successfully"
     exit 1
 fi
 
-log_info "Pro Tools Plugins Post-install cleanup script completed successfully"
+log_info "${SCRIPT_NAME} script completed successfully"
 
 exit 0
 
-# ## Pro Tools Installation
-# /Users/$USERID/Documents/Pro Tools/Demo Sessions/
-# /Users/$USERID/Documents/Pro Tools/Demo Sketches/
 
 # ## Other installations
 # /Users/$USERID/Library/Preferences/
@@ -210,8 +246,7 @@ exit 0
 # /Users/$USERID/Library/Preferences/com.airmusictech.*.plist
 
 
-# mkdir -p "$TARGET"
-# cp -Rpv "/Users/$USERID/Documents/Pro Tools/Demo Sessions/" "/Library/User Template/Non_localized/Documents/Pro Tools/Demo Sessions"
+
 
 # /bin/mv
 # /bin/rm
