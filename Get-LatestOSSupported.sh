@@ -248,7 +248,7 @@ os_check() {
 
 check_ram_upgradeable() {
 	ram_upgradeable=$( /usr/sbin/system_profiler SPMemoryDataType | \
-		/usr/bin/awk -F "Upgradeable Memory: " '{print $2}' | /usr/bin/xargs 2&> /dev/null )
+		/usr/bin/awk -F "Upgradeable Memory: " '{print $2}' | /usr/bin/xargs 2>/dev/null )
 	# ARM Macs do not return the "Upgradeable Memory:" attribute as of early 2022
 	if [[ -z ${ram_upgradeable} ]]; then
 		ram_upgradeable="No"

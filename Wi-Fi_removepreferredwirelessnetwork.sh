@@ -54,10 +54,12 @@ alias sudo=/usr/bin/sudo
 # debug bash script using xtrace
 # set -x
 
-# Example:
-#!/bin/sh
-
 SSID="$1"
+
+if [[ -z "${SSID}" ]]; then
+	echo "Usage: $(/usr/bin/basename "$0") <SSID to remove>"
+	exit 1
+fi
 
 for interface in $(networksetup -listnetworkserviceorder | grep -e "Hardware" | grep -e "Wi-Fi" |  sed -e 's/(//'  -e  's/)//' | awk '{ print $NF }')
 do  
@@ -66,4 +68,3 @@ do
 done
 
 exit 0
-
