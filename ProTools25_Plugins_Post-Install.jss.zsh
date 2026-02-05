@@ -184,7 +184,6 @@ main() {
 	# AIR Effects Bundle 26.1.0.5 Mac (DMG) 424.47 MB
 	# 
 	
-	log_info "Starting Pro Tools Plugins Post-install cleanup script"
 	
 	readonly IOPlatformUUID=$(get_UUID)
 	
@@ -228,6 +227,8 @@ main() {
 	
 }
 
+log_info "Starting ${SCRIPT_NAME} script"
+ 
 # Execute main function with error handling
 if ! main; then
     log_error "${SCRIPT_NAME} script failed to complete successfully"
