@@ -33,7 +33,7 @@
 # Script constants
 readonly SCRIPT_NAME=$(/usr/bin/basename "$0")
 readonly SCRIPT_DIR=$(/usr/bin/dirname "$0")
-readonly TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+readonly TIMESTAMP=$(/bin/date +"%Y-%m-%d %H:%M:%S")
 readonly IOPlatformUUID=$(/usr/sbin/ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}')
 
 # File Structure Constants
