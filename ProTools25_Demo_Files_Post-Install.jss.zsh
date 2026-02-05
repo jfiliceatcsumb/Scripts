@@ -109,28 +109,41 @@ set_user_templ() {
 
 # Function to create directory with proper permissions
 create_directory() {
-    local dir=$1
+    local dir="${1}"
     if ! /bin/mkdir -pvm ${DIR_PERMS} "$dir"; then
         log_error "Failed to create directory: $dir"
         return 1
     fi
 }
 
+# Function to copy files to the user template.
+ditto_files() {
+		local SOURCEPATH="${1}"
+		local DESTINATIONPATH="${2}" 
+		if [[ -e "${SOURCEPATH}" ]]; then
+			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
+			if ! /usr/bin/ditto --noacl --noqtn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
+					log_error "Failed to copy ${SOURCEPATH}"
+					return 1
+			fi    
+		else
+			log_info "Skipping source directory not found: ${SOURCEPATH}"
+		fi
+}
 
 # Main execution starts here
 main() {
-    log_info "Starting Pro Tools Post-install Demo Files cleanup script"
     
     # Check if running as root
     check_root
     
 # Use similar method as the stupid Avid installer scripts to determine the userID (typically "root")
 #	Determine currently loggged in user because this is what the Avid installers use to create the user directory.
-		loggedInUser=$(stat -f "%Su" /dev/console) 2>/dev/null
+	readonly loggedInUser=$(stat -f "%Su" /dev/console) 2>/dev/null
 		if [[ "${loggedInUser}" == "root" || "${loggedInUser}" == "" ]]; then
-			USERID="root"
+		readonly USERID="root"
 		else
-  	  USERID="${loggedInUser}"
+		readonly USERID="${loggedInUser}"
 		fi
 
     # Get and validate macOS version
@@ -189,13 +202,15 @@ main() {
     
 }
 
+log_info "Starting ${SCRIPT_NAME} script"
+ 
 # Execute main function with error handling
 if ! main; then
-    log_error "Script failed to complete successfully"
+    log_error "${SCRIPT_NAME} script failed to complete successfully"
     exit 1
 fi
 
-log_info "Pro Tools Post-install Demo Files cleanup script completed successfully"
+log_info "${SCRIPT_NAME} script completed successfully"
 
 exit 0
 
