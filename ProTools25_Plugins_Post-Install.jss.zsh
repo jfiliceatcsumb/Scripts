@@ -63,7 +63,7 @@ cleanup() {
     # Add cleanup actions if needed
     # Delete /Users/root/ directory and files
     # Clean up after the Avid installers. We do not want a /Users/root left behind
-    # If USERID was some other user, then we will just leave it behind.
+    # If USERIDHOME was some other user, then we will just leave it behind.
 
     if [[ -d "/Users/root" ]]; then
         log_info "Cleaning up /Users/root directory..."
@@ -159,31 +159,6 @@ move_files() {
 # Main execution starts here
 main() {
 	
-	# Directories to create and copy to User Template:
-	# "/Users/$userid/Documents/Pro Tools/Track Presets/Avid/AIR Instruments Bundle/Xpand!2\"
-	# 
-	# "/Users/$userid/Library/Preferences/com.airmusictech.Xpand\!2.plist"
-	# "/Users/$userid/Library/Preferences/com.airmusictech.Boom.plist"
-	# "/Users/$userid/Library/Preferences/com.airmusictech.Mini Grand.plist"
-	# "/Users/$userid/Library/Preferences/com.airmusictech.Structure.plist"
-	
-	# $homedir = $ENV{'HOME'}
-	# $userid = basename($homedir)
-	# return $userid;
-	
-	# Strange postinstall: 
-	# ${HOME}/Music/K-Devices/Presets/*
-	# /Users/$userid/Documents/Pro Tools/Plug-In Settings/*"
-	
-	# /Users/$userid/Documents/Pro Tools/Track Presets/Avid/AIR Instruments Bundle/*"
-	# /Users/$userid/Documents/Pro Tools/Track Presets/*"
-	# /Users/$userid/Library/Preferences/com.airmusictech.*.plist"
-	# 
-	# "$HOME/Library/Audio/Presets/"
-	# 
-	# AIR Effects Bundle 26.1.0.5 Mac (DMG) 424.47 MB
-	# 
-	
 	
 	readonly IOPlatformUUID=$(get_UUID)
 	
@@ -192,11 +167,15 @@ main() {
 	
 	# Use similar method as the stupid Avid installer scripts to determine the userID (typically "root")
 	#	Determine currently loggged in user because this is what the Avid installers use to create the user directory.
+	# $homedir = $ENV{'HOME'}
+	# $userid = basename($homedir)
+	# return $userid;
+
 	readonly loggedInUser=$(stat -f "%Su" /dev/console) 2>/dev/null
 	if [[ "${loggedInUser}" == "root" || "${loggedInUser}" == "" ]]; then
-		readonly USERID="root"
+		readonly USERIDHOME="root"
 	else
-		readonly USERID="${loggedInUser}"
+		readonly USERIDHOME="${loggedInUser}"
 	fi
 	
 	# Get and validate macOS version
@@ -208,11 +187,45 @@ main() {
 	
 		
 	
-#     log_info "Creating directory: ${USER_TEMPL}/Library/Preferences/Avid"
-#     create_directory "${USER_TEMPL}/Library/Preferences/Avid" || exit 1
-#     
-		
+	log_info "Creating directory: ${USER_TEMPL}/Library/Preferences/Avid"
+	create_directory "${USER_TEMPL}/Library/Preferences/Avid" || exit 1
+	
+	log_info "Copying files to User Template ${USER_TEMPL}"
+# Directories to create and copy to User Template:
+# 
+	ditto_files "/Users/$USERIDHOME/Music/K-Devices/Presets" "${USER_TEMPL}/Music/K-Devices/Presets"
+
+	ditto_files 
+# /Users/$USERIDHOME/Music/K-Devices/Presets/*
+	ditto_files 
+# "/Users/$USERIDHOME/Library/Audio/Presets/*"
+
+	ditto_files 
+# /Users/$USERIDHOME/Documents/Pro Tools/Plug-In Settings/*"
+
+	ditto_files 
+# /Users/$USERIDHOME/Documents/Pro Tools/Track Presets/*"
+	ditto_files 
+# /Users/$USERIDHOME/Library/Preferences/com.airmusictech.*.plist
+
+	ditto_files 
+# /Users/$USERIDHOME/Library/Preferences/Avid/
+
+	ditto_files 
+# /Users/$USERIDHOME/Library/Preferences/com.airmusictech.*.plist"
+# 	
+# "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Xpand\!2.plist"
+# "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Boom.plist"
+# "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Mini Grand.plist"
+# "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Structure.plist"
+
+	# 
+	# 
+
+	
 	# ##  Move files back from temporary ${IOPlatformUUID} location
+		move_files 
+
 	# ## 
 # 	Delete files from temporary ${IOPlatformUUID} location
 
@@ -239,20 +252,10 @@ log_info "${SCRIPT_NAME} script completed successfully"
 
 exit 0
 
-
-# ## Other installations
-# /Users/$USERID/Library/Preferences/
-# /Users/$USERID/Library/Preferences/Avid/
-# /Users/$USERID/Documents/Pro Tools/Track Presets/Avid/AIR Instruments Bundle/
-# /Users/$USERID/Library/Preferences/com.airmusictech.*.plist
-
-
-
-
 # /bin/mv
 # /bin/rm
 # /bin/cp
 # /usr/bin/ditto
 
 
-# ls -FlOahR /Users/$USERID/
+# ls -FlOahR /Users/$USERIDHOME/
