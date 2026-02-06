@@ -43,17 +43,17 @@ fi
 /bin/chmod a+w "/Library/Application Support/Avid/Audio/Plug-Ins"
 /bin/chmod a+w "/Library/Application Support/Avid/Audio/Plug-Ins (Unused)"
 
-/bin/mkdir /Users/Shared/Pro\ Tools
-/bin/mkdir /Users/Shared/AvidVideoEngine
+/bin/mkdir -p "/Users/Shared/Pro Tools"
+/bin/mkdir -p "/Users/Shared/AvidVideoEngine"
 
-/usr/sbin/chown -R root:wheel /Users/Shared/Pro\ Tools
-/bin/chmod -R a+rw /Users/Shared/Pro\ Tools
-/usr/sbin/chown -R root:wheel /Users/Shared/AvidVideoEngine
-/bin/chmod -R a+rw /Users/Shared/AvidVideoEngine
+/usr/sbin/chown -R root:wheel "/Users/Shared/Pro Tools"
+/bin/chmod -R a+rw "/Users/Shared/Pro Tools"
+/usr/sbin/chown -R root:wheel "/Users/Shared/AvidVideoEngine"
+/bin/chmod -R a+rw "/Users/Shared/AvidVideoEngine"
 
 # Get rid of old workspace
-if [[ -e /Users/Shared/Pro\ Tools/Workspace.wksp ]]; then
-	/bin/rm -rf /Users/Shared/Pro\ Tools/Workspace.wksp
+if [[ -e "/Users/Shared/Pro Tools/Workspace.wksp" ]]; then
+	/bin/rm -rf "/Users/Shared/Pro Tools/Workspace.wksp"
 fi
 
 exit 0
