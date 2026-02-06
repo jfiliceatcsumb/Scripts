@@ -117,8 +117,10 @@ set_user_templ() {
 # Function to create directory with proper permissions
 create_directory() {
     local dir="${1}"
-    if ! /bin/mkdir -pvm ${DIR_PERMS} "$dir"; then
-        log_error "Failed to create directory: $dir"
+    log_info "Creating directory: ${dir}"
+
+    if ! /bin/mkdir -pvm ${DIR_PERMS} "${dir}"; then
+        log_error "Failed to create directory: ${dir}"
         return 1
     fi
 }
@@ -185,39 +187,32 @@ main() {
 	set_user_templ "$os_version"
 	log_info "User Template path: ${USER_TEMPL}"
 	
-		
-	
-	log_info "Creating directory: ${USER_TEMPL}/Library/Preferences/Avid"
-	create_directory "${USER_TEMPL}/Library/Preferences/Avid" || exit 1
 	
 	log_info "Copying files to User Template ${USER_TEMPL}"
 # Directories to create and copy to User Template:
 # 
-	ditto_files "/Users/$USERIDHOME/Music/K-Devices/Presets" "${USER_TEMPL}/Music/K-Devices/Presets"
-
-	ditto_files 
 # /Users/$USERIDHOME/Music/K-Devices/Presets/*
-	ditto_files 
-# "/Users/$USERIDHOME/Library/Audio/Presets/*"
+	ditto_files "/Users/${USERIDHOME}/Music/K-Devices/Presets" "${USER_TEMPL}/Music/K-Devices/Presets"
 
-	ditto_files 
-# /Users/$USERIDHOME/Documents/Pro Tools/Plug-In Settings/*"
+# "/Users/${USERIDHOME}/Library/Audio/Presets/*"
+	ditto_files "/Users/${USERIDHOME}/Library/Audio/Presets" "${USER_TEMPL}/Library/Audio/Presets"
+	
+# /Users/${USERIDHOME}/Documents/Pro Tools/Plug-In Settings/*"
+	ditto_files "/Users/${USERIDHOME}/Documents/Pro Tools/Plug-In Settings" "${USER_TEMPL}/Documents/Pro Tools/Plug-In Settings"
 
-	ditto_files 
-# /Users/$USERIDHOME/Documents/Pro Tools/Track Presets/*"
-	ditto_files 
-# /Users/$USERIDHOME/Library/Preferences/com.airmusictech.*.plist
+# /Users/${USERIDHOME}/Documents/Pro Tools/Track Presets/*"
+	ditto_files "/Users/${USERIDHOME}/Documents/Pro Tools/Track Presets" "${USER_TEMPL}/Documents/Pro Tools/Track Presets"
 
-	ditto_files 
 # /Users/$USERIDHOME/Library/Preferences/Avid/
+	ditto_files "/Users/${USERIDHOME}/Library/Preferences/Avid/" "${USER_TEMPL}/Library/Preferences/Avid/"
 
-	ditto_files 
-# /Users/$USERIDHOME/Library/Preferences/com.airmusictech.*.plist"
-# 	
 # "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Xpand\!2.plist"
 # "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Boom.plist"
 # "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Mini Grand.plist"
 # "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Structure.plist"
+# /Users/$USERIDHOME/Library/Preferences/com.airmusictech.*.plist
+	ditto_files "/Users/${USERIDHOME}/Library/Preferences/com.airmusictech.*.plist" "${USER_TEMPL}/Library/Preferences/"
+
 
 	# 
 	# 
