@@ -172,9 +172,7 @@ move_files() {
 
 # Main execution starts here
 main() {
-	
-	set -x
-	
+		
 	readonly IOPlatformUUID=$(get_UUID)
 	
 	# Check if running as root
@@ -277,4 +275,3 @@ exit 0
 # /usr/bin/ditto
 
 
-# ls -FlOahR /Users/$USERIDHOME/
