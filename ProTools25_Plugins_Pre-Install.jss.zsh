@@ -25,7 +25,7 @@
 # debug bash script using xtrace
 # set -x
 # Enable tracing without trace output
-{ set -x; } 2>/dev/null
+# { set -x; } 2>/dev/null
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
 
@@ -65,19 +65,14 @@ cleanup() {
     # Clean up after the Avid installers. We do not want a /Users/root left behind
     # If USERIDHOME was some other user, then we will just leave it behind.
 		local IOPlatformUUID=$(get_UUID)
-    if [[ -d "/Users/root" ]]; then
+    if [[ -e "/Users/root" ]]; then
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
     fi
-    if [[ -n ${USERIDHOME_Avid} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -d "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}" ]]; then
-        log_info "Cleaning up /tmp/${USERIDHOME_Avid}_${IOPlatformUUID} directory..."
-        /bin/rm -fRx "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}"
+    if [[ -n ${loggedInUser} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
+        log_info "Cleaning up /tmp/${loggedInUser}_${IOPlatformUUID} directory..."
+        /bin/rm -fRx "/tmp/${loggedInUser}_${IOPlatformUUID}"
     fi
-		if [[ -n ${USERIDHOME_Avid} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -d "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}" ]]; then
-        log_info "Cleaning up /tmp/${USERIDHOME_REAL}_${IOPlatformUUID} directory..."
-				/bin/rm -fRx "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}"
-		fi
-
 }
 trap 'cleanup' EXIT
 
@@ -201,20 +196,19 @@ main() {
     set_user_templ "$os_version"
     log_info "User Template path: ${USER_TEMPL}"
     
-    
-#     
 # 	remove any files already in /Users/root
+   cleanup 
+#     
 	# ##  Move files to temporary ${IOPlatformUUID} location
-	move_files "${USERIDHOME_REAL}/Music/K-Devices/Presets" "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}/Music/K-Devices/Presets"
-	move_files "${USERIDHOME_Avid}/Library/Audio/Presets" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Audio/Presets"
-	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" 
-	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets"
-	move_files "${USERIDHOME_Avid}/Library/Preferences/Avid/" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Preferences/Avid/"  
-	move_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Preferences/" 
+	move_files "${USERIDHOME_REAL}/Music/K-Devices/Presets" "/tmp/${loggedInUser}_${IOPlatformUUID}/Music/K-Devices/Presets"
+	move_files "${USERIDHOME_Avid}/Library/Audio/Presets" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Audio/Presets"
+	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings" "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" 
+	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets" "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets"
+	move_files "${USERIDHOME_Avid}/Library/Preferences/Avid/" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/Avid/"  
+	move_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
 
 # hide temporary ${IOPlatformUUID} location
-	/usr/bin/chflags  -fhxR  hidden "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}"
-	/usr/bin/chflags  -fhxR  hidden "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}"
+	/usr/bin/chflags  -fhxR  hidden "/tmp/${loggedInUser}_${IOPlatformUUID}"
     
     cleanup
     
