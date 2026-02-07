@@ -146,14 +146,17 @@ move_files() {
 		if [[ -e "${SOURCEPATH}" ]]; then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
 			create_directory "${DESTINATIONDIRECTORY}"
-			if ! /bin/mv -hn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
+			if ! /usr/bin/ditto --noacl --noqtn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
+					log_error "Failed to move ${SOURCEPATH}"
+					return 1
+			fi    
+			if ! /bin/rm -fRx "${SOURCEPATH}"; then
 					log_error "Failed to move ${SOURCEPATH}"
 					return 1
 			fi    
 		else
 			log_info "Skipping source directory not found: ${SOURCEPATH}"
 		fi
-
 }
 
 # Main execution starts here
