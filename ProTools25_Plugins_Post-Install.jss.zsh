@@ -132,24 +132,32 @@ create_directory() {
 # Function to copy files to the user template.
 ditto_files() {
 		local SOURCEPATH="${1}"
+		local SOURCEDIRNAME="$(/usr/bin/dirname "$SOURCEPATH")"
+		local SOURCEBASENAME="$(/usr/bin/basename "$SOURCEPATH")"
 		local DESTINATIONPATH="${2}" 
-		if [[ -e "${SOURCEPATH}" ]]; then
+		local DESTINATIONDIRECTORY="$(/usr/bin/dirname "$DESTINATIONPATH")"
+
+		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
+		then
 			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
 					log_error "Failed to copy ${SOURCEPATH}"
 					return 1
 			fi    
 		else
-			log_info "Skipping source directory not found: ${SOURCEPATH}"
+			log_info "Skipping source path not found: ${SOURCEPATH}"
 		fi
 }
 
 # Function to move files back to their original path after copying or moving files to user template
 move_files() {
 		local SOURCEPATH="${1}"
+		local SOURCEDIRNAME="$(/usr/bin/dirname "$SOURCEPATH")"
+		local SOURCEBASENAME="$(/usr/bin/basename "$SOURCEPATH")"
 		local DESTINATIONPATH="${2}" 
-		local DESTINATIONDIRECTORY="$(/usr/bin/dirname "$2")"
-		if [[ -e "${SOURCEPATH}" ]]; then
+		local DESTINATIONDIRECTORY="$(/usr/bin/dirname "$DESTINATIONPATH")"
+		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
+		then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
 			create_directory "${DESTINATIONDIRECTORY}"
 			if ! /usr/bin/ditto --noacl --noqtn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
@@ -161,7 +169,7 @@ move_files() {
 					return 1
 			fi    
 		else
-			log_info "Skipping source directory not found: ${SOURCEPATH}"
+			log_info "Skipping source path not found: ${SOURCEPATH}"
 		fi
 }
 
