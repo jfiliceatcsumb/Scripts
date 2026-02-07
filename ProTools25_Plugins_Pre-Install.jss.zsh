@@ -208,23 +208,19 @@ main() {
     log_info "User Template path: ${USER_TEMPL}"
     
     
-    
-#     log_info "Creating directory: ${USER_TEMPL}/Library/Preferences/Avid"
-#     create_directory "${USER_TEMPL}/Library/Preferences/Avid" || exit 1
 #     
 # 	remove any files already in /Users/root
-    cleanup
-# 	Delete files from temporary ${IOPlatformUUID} location
-# hide temporary ${IOPlatformUUID} location
 	# ##  Move files to temporary ${IOPlatformUUID} location
-	# ## 
-    
-    # Set root ownership on target directories and files
-    log_info "Setting root ownership on ${USER_TEMPL}..."
-    if ! /usr/sbin/chown -fR 0:0 "${USER_TEMPL}"; then
-        log_error "Failed to set ownership on: $USER_TEMPL"
-        return 1
-    fi
+	move_files "${USERIDHOME_REAL}/Music/K-Devices/Presets" "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}/Music/K-Devices/Presets"
+	move_files "${USERIDHOME_Avid}/Library/Audio/Presets" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Audio/Presets"
+	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" 
+	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets"
+	move_files "${USERIDHOME_Avid}/Library/Preferences/Avid/" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Preferences/Avid/"  
+	move_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Preferences/" 
+
+# hide temporary ${IOPlatformUUID} location
+	/usr/bin/chflags  -fhxR  hidden "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}"
+	/usr/bin/chflags  -fhxR  hidden "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}"
     
     cleanup
     
