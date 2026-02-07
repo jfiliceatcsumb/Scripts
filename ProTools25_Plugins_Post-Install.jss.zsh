@@ -64,11 +64,20 @@ cleanup() {
     # Delete /Users/root/ directory and files
     # Clean up after the Avid installers. We do not want a /Users/root left behind
     # If USERIDHOME was some other user, then we will just leave it behind.
-
+		local IOPlatformUUID=$(get_UUID)
     if [[ -d "/Users/root" ]]; then
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
     fi
+    if [[ -n ${USERIDHOME_Avid} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -d "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}" ]]; then
+        log_info "Cleaning up /tmp/${USERIDHOME_Avid}_${IOPlatformUUID} directory..."
+        /bin/rm -fRx "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}"
+    fi
+		if [[ -n ${USERIDHOME_Avid} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -d "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}" ]]; then
+        log_info "Cleaning up /tmp/${USERIDHOME_REAL}_${IOPlatformUUID} directory..."
+				/bin/rm -fRx "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}"
+		fi
+
 }
 trap 'cleanup' EXIT
 
@@ -148,7 +157,15 @@ move_files() {
 		if [[ -e "${SOURCEPATH}" ]]; then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
 			create_directory "${DESTINATIONDIRECTORY}"
-			if ! /bin/mv -hn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
+# 			if ! /bin/mv -hn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
+# 					log_error "Failed to move ${SOURCEPATH}"
+# 					return 1
+# 			fi    
+			if ! /usr/bin/ditto --noacl --noqtn "${SOURCEPATH}" "${DESTINATIONPATH}"; then
+					log_error "Failed to move ${SOURCEPATH}"
+					return 1
+			fi    
+			if ! /bin/rm -fRx "${SOURCEPATH}"; then
 					log_error "Failed to move ${SOURCEPATH}"
 					return 1
 			fi    
@@ -161,6 +178,7 @@ move_files() {
 # Main execution starts here
 main() {
 	
+	set -x
 	
 	readonly IOPlatformUUID=$(get_UUID)
 	
@@ -173,13 +191,17 @@ main() {
 	# $userid = basename($homedir)
 	# return $userid;
 
-	readonly loggedInUser=$(stat -f "%Su" /dev/console) 2>/dev/null
+	readonly loggedInUser=$(stat -f "%Su" /dev/console 2>/dev/null) 
 	if [[ "${loggedInUser}" == "root" || "${loggedInUser}" == "" ]]; then
-		readonly USERIDHOME="root"
+		readonly USERIDHOME_Avid="/Users/root"
+		readonly USERIDHOME_REAL="$(/usr/bin/dscl . -read /Users/root NFSHomeDirectory | awk '{print $NF}' 2>/dev/null)"
 	else
-		readonly USERIDHOME="${loggedInUser}"
+		readonly USERIDHOME_Avid="/Users/${loggedInUser}"
+		readonly USERIDHOME_REAL="$(/usr/bin/dscl . -read /Users/${loggedInUser} NFSHomeDirectory | awk '{print $NF}' 2>/dev/null)"
+		dscl -q . -read /Users/fili4665 NFSHomeDirectory | awk '{print $NF}'
 	fi
 	
+	# validate value in $USERIDHOME_Avid and $USERIDHOME_REAL
 	# Get and validate macOS version
 	local os_version
 	os_version=$(get_macos_version)
@@ -192,37 +214,41 @@ main() {
 # Directories to create and copy to User Template:
 # 
 # /Users/$USERIDHOME/Music/K-Devices/Presets/*
-	ditto_files "/Users/${USERIDHOME}/Music/K-Devices/Presets" "${USER_TEMPL}/Music/K-Devices/Presets"
+	ditto_files "${USERIDHOME_REAL}/Music/K-Devices/Presets" "${USER_TEMPL}/Music/K-Devices/Presets"
+	if [[ ${USERIDHOME_REAL} == "/private/var/root" ]]; then
+		/bin/rm -fRx "/private/var/root/Music/K-Devices/"
+	fi
 
-# "/Users/${USERIDHOME}/Library/Audio/Presets/*"
-	ditto_files "/Users/${USERIDHOME}/Library/Audio/Presets" "${USER_TEMPL}/Library/Audio/Presets"
+# "/Users/${USERID}/Library/Audio/Presets/*"
+	ditto_files "${USERIDHOME_Avid}/Library/Audio/Presets" "${USER_TEMPL}/Library/Audio/Presets"
 	
-# /Users/${USERIDHOME}/Documents/Pro Tools/Plug-In Settings/*"
-	ditto_files "/Users/${USERIDHOME}/Documents/Pro Tools/Plug-In Settings" "${USER_TEMPL}/Documents/Pro Tools/Plug-In Settings"
+# /Users/${USERID}/Documents/Pro Tools/Plug-In Settings/*"
+	ditto_files "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings" "${USER_TEMPL}/Documents/Pro Tools/Plug-In Settings"
 
-# /Users/${USERIDHOME}/Documents/Pro Tools/Track Presets/*"
-	ditto_files "/Users/${USERIDHOME}/Documents/Pro Tools/Track Presets" "${USER_TEMPL}/Documents/Pro Tools/Track Presets"
+# /Users/${USERID}/Documents/Pro Tools/Track Presets/*"
+	ditto_files "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets" "${USER_TEMPL}/Documents/Pro Tools/Track Presets"
 
-# /Users/$USERIDHOME/Library/Preferences/Avid/
-	ditto_files "/Users/${USERIDHOME}/Library/Preferences/Avid/" "${USER_TEMPL}/Library/Preferences/Avid/"
+# /Users/$USERID/Library/Preferences/Avid/
+	ditto_files "${USERIDHOME_Avid}/Library/Preferences/Avid/" "${USER_TEMPL}/Library/Preferences/Avid/"
 
-# "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Xpand\!2.plist"
-# "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Boom.plist"
-# "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Mini Grand.plist"
-# "/Users/$USERIDHOME/Library/Preferences/com.airmusictech.Structure.plist"
-# /Users/$USERIDHOME/Library/Preferences/com.airmusictech.*.plist
-	ditto_files "/Users/${USERIDHOME}/Library/Preferences/com.airmusictech.*.plist" "${USER_TEMPL}/Library/Preferences/"
-
-
-	# 
-	# 
-
+# "/Users/$USERID/Library/Preferences/com.airmusictech.Xpand\!2.plist"
+# "/Users/$USERID/Library/Preferences/com.airmusictech.Boom.plist"
+# "/Users/$USERID/Library/Preferences/com.airmusictech.Mini Grand.plist"
+# "/Users/$USERID/Library/Preferences/com.airmusictech.Structure.plist"
+# /Users/$USERID/Library/Preferences/com.airmusictech.*.plist
+	ditto_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "${USER_TEMPL}/Library/Preferences/"
 	
 	# ##  Move files back from temporary ${IOPlatformUUID} location
-		move_files 
+	
+	/usr/bin/chflags  -fhxR  nohidden "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}"
+	move_files "/tmp/${USERIDHOME_REAL}_${IOPlatformUUID}/Music/K-Devices/Presets" "${USERIDHOME_REAL}/Music/K-Devices/Presets"
+	/usr/bin/chflags  -fhxR  nohidden "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}"
+	move_files "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Audio/Presets" "${USERIDHOME_Avid}/Library/Audio/Presets"
+	move_files "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings"
+	move_files "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets" "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets"
+	move_files "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Preferences/Avid/" "${USERIDHOME_Avid}/Library/Preferences/Avid/" 
+	move_files "/tmp/${USERIDHOME_Avid}_${IOPlatformUUID}/Library/Preferences/com.airmusictech.*.plist" "${USERIDHOME_Avid}/Library/Preferences/"
 
-	# ## 
-# 	Delete files from temporary ${IOPlatformUUID} location
 
 	# Set root ownership on target directories and files
 	log_info "Setting root ownership on ${USER_TEMPL}..."
@@ -230,6 +256,9 @@ main() {
 			log_error "Failed to set ownership on: $USER_TEMPL"
 			return 1
 	fi
+	
+	# ## 
+# 	Delete files from temporary ${IOPlatformUUID} location
 	
 	cleanup
 	
