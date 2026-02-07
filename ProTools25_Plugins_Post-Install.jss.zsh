@@ -168,7 +168,6 @@ move_files() {
 		else
 			log_info "Skipping source directory not found: ${SOURCEPATH}"
 		fi
-
 }
 
 # Main execution starts here
