@@ -140,7 +140,7 @@ ditto_files() {
 					return 1
 			fi    
 		else
-			log_info "Skipping source directory not found: ${SOURCEPATH}"
+			log_info "Skipping source path not found: ${SOURCEPATH}"
 		fi
 }
 
@@ -161,7 +161,7 @@ move_files() {
 					return 1
 			fi    
 		else
-			log_info "Skipping source directory not found: ${SOURCEPATH}"
+			log_info "Skipping source path not found: ${SOURCEPATH}"
 		fi
 }
 
