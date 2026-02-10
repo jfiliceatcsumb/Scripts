@@ -34,7 +34,6 @@
 readonly SCRIPT_NAME=$(/usr/bin/basename "$0")
 readonly SCRIPT_DIR=$(/usr/bin/dirname "$0")
 readonly TIMESTAMP=$(/bin/date +"%Y-%m-%d %H:%M:%S")
-readonly IOPlatformUUID=$(/usr/sbin/ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}')
 
 # File Structure Constants
 readonly DIR_PERMS=755
@@ -64,7 +63,7 @@ cleanup() {
     # Delete /Users/root/ directory and files
     # Clean up after the Avid installers. We do not want a /Users/root left behind
     # If USERIDHOME was some other user, then we will just leave it behind.
-		local IOPlatformUUID=$(get_UUID)
+
     if [[ -e "/Users/root" ]]; then
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
@@ -134,6 +133,7 @@ ditto_files() {
 		local SOURCEPATH="${1}"
 		local SOURCEDIRNAME="$(/usr/bin/dirname "$SOURCEPATH")"
 		local SOURCEBASENAME="$(/usr/bin/basename "$SOURCEPATH")"
+		local SOURCEFILES=(${SOURCEPATH})
 		local DESTINATIONPATH="${2}" 
 		local DESTINATIONDIRECTORY="$(/usr/bin/dirname "$DESTINATIONPATH")"
 
@@ -142,7 +142,6 @@ ditto_files() {
 			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
 # 		The "${files[@]}" array syntax ensures each matched file is passed as a separate, properly quoted argument.
 # 		This supports using *wildcards* within double quotes.
-			SOURCEFILES=(${SOURCEPATH})
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEFILES[@]}" "${DESTINATIONPATH}"
 			then
 					log_error "Failed to copy ${SOURCEPATH}"
@@ -158,18 +157,21 @@ move_files() {
 		local SOURCEPATH="${1}"
 		local SOURCEDIRNAME="$(/usr/bin/dirname "$SOURCEPATH")"
 		local SOURCEBASENAME="$(/usr/bin/basename "$SOURCEPATH")"
+		local SOURCEFILES=(${SOURCEPATH})
 		local DESTINATIONPATH="${2}" 
 		local DESTINATIONDIRECTORY="$(/usr/bin/dirname "$DESTINATIONPATH")"
 		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
 		then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
-			create_directory "${DESTINATIONDIRECTORY}"
-			if ! /usr/bin/ditto --noacl --noqtn "${SOURCEPATH}" "${DESTINATIONPATH}"
+# 		The "${files[@]}" array syntax ensures each matched file is passed as a separate, properly quoted argument. 
+# 		This supports using *wildcards* within double quotes.
+			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEFILES[@]}" "${DESTINATIONPATH}"
 			then
 					log_error "Failed to move ${SOURCEPATH}"
 					return 1
 			fi    
-			if ! /bin/rm -fRx "${SOURCEPATH}"; then
+			if ! /bin/rm -fRx "${SOURCEPATH}"
+			then
 					log_error "Failed to move ${SOURCEPATH}"
 					return 1
 			fi    
@@ -221,7 +223,7 @@ main() {
 	move_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
 
 # hide temporary ${IOPlatformUUID} location
-	/usr/bin/chflags  -fhxR  hidden "/tmp/${loggedInUser}_${IOPlatformUUID}"
+	/usr/bin/chflags  -fxR  hidden "/tmp/${loggedInUser}_${IOPlatformUUID}"
     
     cleanup
     
