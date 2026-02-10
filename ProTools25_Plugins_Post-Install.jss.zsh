@@ -34,7 +34,6 @@
 readonly SCRIPT_NAME=$(/usr/bin/basename "$0")
 readonly SCRIPT_DIR=$(/usr/bin/dirname "$0")
 readonly TIMESTAMP=$(/bin/date +"%Y-%m-%d %H:%M:%S")
-readonly IOPlatformUUID=$(/usr/sbin/ioreg -d2 -c IOPlatformExpertDevice | awk -F\" '/IOPlatformUUID/{print $(NF-1)}')
 
 # File Structure Constants
 readonly DIR_PERMS=755
@@ -64,7 +63,7 @@ cleanup() {
     # Delete /Users/root/ directory and files
     # Clean up after the Avid installers. We do not want a /Users/root left behind
     # If USERIDHOME was some other user, then we will just leave it behind.
-		local IOPlatformUUID=$(get_UUID)
+
     if [[ -e "/Users/root" ]]; then
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
@@ -240,7 +239,7 @@ main() {
 	
 	# ##  Move files back from temporary ${IOPlatformUUID} location
 	
-	/usr/bin/chflags  -fhxR  nohidden "/tmp/${loggedInUser}_${IOPlatformUUID}"
+	/usr/bin/chflags  -fxR  nohidden "/tmp/${loggedInUser}_${IOPlatformUUID}"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Music/K-Devices/Presets" "${USERIDHOME_REAL}/Music/K-Devices/Presets"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Audio/Presets" "${USERIDHOME_Avid}/Library/Audio/Presets"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings"
