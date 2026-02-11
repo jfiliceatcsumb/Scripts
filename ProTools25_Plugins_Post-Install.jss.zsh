@@ -119,7 +119,7 @@ set_user_templ() {
 
 # Function to create directory with proper permissions
 create_directory() {
-    local dir="${1}"
+    local dir=${1}
     log_info "Creating directory: ${dir}"
 
     if ! /bin/mkdir -pvm ${DIR_PERMS} "${dir}"; then
@@ -130,12 +130,14 @@ create_directory() {
 
 # Function to copy files to the user template.
 ditto_files() {
-		local SOURCEPATH="${1}"
-		local SOURCEDIRNAME="$(/usr/bin/dirname "$SOURCEPATH")"
-		local SOURCEBASENAME="$(/usr/bin/basename "$SOURCEPATH")"
+# Enable tracing without trace output
+{ set -x; } 2>/dev/null
+		local SOURCEPATH=${1}
+		local SOURCEDIRNAME=$(/usr/bin/dirname "$SOURCEPATH")
+		local SOURCEBASENAME=$(/usr/bin/basename "$SOURCEPATH")
 		local SOURCEFILES=(${SOURCEPATH})
-		local DESTINATIONPATH="${2}" 
-		local DESTINATIONDIRECTORY="$(/usr/bin/dirname "$DESTINATIONPATH")"
+		local DESTINATIONPATH=${2} 
+		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
 		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
 		then
@@ -150,16 +152,18 @@ ditto_files() {
 		else
 			log_info "Skipping source path not found: ${SOURCEPATH}"
 		fi
+# Disable tracing without trace output
+{ set +x; } 2>/dev/null
 }
 
 # Function to move files back to their original path after copying or moving files to user template
 move_files() {
-		local SOURCEPATH="${1}"
-		local SOURCEDIRNAME="$(/usr/bin/dirname "$SOURCEPATH")"
-		local SOURCEBASENAME="$(/usr/bin/basename "$SOURCEPATH")"
+		local SOURCEPATH=${1}
+		local SOURCEDIRNAME=$(/usr/bin/dirname "$SOURCEPATH")
+		local SOURCEBASENAME=$(/usr/bin/basename "$SOURCEPATH")
 		local SOURCEFILES=(${SOURCEPATH})
-		local DESTINATIONPATH="${2}" 
-		local DESTINATIONDIRECTORY="$(/usr/bin/dirname "$DESTINATIONPATH")"
+		local DESTINATIONPATH=${2} 
+		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
 		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
 		then
@@ -243,14 +247,16 @@ main() {
 	ditto_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "${USER_TEMPL}/Library/Preferences/"
 	
 	# ##  Move files back from temporary ${IOPlatformUUID} location
-	
-	/usr/bin/chflags  -fxR  nohidden "/tmp/${loggedInUser}_${IOPlatformUUID}"
+	if [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]
+	then
+		/usr/bin/chflags  -fxR  nohidden "/tmp/${loggedInUser}_${IOPlatformUUID}"
+	fi
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Music/K-Devices/Presets" "${USERIDHOME_REAL}/Music/K-Devices/Presets"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Audio/Presets" "${USERIDHOME_Avid}/Library/Audio/Presets"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets" "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/Avid/" "${USERIDHOME_Avid}/Library/Preferences/Avid/" 
-	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/com.airmusictech.*.plist" "${USERIDHOME_Avid}/Library/Preferences/"
+	move_files /tmp/"${loggedInUser}_${IOPlatformUUID}"/Library/Preferences/com.airmusictech.*.plist "${USERIDHOME_Avid}/Library/Preferences/"
 
 
 	# Set root ownership on target directories and files
