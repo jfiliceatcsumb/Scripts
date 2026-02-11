@@ -135,16 +135,13 @@ ditto_files() {
 		local SOURCEPATH=${1}
 		local SOURCEDIRNAME=$(/usr/bin/dirname "$SOURCEPATH")
 		local SOURCEBASENAME=$(/usr/bin/basename "$SOURCEPATH")
-		local SOURCEFILES=(${SOURCEPATH})
 		local DESTINATIONPATH=${2} 
 		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
 		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
 		then
 			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
-# 		The "${files[@]}" array syntax ensures each matched file is passed as a separate, properly quoted argument. 
-# 		This supports using *wildcards* within double quotes.
-			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEFILES[@]}" "${DESTINATIONPATH}"
+			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
 			then
 					log_error "Failed to copy ${SOURCEPATH}"
 					return 1
@@ -161,16 +158,13 @@ move_files() {
 		local SOURCEPATH=${1}
 		local SOURCEDIRNAME=$(/usr/bin/dirname "$SOURCEPATH")
 		local SOURCEBASENAME=$(/usr/bin/basename "$SOURCEPATH")
-		local SOURCEFILES=(${SOURCEPATH})
 		local DESTINATIONPATH=${2} 
 		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
 		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
 		then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
-# 		The "${files[@]}" array syntax ensures each matched file is passed as a separate, properly quoted argument. 
-# 		This supports using *wildcards* within double quotes.
-			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEFILES[@]}" "${DESTINATIONPATH}"
+			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
 			then
 					log_error "Failed to move ${SOURCEPATH}"
 					return 1
@@ -227,7 +221,15 @@ main() {
 	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings" "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" 
 	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets" "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets"
 	move_files "${USERIDHOME_Avid}/Library/Preferences/Avid/" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/Avid/"  
-	move_files "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
+	move_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
+
+	for tmp_plist in "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist
+	do
+		if [[ -f "$tmp_plist" ]]
+		then
+			move_files "$tmp_plist" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
+		fi
+	done	
 
 # hide temporary ${IOPlatformUUID} location
 	
