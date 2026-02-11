@@ -256,8 +256,7 @@ main() {
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets" "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets"
 	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/Avid/" "${USERIDHOME_Avid}/Library/Preferences/Avid/" 
-	move_files /tmp/"${loggedInUser}_${IOPlatformUUID}"/Library/Preferences/com.airmusictech.*.plist "${USERIDHOME_Avid}/Library/Preferences/"
-
+	move_files "/tmp/${loggedInUser}_${IOPlatformUUID}"'/Library/Preferences/com.airmusictech.*.plist' "${USERIDHOME_Avid}/Library/Preferences/"
 
 	# Set root ownership on target directories and files
 	log_info "Setting root ownership on ${USER_TEMPL}..."
