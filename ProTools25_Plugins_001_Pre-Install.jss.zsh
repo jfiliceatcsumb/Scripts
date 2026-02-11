@@ -58,6 +58,11 @@ log_info() {
 
 # trap for cleanup
 cleanup() {
+		local exit_code=${1:-$?}
+    
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Script failed with exit code: $exit_code"
+    fi
     log_info "Performing cleanup..."
     # Add cleanup actions if needed
     # Delete /Users/root/ directory and files
@@ -68,7 +73,7 @@ cleanup() {
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
     fi
-    if [[ -n ${loggedInUser} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
+    if [[ -n ${loggedInUser:-} ]] && [[ -n ${IOPlatformUUID:-} ]] && [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
         log_info "Cleaning up /tmp/${loggedInUser}_${IOPlatformUUID} directory..."
         /bin/rm -fRx "/tmp/${loggedInUser}_${IOPlatformUUID}"
     fi
@@ -101,7 +106,7 @@ get_UUID() {
 set_user_templ() {
     local version=$1
     local major minor
-    declare -g USER_TEMPL
+    declare -g USER_TEMPL # global
     # Parse version string
     major=$(echo "$version" | cut -d. -f1)
     minor=$(echo "$version" | cut -d. -f2)
@@ -109,11 +114,11 @@ set_user_templ() {
     if [[ $major -gt 10 ]] || [[ $major -eq 10 && $minor -ge 15 ]]; then
         log_info "macOS version $version detected"
         log_info "Setting User Template path: '/Library/User Template/Non_localized'"
-        USER_TEMPL='/Library/User Template/Non_localized'
+        readonly USER_TEMPL="/Library/User Template/Non_localized"
     else
         log_info "macOS version $version detected"
         log_info "Setting User Template path: '/System/Library/User Template/Non_localized'"
-        USER_TEMPL='/System/Library/User Template/Non_localized'
+				readonly USER_TEMPL="/System/Library/User Template/Non_localized"
     fi
 }
 
@@ -122,7 +127,8 @@ create_directory() {
     local dir=${1}
     log_info "Creating directory: ${dir}"
 
-    if ! /bin/mkdir -pvm ${DIR_PERMS} "${dir}"; then
+    if ! $(/bin/mkdir -pvm ${DIR_PERMS} "${dir}")
+    then
         log_error "Failed to create directory: ${dir}"
         return 1
     fi
@@ -181,7 +187,9 @@ main() {
 	readonly IOPlatformUUID=$(get_UUID)
 	
     # Check if running as root
-    check_root
+  if ! check_root; then
+    return 1
+  fi
     
 # Use similar method as the stupid Avid installer scripts to determine the userID (typically "root")
 #	Determine currently loggged in user because this is what the Avid installers use to create the user directory.
@@ -196,7 +204,6 @@ main() {
 		else
 		readonly USERIDHOME_Avid="/Users/${loggedInUser}"
 		readonly USERIDHOME_REAL="$(/usr/bin/dscl . -read /Users/${loggedInUser} NFSHomeDirectory | awk '{print $NF}' 2>/dev/null)"
-		dscl -q . -read /Users/fili4665 NFSHomeDirectory | awk '{print $NF}'
 		fi
 
     # Get and validate macOS version
