@@ -7,9 +7,9 @@
 # https://csumb.edu/it
 
 #
-# Purpose: moves and cleans up files installed in a current user directory by Pro Tools installer 
+# Purpose: Copies files to User Template and cleans up files installed in a current user directory after installing Avid Pro Tools v.25.6 plugins 
 # Version: 1.0
-# Tested with: Avid Pro Tools v.25.6 installer
+# Tested with: Avid Pro Tools v.25.6 plugins installers
 #
 # Requirements:
 # - Must be run as root
