@@ -288,10 +288,3 @@ fi
 log_info "${SCRIPT_NAME} script completed successfully"
 
 exit 0
-
-# /bin/mv
-# /bin/rm
-# /bin/cp
-# /usr/bin/ditto
-
-
