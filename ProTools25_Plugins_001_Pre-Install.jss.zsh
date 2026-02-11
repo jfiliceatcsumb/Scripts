@@ -73,7 +73,7 @@ cleanup() {
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
     fi
-    if [[ -n ${loggedInUser:-} ]] && [[ -n ${IOPlatformUUID:-} ]] && [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
+    if [[ -n ${loggedInUser} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
         log_info "Cleaning up /tmp/${loggedInUser}_${IOPlatformUUID} directory..."
         /bin/rm -fRx "/tmp/${loggedInUser}_${IOPlatformUUID}"
     fi
@@ -127,7 +127,7 @@ create_directory() {
     local dir=${1}
     log_info "Creating directory: ${dir}"
 
-    if ! $(/bin/mkdir -pvm ${DIR_PERMS} "${dir}")
+    if ! $(/bin/mkdir -pv -m ${DIR_PERMS} "${dir}")
     then
         log_error "Failed to create directory: ${dir}"
         return 1
@@ -142,7 +142,7 @@ ditto_files() {
 		local DESTINATIONPATH=${2} 
 		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
-		if [[ -n "$(/usr/bin/find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit 2>&1)" ]]
+		if [[ -e "$SOURCEPATH" ]]
 		then
 			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
@@ -163,7 +163,7 @@ move_files() {
 		local DESTINATIONPATH=${2} 
 		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
-		if [[ -n "$(/usr/bin/find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit 2>&1)" ]]
+		if [[ -e "$SOURCEPATH" ]]
 		then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
