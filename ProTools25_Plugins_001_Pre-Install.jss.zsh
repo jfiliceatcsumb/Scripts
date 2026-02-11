@@ -101,7 +101,7 @@ get_UUID() {
 set_user_templ() {
     local version=$1
     local major minor
-    
+    declare -g USER_TEMPL
     # Parse version string
     major=$(echo "$version" | cut -d. -f1)
     minor=$(echo "$version" | cut -d. -f2)
@@ -112,8 +112,8 @@ set_user_templ() {
         USER_TEMPL='/Library/User Template/Non_localized'
     else
         log_info "macOS version $version detected"
-				log_info "Setting User Template path: '/System/Library/User Template/Non_localized'"
-				USER_TEMPL='/System/Library/User Template/Non_localized'
+        log_info "Setting User Template path: '/System/Library/User Template/Non_localized'"
+        USER_TEMPL='/System/Library/User Template/Non_localized'
     fi
 }
 
@@ -130,15 +130,13 @@ create_directory() {
 
 # Function to copy files to the user template.
 ditto_files() {
-# Enable tracing without trace output
-{ set -x; } 2>/dev/null
 		local SOURCEPATH=${1}
 		local SOURCEDIRNAME=$(/usr/bin/dirname "$SOURCEPATH")
 		local SOURCEBASENAME=$(/usr/bin/basename "$SOURCEPATH")
 		local DESTINATIONPATH=${2} 
 		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
-		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
+		if [[ -n "$(/usr/bin/find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit 2>&1)" ]]
 		then
 			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
@@ -149,8 +147,6 @@ ditto_files() {
 		else
 			log_info "Skipping source path not found: ${SOURCEPATH}"
 		fi
-# Disable tracing without trace output
-{ set +x; } 2>/dev/null
 }
 
 # Function to move files back to their original path after copying or moving files to user template
@@ -161,7 +157,7 @@ move_files() {
 		local DESTINATIONPATH=${2} 
 		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
-		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
+		if [[ -n "$(/usr/bin/find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit 2>&1)" ]]
 		then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
@@ -206,7 +202,6 @@ main() {
     # Get and validate macOS version
     local os_version
     os_version=$(get_macos_version)
-    typeset -g USER_TEMPL
     set_user_templ "$os_version"
     log_info "User Template path: ${USER_TEMPL}"
     
