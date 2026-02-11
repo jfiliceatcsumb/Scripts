@@ -206,7 +206,6 @@ main() {
 		readonly USERIDHOME_REAL="$(/usr/bin/dscl . -read /Users/${loggedInUser} NFSHomeDirectory | awk '{print $NF}' 2>/dev/null)"
 	fi
 	
-	# validate value in $USERIDHOME_Avid and $USERIDHOME_REAL
 	# Get and validate macOS version
 	local os_version
 	os_version=$(get_macos_version)
