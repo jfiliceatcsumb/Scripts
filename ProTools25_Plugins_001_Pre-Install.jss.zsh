@@ -137,12 +137,12 @@ create_directory() {
 # Function to copy files to the user template.
 ditto_files() {
 		local SOURCEPATH=${1}
-		local SOURCEDIRNAME=$(/usr/bin/dirname "$SOURCEPATH")
-		local SOURCEBASENAME=$(/usr/bin/basename "$SOURCEPATH")
+		local SOURCEDIRNAME=$(/usr/bin/dirname "${SOURCEPATH}")
+		local SOURCEBASENAME=$(/usr/bin/basename "${SOURCEPATH}")
 		local DESTINATIONPATH=${2} 
-		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
+		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "${DESTINATIONPATH}")
 
-		if [[ -e "$SOURCEPATH" ]]
+		if [[ -e "${SOURCEPATH}" ]]
 		then
 			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
@@ -158,12 +158,12 @@ ditto_files() {
 # Function to move files back to their original path after copying or moving files to user template
 move_files() {
 		local SOURCEPATH=${1}
-		local SOURCEDIRNAME=$(/usr/bin/dirname "$SOURCEPATH")
-		local SOURCEBASENAME=$(/usr/bin/basename "$SOURCEPATH")
+		local SOURCEDIRNAME=$(/usr/bin/dirname "${SOURCEPATH}")
+		local SOURCEBASENAME=$(/usr/bin/basename "${SOURCEPATH}")
 		local DESTINATIONPATH=${2} 
-		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
+		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "${DESTINATIONPATH}")
 
-		if [[ -e "$SOURCEPATH" ]]
+		if [[ -e "${SOURCEPATH}" ]]
 		then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
