@@ -58,6 +58,11 @@ log_info() {
 
 # trap for cleanup
 cleanup() {
+		local exit_code=${1:-$?}
+    
+    if [[ $exit_code -ne 0 ]]; then
+        log_error "Script failed with exit code: $exit_code"
+    fi
     log_info "Performing cleanup..."
     # Add cleanup actions if needed
     # Delete /Users/root/ directory and files
@@ -68,7 +73,7 @@ cleanup() {
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
     fi
-    if [[ -n ${loggedInUser} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
+    if [[ -n ${loggedInUser:-} ]] && [[ -n ${IOPlatformUUID:-} ]] && [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
         log_info "Cleaning up /tmp/${loggedInUser}_${IOPlatformUUID} directory..."
         /bin/rm -fRx "/tmp/${loggedInUser}_${IOPlatformUUID}"
     fi
@@ -101,7 +106,7 @@ get_UUID() {
 set_user_templ() {
     local version=$1
     local major minor
-    
+    declare -g USER_TEMPL # global
     # Parse version string
     major=$(echo "$version" | cut -d. -f1)
     minor=$(echo "$version" | cut -d. -f2)
@@ -109,11 +114,11 @@ set_user_templ() {
     if [[ $major -gt 10 ]] || [[ $major -eq 10 && $minor -ge 15 ]]; then
         log_info "macOS version $version detected"
         log_info "Setting User Template path: '/Library/User Template/Non_localized'"
-        USER_TEMPL='/Library/User Template/Non_localized'
+        readonly USER_TEMPL="/Library/User Template/Non_localized"
     else
         log_info "macOS version $version detected"
 				log_info "Setting User Template path: '/System/Library/User Template/Non_localized'"
-				USER_TEMPL='/System/Library/User Template/Non_localized'
+				readonly USER_TEMPL="/System/Library/User Template/Non_localized"
     fi
 }
 
@@ -122,7 +127,8 @@ create_directory() {
     local dir=${1}
     log_info "Creating directory: ${dir}"
 
-    if ! /bin/mkdir -pvm ${DIR_PERMS} "${dir}"; then
+    if ! $(/bin/mkdir -pvm ${DIR_PERMS} "${dir}")
+    then
         log_error "Failed to create directory: ${dir}"
         return 1
     fi
@@ -130,15 +136,13 @@ create_directory() {
 
 # Function to copy files to the user template.
 ditto_files() {
-# Enable tracing without trace output
-{ set -x; } 2>/dev/null
 		local SOURCEPATH=${1}
 		local SOURCEDIRNAME=$(/usr/bin/dirname "$SOURCEPATH")
 		local SOURCEBASENAME=$(/usr/bin/basename "$SOURCEPATH")
 		local DESTINATIONPATH=${2} 
 		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
-		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
+		if [[ -n "$(/usr/bin/find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit 2>&1)" ]]
 		then
 			log_info "Copying ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
@@ -149,8 +153,6 @@ ditto_files() {
 		else
 			log_info "Skipping source path not found: ${SOURCEPATH}"
 		fi
-# Disable tracing without trace output
-{ set +x; } 2>/dev/null
 }
 
 # Function to move files back to their original path after copying or moving files to user template
@@ -161,7 +163,7 @@ move_files() {
 		local DESTINATIONPATH=${2} 
 		local DESTINATIONDIRECTORY=$(/usr/bin/dirname "$DESTINATIONPATH")
 
-		if [[ -n "$(find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit)" ]]
+		if [[ -n "$(/usr/bin/find "$SOURCEDIRNAME" -maxdepth 1 -name "$SOURCEBASENAME" -print -quit 2>&1)" ]]
 		then
 			log_info "Moving ${SOURCEPATH} to ${DESTINATIONPATH}"
 			if ! /usr/bin/ditto --noacl --noqtn  "${SOURCEPATH}" "${DESTINATIONPATH}"
@@ -185,8 +187,10 @@ main() {
 	readonly IOPlatformUUID=$(get_UUID)
 	
 	# Check if running as root
-	check_root
-	
+  if ! check_root; then
+    return 1
+  fi
+ 	
 	# Use similar method as the stupid Avid installer scripts to determine the userID (typically "root")
 	#	Determine currently loggged in user because this is what the Avid installers use to create the user directory.
 	# $homedir = $ENV{'HOME'}
@@ -200,19 +204,17 @@ main() {
 	else
 		readonly USERIDHOME_Avid="/Users/${loggedInUser}"
 		readonly USERIDHOME_REAL="$(/usr/bin/dscl . -read /Users/${loggedInUser} NFSHomeDirectory | awk '{print $NF}' 2>/dev/null)"
-		dscl -q . -read /Users/fili4665 NFSHomeDirectory | awk '{print $NF}'
 	fi
 	
 	# validate value in $USERIDHOME_Avid and $USERIDHOME_REAL
 	# Get and validate macOS version
 	local os_version
 	os_version=$(get_macos_version)
-	typeset -g USER_TEMPL
 	set_user_templ "$os_version"
 	log_info "User Template path: ${USER_TEMPL}"
 	
 	
-	log_info "Copying files to User Template ${USER_TEMPL}"
+	log_info "Copying files to User Template: ${USER_TEMPL}"
 # Directories to create and copy to User Template:
 # 
 # /Users/$USERIDHOME/Music/K-Devices/Presets/*
@@ -262,9 +264,10 @@ main() {
 			move_files "$tmp_plist" "${USERIDHOME_Avid}/Library/Preferences/"
 		fi
 	done	
+
 	# Set root ownership on target directories and files
 	log_info "Setting root ownership on ${USER_TEMPL}..."
-	if ! /usr/sbin/chown -fR 0:0 "${USER_TEMPL}"
+	if ! $(/usr/sbin/chown -fR 0:0 "${USER_TEMPL}")
 	then
 			log_error "Failed to set ownership on: $USER_TEMPL"
 			return 1
