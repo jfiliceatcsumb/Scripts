@@ -212,23 +212,22 @@ main() {
    cleanup 
 #     
 	# ##  Move files to temporary ${IOPlatformUUID} location
-	create_directory "/private/tmp/${loggedInUser}_${IOPlatformUUID}"
 
 	move_files "${USERIDHOME_REAL}/Music/K-Devices/Presets" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Music/K-Devices/Presets"
 	move_files "${USERIDHOME_Avid}/Library/Audio/Presets" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Audio/Presets"
 	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" 
 	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets"
 	move_files "${USERIDHOME_Avid}/Library/Preferences/Avid/" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/Avid/"  
-	move_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
-
-	for tmp_plist in "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist
-	do
-		if [[ -f "$tmp_plist" ]]
-		then
-			move_files "$tmp_plist" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
-		fi
-	done	
-
+	if [[  $(ls "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist 2>/dev/null) ]]
+	then
+		for tmp_plist in "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist
+		do
+			if [[ -f "$tmp_plist" ]]
+			then
+				move_files "$tmp_plist" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
+			fi
+		done	
+	fi
 # hide temporary ${IOPlatformUUID} location
 	
 	if [[ -e "/private/tmp/${loggedInUser}_${IOPlatformUUID}" ]]
