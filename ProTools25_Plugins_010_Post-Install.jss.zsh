@@ -234,13 +234,14 @@ main() {
 # "/Users/$USERID/Library/Preferences/com.airmusictech.Mini Grand.plist"
 # "/Users/$USERID/Library/Preferences/com.airmusictech.Structure.plist"
 # /Users/$USERID/Library/Preferences/com.airmusictech.*.plist
-
-	for plist_file in "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist; do
-		if [[ -f "$plist_file" ]]; then
-			ditto_files "$plist_file" "${USER_TEMPL}/Library/Preferences/"
-		fi
-	done
-	
+	if [[  $(ls "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist 2>/dev/null) ]]
+	then
+		for plist_file in "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist; do
+			if [[ -f "$plist_file" ]]; then
+				ditto_files "$plist_file" "${USER_TEMPL}/Library/Preferences/"
+			fi
+		done
+	fi
 	# ##  Move files back from temporary ${IOPlatformUUID} location
 	if [[ -e "/private/tmp/${loggedInUser}_${IOPlatformUUID}" ]]
 	then
@@ -251,14 +252,17 @@ main() {
 	move_files "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings"
 	move_files "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets" "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets"
 	move_files "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/Avid/" "${USERIDHOME_Avid}/Library/Preferences/Avid/" 
-	for tmp_plist in "/private/tmp/${loggedInUser}_${IOPlatformUUID}"/Library/Preferences/com.airmusictech.*.plist
-	do
-		if [[ -f "$tmp_plist" ]]
-		then
-			move_files "$tmp_plist" "${USERIDHOME_Avid}/Library/Preferences/"
-		fi
-	done	
-
+	if [[  $(ls "/private/tmp/${loggedInUser}_${IOPlatformUUID}"/Library/Preferences/com.airmusictech.*.plist 2>/dev/null) ]]
+	then
+		for tmp_plist in "/private/tmp/${loggedInUser}_${IOPlatformUUID}"/Library/Preferences/com.airmusictech.*.plist
+		do
+			if [[ -f "$tmp_plist" ]]
+			then
+				move_files "$tmp_plist" "${USERIDHOME_Avid}/Library/Preferences/"
+			fi
+		done	
+	fi
+	
 	# Set root ownership on target directories and files
 	log_info "Setting root ownership on ${USER_TEMPL}..."
 	if ! $(/usr/sbin/chown -fR 0:0 "${USER_TEMPL}")
