@@ -73,9 +73,9 @@ cleanup() {
         log_info "Cleaning up /Users/root directory..."
         /bin/rm -fRx "/Users/root"
     fi
-    if [[ -n ${loggedInUser} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
-        log_info "Cleaning up /tmp/${loggedInUser}_${IOPlatformUUID} directory..."
-        /bin/rm -fRx "/tmp/${loggedInUser}_${IOPlatformUUID}"
+    if [[ -n ${loggedInUser} ]] && [[ -n ${IOPlatformUUID} ]] && [[ -e "/private/tmp/${loggedInUser}_${IOPlatformUUID}" ]]; then
+        log_info "Cleaning up /private/tmp/${loggedInUser}_${IOPlatformUUID} directory..."
+        /bin/rm -fRx "/private/tmp/${loggedInUser}_${IOPlatformUUID}"
     fi
 }
 trap 'cleanup' EXIT
@@ -102,26 +102,6 @@ get_UUID() {
     echo "$UUID"
 }
 
-# Function to determine template location based on OS version
-get_user_templ() {
-    local version=$(get_macos_version)
-    local major minor
-    local user_templ
-    # Parse version string
-    major=$(echo "$version" | cut -d. -f1)
-    minor=$(echo "$version" | cut -d. -f2)
-    
-    if [[ $major -gt 10 ]] || [[ $major -eq 10 && $minor -ge 15 ]]; then
-        log_info "macOS version $version detected"
-        log_info "Setting User Template path: '/Library/User Template/Non_localized'"
-        user_templ="/Library/User Template/Non_localized"
-    else
-        log_info "macOS version $version detected"
-        log_info "Setting User Template path: '/System/Library/User Template/Non_localized'"
-				user_templ="/System/Library/User Template/Non_localized"
-    fi
-    echo "${user_templ}"
-}
 
 # Function to create directory with proper permissions
 create_directory() {
@@ -186,8 +166,24 @@ move_files() {
 main() {
     
 	readonly IOPlatformUUID=$(get_UUID)
+# determine template location based on OS version
+    local version=$(get_macos_version)
+    local major minor
+    local USER_TEMPL
+    # Parse version string
+    major=$(echo "$version" | cut -d. -f1)
+    minor=$(echo "$version" | cut -d. -f2)
 	
-	readonly USER_TEMPL=$(get_user_templ)
+    if [[ $major -gt 10 ]] || [[ $major -eq 10 && $minor -ge 15 ]]; then
+        log_info "macOS version $version detected"
+        log_info "Setting User Template path: '/Library/User Template/Non_localized'"
+        readonly USER_TEMPL="/Library/User Template/Non_localized"
+    else
+        log_info "macOS version $version detected"
+				log_info "Setting User Template path: '/System/Library/User Template/Non_localized'"
+				readonly USER_TEMPL="/System/Library/User Template/Non_localized"
+    fi
+
 	log_info "User Template path: ${USER_TEMPL}"
 	
 	
@@ -216,28 +212,28 @@ main() {
    cleanup 
 #     
 	# ##  Move files to temporary ${IOPlatformUUID} location
-	create_directory "/tmp/${loggedInUser}_${IOPlatformUUID}"
+	create_directory "/private/tmp/${loggedInUser}_${IOPlatformUUID}"
 
-	move_files "${USERIDHOME_REAL}/Music/K-Devices/Presets" "/tmp/${loggedInUser}_${IOPlatformUUID}/Music/K-Devices/Presets"
-	move_files "${USERIDHOME_Avid}/Library/Audio/Presets" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Audio/Presets"
-	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings" "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" 
-	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets" "/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets"
-	move_files "${USERIDHOME_Avid}/Library/Preferences/Avid/" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/Avid/"  
-	move_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
+	move_files "${USERIDHOME_REAL}/Music/K-Devices/Presets" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Music/K-Devices/Presets"
+	move_files "${USERIDHOME_Avid}/Library/Audio/Presets" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Audio/Presets"
+	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Plug-In Settings" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Plug-In Settings" 
+	move_files "${USERIDHOME_Avid}/Documents/Pro Tools/Track Presets" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Documents/Pro Tools/Track Presets"
+	move_files "${USERIDHOME_Avid}/Library/Preferences/Avid/" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/Avid/"  
+	move_files "${USERIDHOME_Avid}/Library/Preferences/com.airmusictech.*.plist" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
 
 	for tmp_plist in "${USERIDHOME_Avid}"/Library/Preferences/com.airmusictech.*.plist
 	do
 		if [[ -f "$tmp_plist" ]]
 		then
-			move_files "$tmp_plist" "/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
+			move_files "$tmp_plist" "/private/tmp/${loggedInUser}_${IOPlatformUUID}/Library/Preferences/" 
 		fi
 	done	
 
 # hide temporary ${IOPlatformUUID} location
 	
-	if [[ -e "/tmp/${loggedInUser}_${IOPlatformUUID}" ]]
+	if [[ -e "/private/tmp/${loggedInUser}_${IOPlatformUUID}" ]]
 	then
-		/usr/bin/chflags  -fxR  hidden "/tmp/${loggedInUser}_${IOPlatformUUID}"
+		/usr/bin/chflags  -fxR  hidden "/private/tmp/${loggedInUser}_${IOPlatformUUID}"
 	fi
     
   cleanup
