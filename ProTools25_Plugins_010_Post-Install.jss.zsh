@@ -25,7 +25,7 @@
 # debug bash script using xtrace
 # set -x
 # Enable tracing without trace output
-# { set -x; } 2>/dev/null
+{ set -x; } 2>/dev/null
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
 
@@ -103,10 +103,10 @@ get_UUID() {
 }
 
 # Function to determine template location based on OS version
-set_user_templ() {
-    local version=$1
+get_user_templ() {
+    local version=$(get_macos_version)
     local major minor
-    declare -g USER_TEMPL # global
+    local user_templ
     # Parse version string
     major=$(echo "$version" | cut -d. -f1)
     minor=$(echo "$version" | cut -d. -f2)
@@ -114,12 +114,13 @@ set_user_templ() {
     if [[ $major -gt 10 ]] || [[ $major -eq 10 && $minor -ge 15 ]]; then
         log_info "macOS version $version detected"
         log_info "Setting User Template path: '/Library/User Template/Non_localized'"
-        readonly USER_TEMPL="/Library/User Template/Non_localized"
+        user_templ="/Library/User Template/Non_localized"
     else
         log_info "macOS version $version detected"
 				log_info "Setting User Template path: '/System/Library/User Template/Non_localized'"
-				readonly USER_TEMPL="/System/Library/User Template/Non_localized"
+				user_templ="/System/Library/User Template/Non_localized"
     fi
+    echo "${user_templ}"
 }
 
 # Function to create directory with proper permissions
@@ -185,6 +186,10 @@ move_files() {
 main() {
 		
 	readonly IOPlatformUUID=$(get_UUID)
+
+	readonly USER_TEMPL=$(get_user_templ)
+	log_info "User Template path: ${USER_TEMPL}"
+	
 	
 	# Check if running as root
   if ! check_root; then
@@ -205,12 +210,6 @@ main() {
 		readonly USERIDHOME_Avid="/Users/${loggedInUser}"
 		readonly USERIDHOME_REAL="$(/usr/bin/dscl . -read /Users/${loggedInUser} NFSHomeDirectory | awk '{print $NF}' 2>/dev/null)"
 	fi
-	
-	# Get and validate macOS version
-	local os_version
-	os_version=$(get_macos_version)
-	set_user_templ "$os_version"
-	log_info "User Template path: ${USER_TEMPL}"
 	
 	
 	log_info "Copying files to User Template: ${USER_TEMPL}"
