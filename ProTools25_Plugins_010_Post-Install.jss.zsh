@@ -272,12 +272,12 @@ main() {
 	fi
 	
 	log_info "Fixing ownership permissions on /Users/Shared/Pro Tools/Sound Libraries..."
-	if ! /usr/sbin/chown -fhRP 0:0 "/Users/Shared/Pro Tools/Sound Libraries"
+	if ! /usr/sbin/chown -fRP 0:0 "/Users/Shared/Pro Tools/Sound Libraries"
 	then
 			log_error "Failed to set ownership on: /Users/Shared/Pro Tools/Sound Libraries"
 			return 1
 	fi
-	if ! /bin/chmod -fhRP ug+rw,o+r "/Users/Shared/Pro Tools/Sound Libraries"
+	if ! /bin/chmod -fRP ug+rw,o+r "/Users/Shared/Pro Tools/Sound Libraries"
 	then
 			log_error "Failed to set permissions on: /Users/Shared/Pro Tools/Sound Libraries"
 			return 1
