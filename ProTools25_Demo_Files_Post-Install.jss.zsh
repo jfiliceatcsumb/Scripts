@@ -193,7 +193,7 @@ main() {
 
     # Set root ownership on target directories and files
     log_info "Setting root ownership on ${USER_TEMPL}..."
-    if ! /usr/sbin/chown -fhRP 0:0 "${USER_TEMPL}"
+    if ! /usr/sbin/chown -fRP 0:0 "${USER_TEMPL}"
     then
         log_error "Failed to set ownership on: $USER_TEMPL"
         return 1
