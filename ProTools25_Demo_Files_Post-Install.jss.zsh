@@ -215,24 +215,3 @@ log_info "${SCRIPT_NAME} script completed successfully"
 
 exit 0
 
-# ## Pro Tools Installation
-# /Users/$USERID/Documents/Pro Tools/Demo Sessions/
-# /Users/$USERID/Documents/Pro Tools/Demo Sketches/
-
-# ## Other installations
-# /Users/$USERID/Library/Preferences/
-# /Users/$USERID/Library/Preferences/Avid/
-# /Users/$USERID/Documents/Pro Tools/Track Presets/Avid/AIR Instruments Bundle/
-# /Users/$USERID/Library/Preferences/com.airmusictech.*.plist
-
-
-# mkdir -p "$TARGET"
-# cp -Rpv "/Users/$USERID/Documents/Pro Tools/Demo Sessions/" "/Library/User Template/Non_localized/Documents/Pro Tools/Demo Sessions"
-
-# /bin/mv
-# /bin/rm
-# /bin/cp
-# /usr/bin/ditto
-
-
-# ls -FlOahR /Users/$USERID/
