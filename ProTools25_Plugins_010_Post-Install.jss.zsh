@@ -265,12 +265,24 @@ main() {
 	
 	# Set root ownership on target directories and files
 	log_info "Setting root ownership on ${USER_TEMPL}..."
-	if ! $(/usr/sbin/chown -fR 0:0 "${USER_TEMPL}")
+	if ! /usr/sbin/chown -fhRP 0:0 "${USER_TEMPL}"
 	then
 			log_error "Failed to set ownership on: $USER_TEMPL"
 			return 1
 	fi
 	
+	log_info "Fixing ownership permissions on /Users/Shared/Pro Tools/Sound Libraries..."
+	if ! /usr/sbin/chown -fhRP 0:0 "/Users/Shared/Pro Tools/Sound Libraries"
+	then
+			log_error "Failed to set ownership on: /Users/Shared/Pro Tools/Sound Libraries"
+			return 1
+	fi
+	if ! /bin/chmod -fhRP ug+rw,o+r "/Users/Shared/Pro Tools/Sound Libraries"
+	then
+			log_error "Failed to set permissions on: /Users/Shared/Pro Tools/Sound Libraries"
+			return 1
+	fi
+
 	# ## 
 # 	Delete files from temporary ${IOPlatformUUID} location
 	
