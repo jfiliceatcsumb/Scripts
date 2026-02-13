@@ -108,7 +108,7 @@ create_directory() {
     local dir=${1}
     log_info "Creating directory: ${dir}"
 
-    if ! $(/bin/mkdir -pv -m ${DIR_PERMS} "${dir}")
+    if ! /bin/mkdir -pv -m ${DIR_PERMS} "${dir}"
     then
         log_error "Failed to create directory: ${dir}"
         return 1
@@ -271,18 +271,21 @@ main() {
 			return 1
 	fi
 	
-	log_info "Fixing ownership permissions on /Users/Shared/Pro Tools/Sound Libraries..."
-	if ! /usr/sbin/chown -fRP 0:0 "/Users/Shared/Pro Tools/Sound Libraries"
+	if [[ -e "/Users/Shared/Pro Tools/Sound Libraries/Avid Loopmasters 1.0" ]]
 	then
-			log_error "Failed to set ownership on: /Users/Shared/Pro Tools/Sound Libraries"
-			return 1
+		log_info "Fixing ownership permissions on /Users/Shared/Pro Tools/Sound Libraries/Avid Loopmasters 1.0..."
+		if ! /usr/sbin/chown -fRP 0:0 "/Users/Shared/Pro Tools/Sound Libraries"
+		then
+				log_error "Failed to set ownership on: /Users/Shared/Pro Tools/Sound Libraries/Avid Loopmasters 1.0"
+				return 1
+		fi
+		if ! {/bin/chmod -fRP a-x "/Users/Shared/Pro Tools/Sound Libraries/Avid Loopmasters 1.0" && \
+          /bin/chmod -fRP ug+rwX,o=u-w "/Users/Shared/Pro Tools/Sound Libraries/Avid Loopmasters 1.0";}
+		then
+				log_error "Failed to set permissions on: /Users/Shared/Pro Tools/Sound Libraries/Avid Loopmasters 1.0"
+				return 1
+		fi
 	fi
-	if ! /bin/chmod -fRP ug+rw,o+r "/Users/Shared/Pro Tools/Sound Libraries"
-	then
-			log_error "Failed to set permissions on: /Users/Shared/Pro Tools/Sound Libraries"
-			return 1
-	fi
-
 	# ## 
 # 	Delete files from temporary ${IOPlatformUUID} location
 	
