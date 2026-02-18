@@ -7,7 +7,7 @@
 # Location of macOS Build plist for comparison
 # Subsitute your org name for anyOrg, or place in another location
 # ##### Modified Path #####
-buildPlist="/Library/Management/edu.csumb/edu.csumb.macOSBuild.plist"
+buildPlist="/Library/Preferences/edu.csumb.macOSBuild.plist"
 
 # Get the local os build version
 # Using build version accounts for supplimental updates as well as dot updates and os upgrades
@@ -28,24 +28,24 @@ fi
 }
 
 SetFilePermissions(){
-	/usr/sbin/chown -fR 0:0 $(/usr/bin/dirname "${buildPlist}")
+	/usr/sbin/chown -f 0:0 "${buildPlist}"
 	/bin/chmod -fR 755 $(/usr/bin/dirname "${buildPlist}")
 	/bin/chmod -f 644 "${buildPlist}"
 }
 
 main() {
 # If the macOS Build plist key does not exist, create it and write the local os into it
-if ! /usr/libexec/PlistBuddy -c 'print "macOSBuild"' ${buildPlist} &> /dev/null; then
+if ! /usr/libexec/PlistBuddy -c 'print "OS_Build"' ${buildPlist} &> /dev/null; then
 	echo "macOS Build plist does not exist. Creating now..."
 	/bin/mkdir -pm 755 $(/usr/bin/dirname "${buildPlist}")
-	/usr/bin/defaults write ${buildPlist} macOSBuild ${localOS}
+	/usr/bin/defaults write ${buildPlist} OS_Build ${localOS}
 	ReEnableJamfConnect
 else
 	echo "macOS Build plist already exists. Skipping creation..."
 fi
 
 # Get the os from the macOS build plist now that we have ensured it exists
-plistOS=$( /usr/bin/defaults read ${buildPlist} macOSBuild )
+plistOS=$( /usr/bin/defaults read ${buildPlist} OS_Build )
 
 # If the local OS does not match the plist OS do some maintainance
 if [[ ${localOS} != ${plistOS} ]]; then
@@ -53,7 +53,7 @@ if [[ ${localOS} != ${plistOS} ]]; then
 	ReEnableJamfConnect
 	
 	# Update the local plist file for next time
-	/usr/bin/defaults write ${buildPlist} macOSBuild ${localOS}
+	/usr/bin/defaults write ${buildPlist} OS_Build ${localOS}
 else
 	echo "macOS was not updated. Nothing to do here."
 fi
