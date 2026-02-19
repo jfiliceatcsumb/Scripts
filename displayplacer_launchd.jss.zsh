@@ -90,58 +90,57 @@ mountPoint=$1
 computerName=$2
 userName=$3
 
-shift 3
-# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
 
 echo "pathToScript=$pathToScript"
 echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
-# Allowed device_type values: input | output | system
-
+### Production path:
+readonly PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.displayplacer.agent.plist"
+readonly PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.displayplacer.daemon.plist"
 
 # --- Validation Logic ---
 
-# Validate executable file at /usr/local/bin/SwitchAudioSource
+readonly DISPLAYPLACER="/usr/local/bin/displayplacer"
 
-displayplacer="/usr/local/bin/displayplacer"
-
-if command -v "$displayplacer" &>/dev/null; then
-    echo "$displayplacer is installed and can be run."
+if command -v "$DISPLAYPLACER" &>/dev/null; then
+    echo "$DISPLAYPLACER is installed and can be run."
 else
-    echo "Error: $displayplacer is not installed." >&2
+    echo "Error: $DISPLAYPLACER is not installed." >&2
     exit 1
 fi
 
-
-# Validate input 
-# Temporarily set the style for case-insensitivity for 'case' comparisons
-
-
-echo "Script parameters are valid. Proceeding..."
-
-### Production path:
-PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.displayplacer_launchd.agent.plist"
-PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.displayplacer_launchd.daemon.plist"
-# 
-# # Create script.
-# PathToScript="/Library/Management/edu.csumb/edu.csumb.displayplacer_launchd.zsh"
-# 
-# 
-# cat > "${PathToScript}" <<EOF
-# #!/bin/zsh --no-rcs
-# /bin/date
-# ${displayplacer} "${4}" "${5}" "${6}" "${7}" "${8}" "${9}"
-# 
-# exit 0
-# EOF
-# 
-LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
-LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
+ 
+readonly LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
+readonly LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 
 /bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
 /bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
+
+echo "Arguments passed: $@"
+echo "Total arguments passed: $#"
+
+# Ensure minimum requirement is met
+if [[ $# -lt 4 ]]; then
+    echo "Error: Minimum 4 arguments required." >&2
+    exit 1
+fi
+
+# Warn if we are truncating
+if [[ $# -gt 9 ]]; then
+    echo "Warning: More than 9 arguments provided. Only the first 9 will be used."
+fi
+
+echo "Script parameters are valid. Proceeding..."
+
+# Slice from the 4th argument up to the 9th
+# $@[4,-1] is shorthand for index 4 through the last element
+# This captures $4, $5, $6, $7, $8, and $9 (if they exist)
+args_to_write=( $@[4,9] )
+
+/usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
 
 
 # #### Create LaunchAgent ####
@@ -150,15 +149,16 @@ if [[ -f "${PathToLaunchAgent}" ]]; then
     /usr/bin/defaults delete "${PathToLaunchAgent}"
 fi
 # /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${PathToScript}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${displayplacer}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}"
+/usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LaunchAgentLabel}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LaunchAgentLabel}_stdout.log"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardErrorPath' -string "/private/var/log/${LaunchAgentLabel}_stderr.log"
+/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LaunchAgentLabel}.log"
+/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardErrorPath' -string "/private/var/log/${LaunchAgentLabel}.log"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'KeepAlive' -bool false
 /usr/bin/defaults write "${PathToLaunchAgent}" 'RunAtLoad' -bool true
-/usr/bin/defaults write "${PathToLaunchAgent}" 'Debug' -bool true
+/usr/bin/defaults write "${PathToLaunchAgent}" 'Debug' -bool false
+
 
 # #### Create LaunchDaemon ####
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
@@ -166,14 +166,13 @@ echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
 if [[ -f "${PathToLaunchDaemon}" ]]; then
     /usr/bin/defaults delete "${PathToLaunchDaemon}"
 fi
-# /usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "${PathToScript}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "${displayplacer}" "${4}" "${5}" "${6}" "${7}" "${8}" "${9}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}_stdout.log"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardErrorPath' -string "/private/var/log/${LaunchDaemonLabel}_stderr.log"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardErrorPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'KeepAlive' -bool false
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'RunAtLoad' -bool true
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'Debug' -bool true
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'Debug' -bool false
 
 
 # Enable tracing without trace output
