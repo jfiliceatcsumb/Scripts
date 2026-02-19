@@ -138,10 +138,7 @@ echo "Script parameters are valid. Proceeding..."
 # $@[4,-1] is shorthand for index 4 through the last element
 # This captures $4, $5, $6, $7, $8, and $9 (if they exist)
 args_to_write=( $@[4,9] )
-
-/usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
-
+# Using "${args_to_write[@]}" ensures that if any argument contains a space, it is preserved as a single item in the defaults array
 
 # #### Create LaunchAgent ####
 echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
