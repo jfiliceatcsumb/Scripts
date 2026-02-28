@@ -198,11 +198,17 @@ fi
 # Remove quarantine extended attributes
 /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
 /usr/bin/plutil -lint "${PathToLaunchAgent}"
-/usr/bin/plutil -p "${PathToLaunchAgent}"
+echo "Printing ${PathToLaunchAgent}..."
+# /usr/bin/plutil -p "${PathToLaunchAgent}"
+/usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchAgent}"
+echo ""
+
 /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchDaemon}"
 /usr/bin/plutil -lint "${PathToLaunchDaemon}"
-/usr/bin/plutil -p "${PathToLaunchDaemon}"
-
+echo "Printing ${PathToLaunchDaemon}..."
+# /usr/bin/plutil -p "${PathToLaunchDaemon}"
+/usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchDaemon}"
+echo ""
 
 /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
 /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
