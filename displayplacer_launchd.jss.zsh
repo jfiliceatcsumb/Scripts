@@ -90,6 +90,9 @@ mountPoint=$1
 computerName=$2
 userName=$3
 
+shift 3
+# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+
 
 echo "pathToScript=$pathToScript"
 echo "mountPoint=$mountPoint"
@@ -118,27 +121,37 @@ readonly LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 /bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
 /bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
+# Slice from the 1st argument up to the 6th
+# $@[4,-1] is shorthand for index 4 through the last element
+# This captures $1, $2, $3, $4, $5, and $6 (if they exist)
+# Filter out empty arguments from the slice [1,6]
+# The (@) flag ensures we treat the result as an array even if empty
+# Using "${args_to_write[@]}" ensures that if any argument contains a space, it is preserved as a single item in the defaults array
+
+# Filter out empty elements AND slice the first 6
+# - "${(@)@:#}" filters out empty/null strings
+# - [1,6] slices the resulting list to the first six elements
+args_to_write=( "${(@)${@:#}[1,6]}" )
+
+non_null_count=${#args_to_write}
+
 echo "Arguments passed: $@"
-echo "Total arguments passed: $#"
+echo "Total arguments passed: ${#args_to_write}"
 
 # Ensure minimum requirement is met
-if [[ $# -lt 4 ]]; then
-    echo "Error: Minimum 4 arguments required." >&2
+if [[ ${#args_to_write} -lt 1 ]]; then
+    echo "Error: Minimum 1 arguments required." >&2
     exit 1
 fi
 
 # Warn if we are truncating
-if [[ $# -gt 9 ]]; then
-    echo "Warning: More than 9 arguments provided. Only the first 9 will be used."
+if [[ ${#args_to_write} -gt 6 ]]; then
+    echo "Warning: More than 6 arguments provided. Only the first 6 will be used."
 fi
 
 echo "Script parameters are valid. Proceeding..."
 
-# Slice from the 4th argument up to the 9th
-# $@[4,-1] is shorthand for index 4 through the last element
-# This captures $4, $5, $6, $7, $8, and $9 (if they exist)
-args_to_write=( $@[4,9] )
-# Using "${args_to_write[@]}" ensures that if any argument contains a space, it is preserved as a single item in the defaults array
+
 
 # #### Create LaunchAgent ####
 echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
