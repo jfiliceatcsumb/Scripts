@@ -29,12 +29,17 @@ userName=$3
 
 shift 3
 # Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+
+currentUser=$( echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | awk '/Name :/ { print $3 }' )
+
+
 # convenience function to run a command as the current user
 # https://scriptingosx.com/2020/08/running-a-command-as-another-user/
 # usage:
 #   runAsUser command arguments...
 runAsUser() {  
   if [ "$currentUser" != "loginwindow" ]; then
+    uid=$(id -u "$currentUser")
     launchctl asuser "$uid" sudo -u "$currentUser" "$@"
   else
     echo "no user logged in"
