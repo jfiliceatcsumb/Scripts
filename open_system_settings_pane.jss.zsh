@@ -39,6 +39,21 @@ shift 3
 # If left empty, then it will just open the System Preferences to the front.
 PrefPaneURLScheme=""
 PrefPaneURLScheme="${1}"
+# ##### Debugging flags #####
+# debug bash script by enabling verbose “-v” option
+# set -v
+# debug bash script using noexec (Test for syntaxt errors)
+# set -n
+# identify the unset variables while debugging bash script
+# set -u
+# debug bash script using xtrace
+# set -x
+# Enable tracing without trace output
+# { set -x; } 2>/dev/null
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
+
+currentUser=$( echo "show State:/Users/ConsoleUser" | /usr/sbin/scutil | awk '/Name :/ { print $3 }' )
 
 # convenience function to run a command as the current user
 # https://scriptingosx.com/2020/08/running-a-command-as-another-user/
@@ -46,7 +61,7 @@ PrefPaneURLScheme="${1}"
 #   runAsUser command arguments...
 runAsUser() {  
   if [ "$currentUser" != "loginwindow" ]; then
-    launchctl asuser "$uid" sudo -u "$currentUser" "$@"
+    sudo -u "$currentUser" "$@"
   else
     echo "no user logged in"
     # uncomment the exit command
