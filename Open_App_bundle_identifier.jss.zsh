@@ -29,12 +29,22 @@ userName=$3
 
 shift 3
 # Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
-
-
-# Example:
-# /bin/ls -FlOah "${SCRIPTPATH}"
+# convenience function to run a command as the current user
+# https://scriptingosx.com/2020/08/running-a-command-as-another-user/
+# usage:
+#   runAsUser command arguments...
+runAsUser() {  
+  if [ "$currentUser" != "loginwindow" ]; then
+    launchctl asuser "$uid" sudo -u "$currentUser" "$@"
+  else
+    echo "no user logged in"
+    # uncomment the exit command
+    # to make the function exit with an error when no user is logged in
+    # exit 1
+  fi
+}
 
 bundle_indentifier="$1"
-/usr/bin/sudo --user=$userName /usr/bin/open -b "$bundle_indentifier"
+runAsUser /usr/bin/open -b "$bundle_indentifier"
 
 
