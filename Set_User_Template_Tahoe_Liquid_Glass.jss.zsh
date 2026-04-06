@@ -8,7 +8,7 @@
 
 
 
-# Sets the default user template Interface Style to Dark Mode.
+# Sets the default user template to reduce transparency and restore Window Titlebar Icons in macOS 26 Tahoe.
 # Run it with no arguments. 
 # 
 # Use as script in Jamf JSS.
