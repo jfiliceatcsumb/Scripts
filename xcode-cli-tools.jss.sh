@@ -41,7 +41,7 @@ if [ $macOSversionMajor -gt 11 ] || [ $macOSversionMajor -eq 10 -a $macOSversion
 		/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress 2>/dev/null
 		echo "Checking for Xcode Command Line Tools updates..."
 	fi
-	PROD=$(/usr/sbin/softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+	PROD=$(/usr/sbin/softwareupdate -l | grep "\*.*Command Line Tools for Xcode" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
 # 	Strip "Label: "
 	PROD=$(echo "$PROD" | sed -e 's/Label: //')
 
