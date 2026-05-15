@@ -15,7 +15,7 @@ if [ ! -d "/usr/local/bin" ]; then
     mkdir -p /usr/local/bin
 fi
 
-# Copy the script to /private/tmp/
+# Copy the script to $SCRIPT_PATH
 cat <<'EOF' > "$SCRIPT_PATH"
 #!/bin/bash
 # Read PasswordCurrent value from com.jamf.connect.state plist
