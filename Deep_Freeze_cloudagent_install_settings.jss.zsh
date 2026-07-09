@@ -147,9 +147,10 @@ write_cloudagent_plist() {
      error_exit "Plist validation failed"
   fi
 	# debugging: print plist file
-	# /usr/bin/plutil -p "${configFile}"
+	echo "Print plist file..."
+	/usr/bin/plutil -p "${configFile}"
 	
-    log "Successfully wrote and validated plist file"
+  log "Successfully wrote and validated plist file"
 	return 0
 
 }
