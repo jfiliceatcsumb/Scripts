@@ -5,6 +5,7 @@
 # Script Name:  Get-LatestOSSupported.sh
 # By:  Zack Thompson / Created:  9/26/2017
 # Version:  2.7.0 / Updated:  6/11/2025 / By:  @HowardGMac
+# Updated 2026/07/09 by: @jfiliceatcsumb https://github.com/jfiliceatcsumb/Scripts/blob/master/Get-LatestOSSupported.sh
 #
 # Description:  A Jamf Pro Extension Attribute to check the latest compatible version of macOS.
 #
@@ -80,6 +81,9 @@ not_sonoma_regex="^(MacPro[1-6],[0-9]|iMac([1-9]|1[0-8]),[0-9]|(Macmini|MacBookA
 not_sequoia_regex="^(MacPro[1-6],[0-9]|iMac([1-9]|1[0-8]),[0-9]|Macmini[1-7],[0-9]|MacBookAir[1-8],[0-9]|MacBookPro([1-9]|1[0-4]),[0-9])$"
 not_tahoe_regex="^(MacPro[1-6],[0-9]|iMac([1-9]|1[0-9]),[0-9]|iMacPro1,1|Macmini[1-8],[0-9]|MacBookAir[1-9],[0-9]|MacBookPro((16,3)|([1-9]|1[0-5]),[0-9]))$"
 
+# Golden Gate Verification: https://regex101.com/r/BLPe8r/1
+not_goldengate_regex="^(MacPro[1-7],[0-9]|iMac([1-9]|1[0-9]|20)?,[0-9]|iMacPro1,1|Macmini[1-8],[0-9]|MacBookAir[1-9],[0-9]|MacBookPro((16,[1-4])|([1-9]|1[0-5]),[0-9])|MacBook(10|[1-9]),[1-9])$"
+
 ##################################################
 # Setup Functions
 
@@ -125,8 +129,10 @@ model_check() {
 		echo "Sonoma*"
 	elif [[ $model =~ $not_tahoe_regex ]]; then
 		echo "Sequoia*"
-	else
+	elif [[ $model =~ $not_goldengate_regex ]]; then
 		echo "Tahoe*"
+	else
+		echo "Golden Gate*"
 	fi
 }
 
@@ -145,11 +151,16 @@ os_check() {
 		# For all models except MacPro5,1...
 
 		if [[
+			"${validate_os}" == "Golden Gate*" && \
+			( "${os_major}" -ge 11 )
+		]]; then
+			echo "Golden Gate*"
+		elif [[
 			"${validate_os}" == "Tahoe*" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
 		]]; then
 			echo "Tahoe*"
-   		elif [[
+   	elif [[
 			"${validate_os}" == "Sequoia*" && \
 			( "${os_major}" -ge 11 || "${os_major}" -eq 10 && "${os_minor}" -ge 9 )
 		]]; then
@@ -248,7 +259,7 @@ os_check() {
 
 check_ram_upgradeable() {
 	ram_upgradeable=$( /usr/sbin/system_profiler SPMemoryDataType | \
-		/usr/bin/awk -F "Upgradeable Memory: " '{print $2}' | /usr/bin/xargs 2>/dev/null )
+		/usr/bin/awk -F "Upgradeable Memory: " '{print $2}' | /usr/bin/xargs 2&> /dev/null )
 	# ARM Macs do not return the "Upgradeable Memory:" attribute as of early 2022
 	if [[ -z ${ram_upgradeable} ]]; then
 		ram_upgradeable="No"
@@ -270,7 +281,7 @@ ram_check() {
 	system_ram=$(( $( /usr/sbin/sysctl -n hw.memsize ) / bytes_in_gigabytes ))
 
 	if [[
-		"${validate_os}" =~ ^(Catalina|Big[[:space:]]Sur|Monterey|(Ventura|Sonoma|Sequoia|Tahoe)\*)$
+		"${validate_os}" =~ ^(Catalina|Big[[:space:]]Sur|Monterey|(Ventura|Sonoma|Sequoia|Tahoe|Golden[[:space:]]Gate)\*)$
 	]]; then
 		# OS version requires 4GB RAM minimum.  For Ventura and newer, value's are inherited from
 		# Monterey as Apple has not publicly defined these requirements.
@@ -360,6 +371,13 @@ storage_check() {
 	# Set the required free space to compare.
 	# Set space requirement in bytes:  /usr/bin/bc <<< "<space in GB> * 1073741824"
 	case "${validate_os}" in
+ 		"Golden Gate*"* )
+			# Value's inherited from Monterey, Apple has not defined these requirements
+			required_free_space_newer="27917287424" # 26GB if Sierra or later
+			os_newer="10.12.0"
+			required_free_space_older="47244640256" # 44GB if El Capitan or earlier
+			os_older="10.11.0"
+		;;
  		"Tahoe*"* )
 			# Value's inherited from Monterey, Apple has not defined these requirements
 			required_free_space_newer="27917287424" # 26GB if Sierra or later
@@ -478,6 +496,9 @@ fi
 model_result=$( model_check "${mac_model}" )
 
 case "${model_result}" in
+	"Golden Gate*" )
+		version_string="27"
+	;;
 	"Tahoe*" )
 		version_string="26"
 	;;
