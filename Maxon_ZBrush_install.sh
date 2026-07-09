@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ## postinstall
 
 # Jason Filice
@@ -78,22 +78,11 @@ targetLocation=$2
 targetVolume=$3
 
 
-
-# set alias for PlistBuddy and several others so I don't have to specify full path.
-# 
-alias PlistBuddy="/usr/libexec/PlistBuddy"
-alias chown="/usr/sbin/chown"
-alias chmod="/bin/chmod"
-alias ditto="/usr/bin/ditto"
-alias defaults="/usr/bin/defaults"
-alias rm="/bin/rm"
-alias cp="/bin/cp"
-alias mkdir="/bin/mkdir"
-alias sudo=/usr/bin/sudo
-
-
 /bin/ls -FlOah "${SCRIPTPATH}"
 # Run script found in the application bundle included alongside this postinstall script.
-"${SCRIPTPATH}"/ZBrush_*_Installer.app/Contents/MacOS/installbuilder.sh --mode unattended --unattendedmodeui minimal
+shopt -s nullglob
+ZBRUSHINSTALLER=("${SCRIPTPATH}"/ZBrush_*_Installer.app)
+MAXONZBRUSHINSTALLER=("${SCRIPTPATH}"/Maxon\ ZBrush*Installer.app)
+shopt -u nullglob
 
 exit 0
