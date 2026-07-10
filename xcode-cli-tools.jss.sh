@@ -21,7 +21,7 @@ echo "macOSversionMinor=$macOSversionMinor"
 # macOS 10.9.x or newer
 
 # on 10.9+, we can leverage SUS to get the latest CLI tools
-if [[ $macOSversionMajor -gt 11 ]] || [[ $macOSversionMajor -eq 10 -a $macOSversionMinor -ge 9 ]]; then
+if [[ $macOSversionMajor -gt 11 ]] || [[ $macOSversionMajor -eq 10 && $macOSversionMinor -ge 9 ]]; then
 	# https://stackoverflow.com/questions/15371925/how-to-check-if-command-line-tools-is-installed
 	echo "Check if command line tools are installed..."
 	/usr/bin/xcode-select -p 1>/dev/null 2>&1 
