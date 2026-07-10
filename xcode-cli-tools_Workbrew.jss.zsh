@@ -18,7 +18,7 @@ echo "macOSversionMinor=${macOSversionMinor}"
 echo "macOSversionMinorUpdate=${macOSversionMinorUpdate}"
 
 
-if [[ ${macOSversionMajor} -eq 10 -a ${macOSversionMinor} -lt 13 ] || [ ${macOSversionMajor} -eq 10 -a ${macOSversionMinor} -eq 13 -a ${macOSversionMinorUpdate} -lt 4 ]]; then
+if [[ ${macOSversionMajor} -eq 10 -a ${macOSversionMinor} -lt 13 ]] || [[ ${macOSversionMajor} -eq 10 -a ${macOSversionMinor} -eq 13 -a ${macOSversionMinorUpdate} -lt 4 ]]; then
 	echo "ERROR: Prerequisites macOS 10.13.4 or newer. Terminating script." 1>&2
 	exit 1
 fi
