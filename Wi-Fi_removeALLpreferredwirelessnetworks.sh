@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/zsh --no-rcs
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -31,18 +31,6 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
-# set alias for PlistBuddy and several others so I don't have to specify full path.
-# Prefix sudo path because I'm using it here for all commands.
-# If I want to run a command without the alias, then specify the full path.
-alias PlistBuddy="/usr/libexec/PlistBuddy"
-alias chown="/usr/sbin/chown"
-alias chmod="/bin/chmod"
-alias ditto="/usr/bin/ditto"
-alias defaults="/usr/bin/defaults"
-alias rm="/bin/rm"
-alias cp="/bin/cp"
-alias mkdir="/bin/mkdir"
-alias sudo=/usr/bin/sudo
 
 # ##### Debugging flags #####
 # debug bash script by enabling verbose “-v” option
@@ -54,17 +42,11 @@ alias sudo=/usr/bin/sudo
 # debug bash script using xtrace
 # set -x
 
-SSID="$1"
-
-if [[ -z "${SSID}" ]]; then
-	echo "Usage: $(/usr/bin/basename "$0") <SSID to remove>"
-	exit 1
-fi
 
 for interface in $(networksetup -listnetworkserviceorder | grep -e "Hardware" | grep -e "Wi-Fi" |  sed -e 's/(//'  -e  's/)//' | awk '{ print $NF }')
 do  
-	echo "Disconnecting $interface from non-internal device network"  
-	/usr/sbin/networksetup -removepreferredwirelessnetwork $interface "${SSID}"
+	echo "Remove all networks from the preferred wireless network list for $interface"  
+	/usr/sbin/networksetup -removeallpreferredwirelessnetworks $interface
 done
 
 exit 0
