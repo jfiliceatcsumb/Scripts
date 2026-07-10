@@ -7,17 +7,6 @@
 # https://csumb.edu/it
 
 
-
-# Script to disable Wi-Fi power
-# Run it with no arguments. 
-# 
-# Use as script in Jamf JSS.
-
-
-# Change History:
-# 2022/08/24:	Creation.
-#
-
 SCRIPTNAME=`/usr/bin/basename "$0"`
 SCRIPTDIR=`/usr/bin/dirname "$0"`
 
@@ -47,17 +36,19 @@ echo "userName=$userName"
 # debug bash script using xtrace
 
 # set -x
-SSID="$1"
-INDEX=${2:-0}
-SECURITY_TYPE=$3
-PASSWORD=${4:-""}
+SSID="${1:-}"
+INDEX="${2:-0}"
+SECURITYTYPE="${3:-}"
+PASSWORD="${4:-''}"
 
-if [[ -z "${SSID}" ]]; then
-	echo "Usage: $(/usr/bin/basename "$0") <SSID to remove>"
+if [[ -z "${SSID}" || -z "${SECURITY_TYPE}" ]]; then
+	echo "Usage: $(/usr/bin/basename "$0") <networkSSID> <index> <security type> [password]"
 	exit 1
 fi
 
 # Get network hardware port
 WifiHardwarePort=$(/usr/sbin/networksetup -listallhardwareports | /usr/bin/awk '/Wi-Fi|AirPort/ {getline; print $NF}')
-# Usage: networksetup -addpreferredwirelessnetworkatindex <device name> <network> <index> <security type> [password]
-/usr/sbin/networksetup -addpreferredwirelessnetworkatindex ${WifiHardwarePort} "${SSID}" ${INDEX} "${SECURITY_TYPE}" "${PASSWORD}"
+# Usage: networksetup -addpreferredwirelessnetworkatindex <hardwareport> <network> <index> <securitytype> [password]
+/usr/sbin/networksetup -addpreferredwirelessnetworkatindex ${WifiHardwarePort} "${SSID}" ${INDEX} "${SECURITYTYPE}" "${PASSWORD}"
+
+exit 0
