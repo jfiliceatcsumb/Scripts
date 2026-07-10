@@ -2,12 +2,13 @@
 
 # https://workbrew.com/docs/deployment-guides/workbrew-deployment-guide-jamf-pro
 
-set -x
+# set -x
 
 # Get and install Xcode CLI tools
 # Prerequisites: macOS 10.13.4 or newer
 
 macOSversion=$(sw_vers -productVersion)
+
 echo "macOSversion=${macOSversion}"
 # Just get the second version value after 10.
 macOSversionMajor=$(echo ${macOSversion} | awk -F. '{print $1}')
@@ -18,12 +19,12 @@ echo "macOSversionMinor=${macOSversionMinor}"
 echo "macOSversionMinorUpdate=${macOSversionMinorUpdate}"
 
 
-if [[ ${macOSversionMajor} -eq 10 -a ${macOSversionMinor} -lt 13 ]] || [[ ${macOSversionMajor} -eq 10 -a ${macOSversionMinor} -eq 13 -a ${macOSversionMinorUpdate} -lt 4 ]]; then
+if [[ ${macOSversionMajor} -eq 10 && ${macOSversionMinor} -lt 13 ]] || [[ ${macOSversionMajor} -eq 10 && ${macOSversionMinor} -eq 13 && ${macOSversionMinorUpdate} -lt 4 ]]; then
 	echo "ERROR: Prerequisites macOS 10.13.4 or newer. Terminating script." 1>&2
 	exit 1
 fi
 # on 10.9+, we can leverage SUS to get the latest CLI tools
-exit 0
+
 CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
 if [[ ! -f "/Library/Developer/CommandLineTools/usr/bin/git" ]]; then
 	echo "Xcode Command Line Tools not found. Starting installation..."
