@@ -2,18 +2,32 @@
 
 # https://github.com/timsutton/osx-vm-templates/blob/master/scripts/xcode-cli-tools.sh
 
+# ##### Debugging flags #####
+# debug bash script by enabling verbose “-v” option
+# set -v
+# debug bash script using noexec (Test for syntaxt errors)
+# set -n
+# identify the unset variables while debugging bash script
+# set -u
+# debug bash script using xtrace
 # set -x
-
+# Enable tracing without trace output
+{ set -x; } 2>/dev/null
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
 
 # Get and install Xcode CLI tools
 
 macOSversion=$(sw_vers -productVersion)
-echo "macOSversion=$macOSversion"
+
+echo "macOSversion=${macOSversion}"
 # Just get the second version value after 10.
-macOSversionMajor=$(echo $macOSversion | awk -F. '{print $1}')
-macOSversionMinor=$(echo $macOSversion | awk -F. '{print $2}')
-echo "macOSversionMajor=$macOSversionMajor"
-echo "macOSversionMinor=$macOSversionMinor"
+macOSversionMajor=$(echo ${macOSversion} | awk -F. '{print $1}')
+macOSversionMinor=$(echo ${macOSversion} | awk -F. '{print $2}')
+macOSversionMinorUpdate=$(echo ${macOSversion} | awk -F. '{print $3}')
+echo "macOSversionMajor=${macOSversionMajor}"
+echo "macOSversionMinor=${macOSversionMinor}"
+echo "macOSversionMinorUpdate=${macOSversionMinorUpdate}"
 
 # if 
 # macOS 11.x or newer
