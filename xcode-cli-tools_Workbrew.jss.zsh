@@ -12,7 +12,7 @@
 # debug bash script using xtrace
 # set -x
 # Enable tracing without trace output
-{ set -x; } 2>/dev/null
+# { set -x; } 2>/dev/null
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
 
@@ -67,7 +67,7 @@ echo "Targeting package: ${CLT_PACKAGE}"
 #  Detect if a user is currently logged into the GUI console
 CURRENT_USER=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ {print $3}')
 
-if [ -n "${CURRENT_USER}" ]; then
+if [ -n "${CURRENT_USER}" ] && [ "${CURRENT_USER}" != "_mbsetupuser" ]; then
     echo "User '${CURRENT_USER}' is logged in. Executing within the user context to prevent GUI freeze..."
     # Running via launchctl inside the user's bootstrap bypasses the root MDM lock
     USER_ID=$(id -u "${CURRENT_USER}")
@@ -77,12 +77,6 @@ else
     # Since no user session exists, the root process can claim the update daemon directly
     /usr/sbin/softwareupdate --install "${CLT_PACKAGE}" --verbose
 fi
-
-
-# /usr/sbin/softwareupdate --list --force --verbose
-# CLT_PACKAGE=$(/usr/sbin/softwareupdate --list --no-scan --verbose | grep -B 1 "Command Line Tools")
-# CLT_PACKAGE=$(echo "$CLT_PACKAGE" | awk -F"*" '/^ *\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n1)
-# /usr/bin/sudo /usr/sbin/softwareupdate --install --no-scan --force --agree-to-license --verbose "${CLT_PACKAGE}"
 
 #  Cleanup and verification
 /bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
