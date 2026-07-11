@@ -50,9 +50,7 @@ fi
 /usr/sbin/softwareupdate --list --force --verbose
 CLT_PACKAGE=$(/usr/sbin/softwareupdate --list --no-scan --verbose | grep -B 1 "Command Line Tools")
 CLT_PACKAGE=$(echo "$CLT_PACKAGE" | awk -F"*" '/^ *\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n1)
-if [[ ${macOSversionMajor} -lt 26  ]]; then
-	/usr/bin/sudo /usr/sbin/softwareupdate --install --no-scan --force --agree-to-license --verbose "${CLT_PACKAGE}"
-fi
+/usr/bin/sudo /usr/sbin/softwareupdate --install --no-scan --force --agree-to-license --verbose "${CLT_PACKAGE}"
 /usr/bin/sudo /bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
 
 exit
