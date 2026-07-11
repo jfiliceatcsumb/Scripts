@@ -2,7 +2,19 @@
 
 # https://workbrew.com/docs/deployment-guides/workbrew-deployment-guide-jamf-pro
 
+# ##### Debugging flags #####
+# debug bash script by enabling verbose “-v” option
+# set -v
+# debug bash script using noexec (Test for syntaxt errors)
+# set -n
+# identify the unset variables while debugging bash script
+# set -u
+# debug bash script using xtrace
 # set -x
+# Enable tracing without trace output
+{ set -x; } 2>/dev/null
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
 
 # Get and install Xcode CLI tools
 # Prerequisites: macOS 10.13.4 or newer
@@ -35,9 +47,12 @@ else
 	/usr/bin/sudo /bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
   sleep 1
 fi
-  CLT_PACKAGE=$(/usr/sbin/softwareupdate --list --force --verbose | grep -B 1 "Command Line Tools")
-  CLT_PACKAGE=$(echo "$CLT_PACKAGE" | awk -F"*" '/^ *\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n1)
-  /usr/bin/sudo /usr/sbin/softwareupdate --install --no-scan --force --agree-to-license --verbose "${CLT_PACKAGE}"
-	/usr/bin/sudo /bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
+/usr/sbin/softwareupdate --list --force --verbose
+CLT_PACKAGE=$(/usr/sbin/softwareupdate --list --no-scan --verbose | grep -B 1 "Command Line Tools")
+CLT_PACKAGE=$(echo "$CLT_PACKAGE" | awk -F"*" '/^ *\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n1)
+if [[ ${macOSversionMajor} -lt 26  ]]; then
+	/usr/bin/sudo /usr/sbin/softwareupdate --install --no-scan --force --agree-to-license --verbose "${CLT_PACKAGE}"
+fi
+/usr/bin/sudo /bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
 
 exit
