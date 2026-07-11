@@ -37,20 +37,62 @@ if [[ ${macOSversionMajor} -eq 10 && ${macOSversionMinor} -lt 13 ]] || [[ ${macO
 fi
 # on 10.9+, we can leverage SUS to get the latest CLI tools
 
-CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
 if [[ ! -f "/Library/Developer/CommandLineTools/usr/bin/git" ]]; then
 	echo "Xcode Command Line Tools not found. Starting installation..."
-  /usr/bin/sudo /usr/bin/touch "${CLT_PLACEHOLDER}"
+#  Touch the Apple placeholder flag
+	CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+	/usr/bin/touch "${CLT_PLACEHOLDER}"
   sleep 1
 else
 	echo "Xcode Command Line Tools are already installed. Checking for available updates..."
-	/usr/bin/sudo /bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
-  sleep 1
+	/bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
 fi
-/usr/sbin/softwareupdate --list --force --verbose
-CLT_PACKAGE=$(/usr/sbin/softwareupdate --list --no-scan --verbose | grep -B 1 "Command Line Tools")
-CLT_PACKAGE=$(echo "$CLT_PACKAGE" | awk -F"*" '/^ *\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n1)
-/usr/bin/sudo /usr/sbin/softwareupdate --install --no-scan --force --agree-to-license --verbose "${CLT_PACKAGE}"
-/usr/bin/sudo /bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
+
+
+# 3. Force a quick scan to populate the local softwareupdate history
+/usr/sbin/softwareupdate -l > /dev/null 2>&1
+
+# Extract the exact matching package name from the Apple Catalog
+CLT_PACKAGE=$(/usr/sbin/softwareupdate -l | grep -B 1 "Command Line Tools" | awk -F'* ' '/^ *\*/ {print $2}' | sed -e 's/^Label: //' -e 's/^ *//' | sort -V | tail -n1)
+
+if [ -z "$CLT_PACKAGE" ]; then
+    echo "ERROR: No Command Line Tools found in the Apple catalog stream."
+    /bin/rm -f "${CLT_PLACEHOLDER}" 2>/dev/null
+    exit 1
+fi
+
+echo "Targeting package: ${CLT_PACKAGE}"
+
+
+#  Detect if a user is currently logged into the GUI console
+CURRENT_USER=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ {print $3}')
+
+if [ -n "${CURRENT_USER}" ]; then
+    echo "User '${CURRENT_USER}' is logged in. Executing within the user context to prevent GUI freeze..."
+    # Running via launchctl inside the user's bootstrap bypasses the root MDM lock
+    USER_ID=$(id -u "${CURRENT_USER}")
+    launchctl asuser "${USER_ID}" /usr/sbin/softwareupdate --install "${CLT_PACKAGE}" --verbose
+else
+    echo "No user logged in (Headless / Login Window). Executing directly as system root..."
+    # Since no user session exists, the root process can claim the update daemon directly
+    /usr/sbin/softwareupdate --install "${CLT_PACKAGE}" --verbose
+fi
+
+
+# /usr/sbin/softwareupdate --list --force --verbose
+# CLT_PACKAGE=$(/usr/sbin/softwareupdate --list --no-scan --verbose | grep -B 1 "Command Line Tools")
+# CLT_PACKAGE=$(echo "$CLT_PACKAGE" | awk -F"*" '/^ *\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n1)
+# /usr/bin/sudo /usr/sbin/softwareupdate --install --no-scan --force --agree-to-license --verbose "${CLT_PACKAGE}"
+
+#  Cleanup and verification
+/bin/rm -vf "${CLT_PLACEHOLDER}"  2>/dev/null
+
+if [ -d "/Library/Developer/CommandLineTools/usr/bin" ]; then
+    echo "Success: Command Line Tools successfully installed."
+    exit 0
+else
+    echo "ERROR: Installation completed but binaries were not found."
+    exit 2
+fi
 
 exit
