@@ -37,10 +37,10 @@ if [[ ${macOSversionMajor} -eq 10 && ${macOSversionMinor} -lt 13 ]] || [[ ${macO
 fi
 # on 10.9+, we can leverage SUS to get the latest CLI tools
 
+CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
 if [[ ! -f "/Library/Developer/CommandLineTools/usr/bin/git" ]]; then
 	echo "Xcode Command Line Tools not found. Starting installation..."
 #  Touch the Apple placeholder flag
-	CLT_PLACEHOLDER="/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress"
 	/usr/bin/touch "${CLT_PLACEHOLDER}"
   sleep 1
 else
@@ -51,9 +51,9 @@ fi
 
 # 3. Force a quick scan to populate the local softwareupdate history
 /usr/sbin/softwareupdate -l > /dev/null 2>&1
-
+ 																						
 # Extract the exact matching package name from the Apple Catalog
-CLT_PACKAGE=$(/usr/sbin/softwareupdate -l | grep -B 1 "Command Line Tools" | awk -F'* ' '/^ *\*/ {print $2}' | sed -e 's/^Label: //' -e 's/^ *//' | sort -V | tail -n1)
+CLT_PACKAGE=$(/usr/sbin/softwareupdate -l | grep -B 1 "Command Line Tools" | awk -F"*" '/^ *\*/ {print $2}' | sed -e 's/^ *Label: //' -e 's/^ *//' | sort -V | tail -n1)
 
 if [ -z "$CLT_PACKAGE" ]; then
     echo "ERROR: No Command Line Tools found in the Apple catalog stream."
