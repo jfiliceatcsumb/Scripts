@@ -44,7 +44,7 @@ fi
 
 VolumeName="${1}"
 
-bootDiskdev=$(diskutil info / | awk '/Part of Whole/ {print $4}')
+bootDiskdev=$(/usr/sbin/diskutil info / | awk '/Part of Whole/ {print $4}')
 
 if [ ! -e /Volumes/"$VolumeName" ]
 then
@@ -56,8 +56,15 @@ fi
 # ignore permisssions
 /usr/sbin/diskutil disableOwnership "/Volumes/$VolumeName"
 
-echo "Setting $VolumeName volume state to Thawed..."
-DFXPSWD="$dfPassword" /usr/local/bin/deepfreeze thaw --volume "$VolumeName" --env
+# If DeepFreeze 7 APFS is installed...
+if [[ -f /usr/local/bin/deepfreeze ]]; then
+	echo "DeepFreeze 7 installed."
+	echo "Setting $VolumeName volume state to Thawed..."
+	DFXPSWD="$dfPassword" /usr/local/bin/deepfreeze thaw --volume "$VolumeName" --env
+else
+	echo "DeepFreeze 7 not installed."
+fi
+
 
 
 
