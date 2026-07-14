@@ -53,7 +53,7 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
-# Allowed device_type values: input | output | system
+# Allowed device_type values: input | output | system | all
 
 device_type="${1:-output}"
 device_name_uid="${2:-builtin}"
@@ -129,7 +129,7 @@ PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.SwitchAudioSource.${devi
 # 	-a             : shows all devices
 # 	-c             : shows current device
 # 	-f format      : output format (cli/human/json). Defaults to human.
-# 	-t type        : device type (input/output/system).  Defaults to output.
+# 	-t type        : device type (input/output/system/all).  Defaults to output.
 # 	-m mute_mode : sets the mute status (mute/unmute/toggle). (version 1.2.0+)
 # 	-n             : cycles the audio device to the next one
 # 	-i device_id   : sets the audio device to the given device by id
