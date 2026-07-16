@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/zsh --no-rcs
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -13,10 +13,8 @@
 # 
 # Use as script in Jamf JSS.
 
-#
-
-SCRIPTNAME=`/usr/bin/basename "$0"`
-SCRIPTDIR=`/usr/bin/dirname "$0"`
+SCRIPTNAME=$(/usr/bin/basename "$0")
+SCRIPTDIR=$(/usr/bin/dirname "$0")
 
 # Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
 
@@ -36,7 +34,7 @@ echo "userName=$userName"
 # ##### Debugging flags #####
 # debug bash script by enabling verbose "-v" option
 # set -v
-# debug bash script using noexec (Test for syntaxt errors)
+# debug bash script using noexec (Test for syntax errors)
 # set -n
 # identify the unset variables while debugging bash script
 # set -u
@@ -44,19 +42,32 @@ echo "userName=$userName"
 # set -x
 
 bootstrap_is_supported() {
-    echo "$1" | grep -q "supported on server: YES"
+	echo "$1" | grep -q "supported on server: YES"
 }
 
 bootstrap_is_escrowed() {
-    echo "$1" | grep -q "escrowed to server: YES"
+	echo "$1" | grep -q "escrowed to server: YES"
 }
 
 check_not_macOS26Tahoe() {
 	# Get the current macOS version
+	local currentVersion
 	currentVersion=$(/usr/bin/sw_vers -productVersion)
 	
+	if [[ -z "$currentVersion" ]]; then
+		echo "Error: Unable to retrieve macOS version"
+		return 1
+	fi
+	
 	# Extract major version (first number before the first dot)
-	majorVersion=${currentVersion%%.*}
+	local majorVersion
+	majorVersion="${currentVersion%%.*}"
+	
+	# Validate that majorVersion is numeric
+	if ! [[ "$majorVersion" =~ ^[0-9]+$ ]]; then
+		echo "Error: Invalid macOS version format: $currentVersion"
+		return 1
+	fi
 	
 	# Check if major version is less than 26
 	# Return 0 (success/true) if NOT version 26 or higher
@@ -70,9 +81,9 @@ check_not_macOS26Tahoe() {
 }
 
 verify_authentication() {
-# 		Used to verify the password
-# 		authenticate the account without actually logging into anything
-# 		account authenticates in any way it will have a SecureToken enabled on the account
+	# Used to verify the password
+	# authenticate the account without actually logging into anything
+	# account authenticates in any way it will have a SecureToken enabled on the account
 	if ! /usr/bin/dscl . authonly "${1}" "${2}"; then
 		echo "Error: Authentication failed"
 		exit 1
@@ -81,7 +92,7 @@ verify_authentication() {
 }
 
 escrow_bootstraptoken() {
-# Add error handling for profiles command
+	# Add error handling for profiles command
 	verify_authentication "${1}" "${2}"
 	if ! /usr/bin/profiles install -type bootstraptoken -user "${1}" -password "${2}" -verbose; then
 		echo "Error: Failed to install bootstrap token"
@@ -91,34 +102,31 @@ escrow_bootstraptoken() {
 	/usr/bin/profiles status -type bootstraptoken
 }
 
-
-#  parameter validation
+# Parameter validation
 if [[ -z "${1}" ]] || [[ -z "${2}" ]]; then
-    echo "Error: Volume owner account and password are required"
-    exit 1
+	echo "Error: Volume owner account and password are required"
+	exit 1
 fi
 
-
 echo "Show secure token status for additional info..." 
-/usr/sbin/sysadminctl -secureTokenStatus  "${1}"
+/usr/sbin/sysadminctl -secureTokenStatus "${1}"
 echo "Show Bootstrap Token status..."
 bootstrap=$(/usr/bin/profiles status -type bootstraptoken)
 
-echo ${bootstrap}
+echo "${bootstrap}"
 
 # Then use them:
 if bootstrap_is_supported "$bootstrap"; then
 	if bootstrap_is_escrowed "$bootstrap"; then
-    	echo "Bootstrap escrowed..."
-			if check_not_macOS26Tahoe; then
-				echo "Updating the Bootstrap Token APFS record and escrowing to the MDM server..."
-				escrow_bootstraptoken "${1}" "${2}"
-			fi
-    else
-			echo "Bootstrap not escrowed."
-			echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
+		echo "Bootstrap escrowed..."
+		if check_not_macOS26Tahoe; then
+			echo "Updating the Bootstrap Token APFS record and escrowing to the MDM server..."
 			escrow_bootstraptoken "${1}" "${2}"
-    fi
+		fi
+	else
+		echo "Bootstrap not escrowed."
+		echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
+		escrow_bootstraptoken "${1}" "${2}"
 	fi
 else
 	echo "Bootstrap token not supported on server"
