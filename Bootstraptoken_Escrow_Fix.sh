@@ -43,27 +43,19 @@ echo "userName=$userName"
 # debug bash script using xtrace
 # set -x
 
-# Add parameter validation
-if [[ -z "${1}" ]] || [[ -z "${2}" ]]; then
-    echo "Error: Volume owner account and password are required"
-    exit 1
-fi
+bootstrap_is_supported() {
+    echo "$1" | grep -q "supported on server: YES"
+}
 
+bootstrap_is_escrowed() {
+    echo "$1" | grep -q "escrowed to server: YES"
+}
 
+check_not_macOS26Tahoe() {
+	
+}
 
-# Show secure token status for additional info 
-/usr/sbin/sysadminctl -secureTokenStatus  "${1}"
-echo "Check Bootstrap Token status..."
-bootstrap=$(/usr/bin/profiles status -type bootstraptoken)
-echo ${bootstrap}
-if [[ $bootstrap == *"supported on server: YES"* ]]; then
-	if [[ $bootstrap == *"escrowed to server: YES"* ]]; then
-		echo "Bootstrap escrowed." 
-		echo "Updating the Bootstrap Token APFS record and escrowing to the MDM server..."
-	else
-		echo "Bootstrap not escrowed."
-		echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
-	fi
+verify_authentication() {
 # 		Used to verify the password
 # 		authenticate the account without actually logging into anything
 # 		account authenticates in any way it will have a SecureToken enabled on the account
@@ -71,14 +63,49 @@ if [[ $bootstrap == *"supported on server: YES"* ]]; then
 		echo "Error: Authentication failed"
 		exit 1
 	fi
-	sleep 1
-	# Add error handling for profiles command
+	sleep 0.1
+}
+
+escrow_bootstraptoken() {
+# Add error handling for profiles command
+	verify_authentication "${1}" "${2}"
 	if ! /usr/bin/profiles install -type bootstraptoken -user "${1}" -password "${2}" -verbose; then
 		echo "Error: Failed to install bootstrap token"
 		exit 1
 	fi
-	sleep 1	
+	sleep 0.1	
 	/usr/bin/profiles status -type bootstraptoken
+}
+
+
+#  parameter validation
+if [[ -z "${1}" ]] || [[ -z "${2}" ]]; then
+    echo "Error: Volume owner account and password are required"
+    exit 1
+fi
+
+
+echo "Show secure token status for additional info..." 
+/usr/sbin/sysadminctl -secureTokenStatus  "${1}"
+echo "Show Bootstrap Token status..."
+bootstrap=$(/usr/bin/profiles status -type bootstraptoken)
+
+echo ${bootstrap}
+
+# Then use them:
+if bootstrap_is_supported "$bootstrap"; then
+	if bootstrap_is_escrowed "$bootstrap"; then
+    	echo "Bootstrap escrowed..."
+			if check_not_macOS26Tahoe; then
+				echo "Updating the Bootstrap Token APFS record and escrowing to the MDM server..."
+				escrow_bootstraptoken "${1}" "${2}"
+			fi
+    else
+			echo "Bootstrap not escrowed."
+			echo "Creating the Bootstrap Token APFS record and escrowing to the MDM server..."
+			escrow_bootstraptoken "${1}" "${2}"
+    fi
+	fi
 else
 	echo "Bootstrap token not supported on server"
 	result="NOT SUPPORTED"
