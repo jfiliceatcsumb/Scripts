@@ -184,8 +184,12 @@ elif [[ -n $selectAudioSourceUID ]]; then
     "-t" "${device_type}" \
     "-u" "${selectAudioSourceUID}"
 else
-	echo "Error: No device found for ${device_name_uid}" >&2
-	exit 1
+	echo "Warning: Device '${device_name_uid}' not currently available. Setting with best effort..." >&2
+	/usr/bin/defaults delete "${PathToLaunchAgent}"
+	/usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array \
+	"${Switch_Audio_Source}" \
+	"-t" "${device_type}" \
+	"-s" "${device_name_uid}"
 fi
 
 /usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LaunchAgentLabel}"
@@ -212,8 +216,12 @@ elif [[ -n $selectAudioSourceUID ]]; then
     "-t" "${device_type}" \
     "-u" "${selectAudioSourceUID}"
 else
-	echo "Error: No device found for ${device_name_uid}" >&2
-	exit 1
+	echo "Warning: Device '${device_name_uid}' not currently available. Setting with best effort..." >&2
+	/usr/bin/defaults delete "${PathToLaunchDaemon}"
+	/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array \
+	"${Switch_Audio_Source}" \
+	"-t" "${device_type}" \
+	"-s" "${device_name_uid}"
 fi
 
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
