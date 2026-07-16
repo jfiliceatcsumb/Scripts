@@ -34,7 +34,7 @@ echo "computerName=$computerName"
 echo "userName=$userName"
 
 # ##### Debugging flags #####
-# debug bash script by enabling verbose “-v” option
+# debug bash script by enabling verbose "-v" option
 # set -v
 # debug bash script using noexec (Test for syntaxt errors)
 # set -n
@@ -52,7 +52,21 @@ bootstrap_is_escrowed() {
 }
 
 check_not_macOS26Tahoe() {
+	# Get the current macOS version
+	currentVersion=$(/usr/bin/sw_vers -productVersion)
 	
+	# Extract major version (first number before the first dot)
+	majorVersion=${currentVersion%%.*}
+	
+	# Check if major version is less than 26
+	# Return 0 (success/true) if NOT version 26 or higher
+	# Return 1 (failure/false) if version is 26 or higher
+	if (( majorVersion < 26 )); then
+		return 0
+	else
+		echo "Warning: macOS $currentVersion (26.0 or higher) detected. Skipping bootstrap token update."
+		return 1
+	fi
 }
 
 verify_authentication() {
