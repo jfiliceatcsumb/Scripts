@@ -176,13 +176,6 @@ selectAudioSourceUID=$(echo "${allAudioSources}" | grep --ignore-case --max-coun
 # grep for the first source that is like the input $device_name_uid, then use awk to get the device_name as the first item.
 selectAudioSourceName=$(echo "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $1}')
 
-
-# echo	'/usr/local/bin/SwitchAudioSource -t ${device_type} -u "${selectAudioSourceUID}" -m "${mute_mode}"'
-# echo	"/usr/local/bin/SwitchAudioSource -t ${device_type} -u ${selectAudioSourceUID} -m ${mute_mode}"
-# /usr/local/bin/SwitchAudioSource -t "${device_type}" -u "${selectAudioSourceUID}" -m "${mute_mode}"
-
-LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
-LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 LaunchScript="/Library/Scripts/${LaunchDaemonLabel}.zsh"
 
 write_launchd_script() {
@@ -239,39 +232,35 @@ EOF
 
 write_launchd_program_arguments() {
     local plist_path="$1"
+		LaunchLabel=$(/usr/bin/basename ${plist_path} .plist)
 
-    write_launchd_script "${LaunchScript}"
     /usr/bin/defaults delete "${plist_path}"
     /usr/bin/defaults write "${plist_path}" 'ProgramArguments' -array "${LaunchScript}"
+		/usr/bin/defaults write "${plist_path}" 'Label' -string "${LaunchLabel}"
+		/usr/bin/defaults write "${plist_path}" 'StandardOutPath' -string "/private/var/log/${LaunchLabel}_stdout.log"
+		/usr/bin/defaults write "${plist_path}" 'StandardErrorPath' -string "/private/var/log/${LaunchLabel}_stderr.log"
+		/usr/bin/defaults write "${plist_path}" 'KeepAlive' -bool false
+		/usr/bin/defaults write "${plist_path}" 'RunAtLoad' -bool true
+		/usr/bin/defaults write "${plist_path}" 'Debug' -bool true
+
 }
 
 /bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
 /bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
+write_launchd_script "${LaunchScript}"
 
 # #### Create LaunchAgent ####
 echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
 write_launchd_program_arguments "${PathToLaunchAgent}"
 
-/usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LaunchAgentLabel}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LaunchAgentLabel}_stdout.log"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardErrorPath' -string "/private/var/log/${LaunchAgentLabel}_stderr.log"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'KeepAlive' -bool false
-/usr/bin/defaults write "${PathToLaunchAgent}" 'RunAtLoad' -bool true
-/usr/bin/defaults write "${PathToLaunchAgent}" 'Debug' -bool true
 
 # #### Create LaunchDaemon ####
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
 write_launchd_program_arguments "${PathToLaunchDaemon}"
 
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}_stdout.log"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardErrorPath' -string "/private/var/log/${LaunchDaemonLabel}_stderr.log"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'KeepAlive' -bool false
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'RunAtLoad' -bool true
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'Debug' -bool true
 
 # If you set LimitLoadToSessionType to an array, be aware that each instance of your agent runs independently. For example, if you set up your agent to run in LoginWindow and Aqua, the system will first run an instance of your agent in the loginwindow context. When a user logs in, that instance will be terminated and a second instance will launch in the standard GUI context.
 # https://developer.apple.com/library/archive/technotes/tn2083/_index.html#//apple_ref/doc/uid/DTS10003794-CH1-SUBSECTION44
