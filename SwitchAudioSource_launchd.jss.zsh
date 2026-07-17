@@ -12,13 +12,9 @@
 # Run by Jamf Pro.
 # 
 # PARAMETERS:
-# 4: device type (input/output/system/all).  Defaults to output
+# 4: device type (input|output|system|all).  Defaults to output
 # 5: Audio device name or UID (case insensitive grep matching)
-
-# 
-# Change History:
-# 2025/12/10:	Creation.
-#
+# 6: Mute mode (mute|unmute|toggle)
 
 
 # ##### Debugging flags #####
@@ -35,8 +31,8 @@
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
 
-SCRIPTNAME=`/usr/bin/basename "$0"`
-SCRIPTDIR=`/usr/bin/dirname "$0"`
+SCRIPTNAME=$(/usr/bin/basename "$0")
+SCRIPTDIR=$(/usr/bin/dirname "$0")
 
 # Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
 
@@ -59,11 +55,18 @@ device_type="${1:-output}"
 device_name_uid="${2:-builtin}"
 mute_mode="${3:-}"
 
+### Set file paths:
+readonly LaunchAgentLabel="edu.csumb.it.SwitchAudioSource.${device_type}.agent"
+readonly PathToLaunchAgent="/Library/LaunchAgents/${LaunchAgentLabel}.plist"
+readonly LaunchDaemonLabel="edu.csumb.it.SwitchAudioSource.${device_type}.daemon"
+readonly PathToLaunchDaemon="/Library/LaunchDaemons/${LaunchDaemonLabel}.plist"
+readonly LaunchScript="/Library/Scripts/$(/usr/bin/basename ${LaunchDaemonLabel} .daemon).zsh"
+
 # --- Validation Logic ---
 
 # Validate executable file at /usr/local/bin/SwitchAudioSource
 
-Switch_Audio_Source="/usr/local/bin/SwitchAudioSource"
+readonly Switch_Audio_Source="/usr/local/bin/SwitchAudioSource"
 
 if command -v "$Switch_Audio_Source" &>/dev/null; then
     echo "$Switch_Audio_Source is installed and can be run."
@@ -129,12 +132,6 @@ zstyle ':case' GLOB_CASE_SENSITIVE true
 
 echo "Script parameters are valid. Proceeding..."
 
-### Production path:
-PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.SwitchAudioSource.${device_type}.agent.plist"
-PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.SwitchAudioSource.${device_type}.daemon.plist"
-
-### TESTING locally path:
-# PathToLaunchAgent="$HOME/edu.csumb.it.SwitchAudioSource.${device_type}.plist"
 
 
 # Usage: 
@@ -176,7 +173,6 @@ selectAudioSourceUID=$(echo "${allAudioSources}" | grep --ignore-case --max-coun
 # grep for the first source that is like the input $device_name_uid, then use awk to get the device_name as the first item.
 selectAudioSourceName=$(echo "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $1}')
 
-LaunchScript="/Library/Scripts/${LaunchDaemonLabel}.zsh"
 
 write_launchd_script() {
     local script_path="$1"
@@ -189,6 +185,13 @@ Switch_Audio_Source=${Switch_Audio_Source:q}
 device_type=${device_type:q}
 device_name_uid=${device_name_uid:q}
 mute_mode=${mute_mode:q}
+
+if command -v "\${Switch_Audio_Source}" &>/dev/null; then
+    echo "\${Switch_Audio_Source} is installed and can be run."
+else
+    echo "Error: \${Switch_Audio_Source} is not installed." >&2
+    exit 1
+fi
 
 allAudioSources=\$("\${Switch_Audio_Source}" -a -f cli -t "\${device_type}")
 allAudioSourcesStatus=\$?
@@ -232,8 +235,7 @@ EOF
 
 write_launchd_program_arguments() {
     local plist_path="$1"
-		LaunchLabel=$(/usr/bin/basename ${plist_path} .plist)
-
+		local LaunchLabel=$(/usr/bin/basename ${plist_path} .plist)
     /usr/bin/defaults delete "${plist_path}"
     /usr/bin/defaults write "${plist_path}" 'ProgramArguments' -array "${LaunchScript}"
 		/usr/bin/defaults write "${plist_path}" 'Label' -string "${LaunchLabel}"
@@ -242,6 +244,23 @@ write_launchd_program_arguments() {
 		/usr/bin/defaults write "${plist_path}" 'KeepAlive' -bool false
 		/usr/bin/defaults write "${plist_path}" 'RunAtLoad' -bool true
 		/usr/bin/defaults write "${plist_path}" 'Debug' -bool true
+
+}
+
+set_launchd_plist_privs_quarantine() {
+    local plist_path="$1"
+		# Set file ownership and privileges
+		/usr/sbin/chown -fv 0:0 "${plist_path}"
+		/bin/chmod -fv 644 "${plist_path}"
+		/usr/sbin/chown -fv 0:0 "${plist_path}"
+		/bin/chmod -fv 644 "${plist_path}"
+		
+		# Remove quarantine extended attributes
+		/usr/bin/xattr -d com.apple.quarantine "${plist_path}"
+		
+# 		Check plist
+		/usr/bin/plutil -lint "${plist_path}"
+		/usr/bin/plutil -p "${plist_path}"
 
 }
 
@@ -254,7 +273,8 @@ write_launchd_script "${LaunchScript}"
 echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
 write_launchd_program_arguments "${PathToLaunchAgent}"
 
-/usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
+# Does this need to run as root? 
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
 
 # #### Create LaunchDaemon ####
@@ -287,21 +307,8 @@ write_launchd_program_arguments "${PathToLaunchDaemon}"
 # Enable tracing without trace output
 # { set -x; } 2>/dev/null
 
-# Set file ownership and privileges
-
-/usr/sbin/chown -fv 0:0 "${PathToLaunchAgent}"
-/bin/chmod -fv 644 "${PathToLaunchAgent}"
-/usr/sbin/chown -fv 0:0 "${PathToLaunchDaemon}"
-/bin/chmod -fv 644 "${PathToLaunchDaemon}"
-
-# Remove quarantine extended attributes
-/usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
-/usr/bin/plutil -lint "${PathToLaunchAgent}"
-/usr/bin/plutil -p "${PathToLaunchAgent}"
-/usr/bin/xattr -d com.apple.quarantine "${PathToLaunchDaemon}"
-/usr/bin/plutil -lint "${PathToLaunchDaemon}"
-/usr/bin/plutil -p "${PathToLaunchDaemon}"
-
+set_launchd_plist_privs_quarantine "${PathToLaunchAgent}"
+set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
 
 /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
 /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
