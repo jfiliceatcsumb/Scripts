@@ -211,7 +211,7 @@ if [[ \${switchAudioSourceStatus} -ne 0 ]]; then
 fi
 
 if [[ -n "\${mute_mode}" ]]; then
-    "\${Switch_Audio_Source}" -t "\${device_type}" -m "\${mute_mode}"
+    "\${Switch_Audio_Source}" -m "\${mute_mode}"
 fi
 EOF
     /usr/sbin/chown -fv 0:0 "${script_path}"
