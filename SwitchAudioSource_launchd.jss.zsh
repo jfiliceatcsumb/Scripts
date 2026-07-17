@@ -57,7 +57,7 @@ echo "userName=$userName"
 
 device_type="${1:-output}"
 device_name_uid="${2:-builtin}"
-mute_mode="${3:-unmute}"
+mute_mode="${3:-}"
 
 # --- Validation Logic ---
 
@@ -111,6 +111,19 @@ case "${device_type}" in
 esac
 
 
+if [[ -n "${mute_mode}" ]]; then
+    case "${mute_mode}" in
+        mute|unmute|toggle)
+            echo "Valid mute_mode: $mute_mode"
+            ;;
+        *)
+            echo "Error: Invalid mute_mode value: $mute_mode" >&2
+            echo "Allowed values are: mute, unmute, toggle." >&2
+            exit 1
+            ;;
+    esac
+fi
+
 # Restore default case-sensitivity behavior (optional, good practice)
 zstyle ':case' GLOB_CASE_SENSITIVE true
 
@@ -145,6 +158,12 @@ echo "List  all ${device_type} devices, cli format..."
 
 
 allAudioSources=$(${Switch_Audio_Source} -a -f cli -t ${device_type})
+allAudioSourcesStatus=$?
+
+if [[ ${allAudioSourcesStatus} -ne 0 || -z "${allAudioSources}" ]]; then
+    echo "Error: Unable to enumerate ${device_type} audio devices with ${Switch_Audio_Source}." >&2
+    exit 1
+fi
 
 echo "${allAudioSources}"
 
@@ -164,6 +183,67 @@ selectAudioSourceName=$(echo "${allAudioSources}" | grep --ignore-case --max-cou
 
 LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
 LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
+LaunchScript="/Library/Scripts/${LaunchDaemonLabel}.zsh"
+
+write_launchd_script() {
+    local script_path="$1"
+
+    /bin/mkdir -p "$(/usr/bin/dirname "${script_path}")"
+    /bin/cat > "${script_path}" <<EOF
+#!/bin/zsh --no-rcs
+
+Switch_Audio_Source=${Switch_Audio_Source:q}
+device_type=${device_type:q}
+device_name_uid=${device_name_uid:q}
+mute_mode=${mute_mode:q}
+
+allAudioSources=\$("\${Switch_Audio_Source}" -a -f cli -t "\${device_type}")
+allAudioSourcesStatus=\$?
+
+if [[ \${allAudioSourcesStatus} -ne 0 || -z "\${allAudioSources}" ]]; then
+    echo "Error: Unable to enumerate \${device_type} audio devices with \${Switch_Audio_Source}." >&2
+    exit 1
+fi
+
+matchedAudioSource=\$(echo "\${allAudioSources}" | grep --ignore-case --max-count=1 -e "\${device_name_uid}")
+
+if [[ -z "\${matchedAudioSource}" ]]; then
+    echo "Warning: Device '\${device_name_uid}' not currently available. It will be checked again the next time launchd loads this job." >&2
+    exit 0
+fi
+
+selectAudioSourceUID=\$(echo "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$NF}')
+selectAudioSourceName=\$(echo "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$1}')
+
+if echo "\${selectAudioSourceUID}" | grep --ignore-case --quiet -e "\${device_name_uid}"; then
+    "\${Switch_Audio_Source}" -t "\${device_type}" -u "\${selectAudioSourceUID}"
+elif [[ -n "\${selectAudioSourceName}" ]]; then
+    "\${Switch_Audio_Source}" -t "\${device_type}" -s "\${selectAudioSourceName}"
+else
+    echo "Error: Matched device record did not include a usable device name." >&2
+    exit 1
+fi
+switchAudioSourceStatus=\$?
+
+if [[ \${switchAudioSourceStatus} -ne 0 ]]; then
+    exit \${switchAudioSourceStatus}
+fi
+
+if [[ -n "\${mute_mode}" ]]; then
+    "\${Switch_Audio_Source}" -t "\${device_type}" -m "\${mute_mode}"
+fi
+EOF
+    /usr/sbin/chown -fv 0:0 "${script_path}"
+    /bin/chmod -fv 755 "${script_path}"
+}
+
+write_launchd_program_arguments() {
+    local plist_path="$1"
+
+    write_launchd_script "${LaunchScript}"
+    /usr/bin/defaults delete "${plist_path}"
+    /usr/bin/defaults write "${plist_path}" 'ProgramArguments' -array "${LaunchScript}"
+}
 
 /bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
 /bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
@@ -171,26 +251,7 @@ LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
 
 # #### Create LaunchAgent ####
 echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
-if [[ -n $selectAudioSourceName ]]; then
-    /usr/bin/defaults delete "${PathToLaunchAgent}"
-    /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array \
-    "${Switch_Audio_Source}" \
-    "-t" "${device_type}" \
-    "-s" "${selectAudioSourceName}"
-elif [[ -n $selectAudioSourceUID ]]; then
-    /usr/bin/defaults delete "${PathToLaunchAgent}"
-    /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array \
-    "${Switch_Audio_Source}" \
-    "-t" "${device_type}" \
-    "-u" "${selectAudioSourceUID}"
-else
-	echo "Warning: Device '${device_name_uid}' not currently available. Setting with best effort..." >&2
-	/usr/bin/defaults delete "${PathToLaunchAgent}"
-	/usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array \
-	"${Switch_Audio_Source}" \
-	"-t" "${device_type}" \
-	"-s" "${device_name_uid}"
-fi
+write_launchd_program_arguments "${PathToLaunchAgent}"
 
 /usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LaunchAgentLabel}"
 /usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LaunchAgentLabel}_stdout.log"
@@ -203,26 +264,7 @@ fi
 
 # #### Create LaunchDaemon ####
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
-if [[ -n $selectAudioSourceName ]]; then
-    /usr/bin/defaults delete "${PathToLaunchDaemon}"
-    /usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array \
-    "${Switch_Audio_Source}" \
-    "-t" "${device_type}" \
-    "-s" "${selectAudioSourceName}"
-elif [[ -n $selectAudioSourceUID ]]; then
-    /usr/bin/defaults delete "${PathToLaunchDaemon}"
-    /usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array \
-    "${Switch_Audio_Source}" \
-    "-t" "${device_type}" \
-    "-u" "${selectAudioSourceUID}"
-else
-	echo "Warning: Device '${device_name_uid}' not currently available. Setting with best effort..." >&2
-	/usr/bin/defaults delete "${PathToLaunchDaemon}"
-	/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array \
-	"${Switch_Audio_Source}" \
-	"-t" "${device_type}" \
-	"-s" "${device_name_uid}"
-fi
+write_launchd_program_arguments "${PathToLaunchDaemon}"
 
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}_stdout.log"
