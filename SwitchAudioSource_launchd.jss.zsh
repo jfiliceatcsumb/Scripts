@@ -132,21 +132,6 @@ zstyle ':case' GLOB_CASE_SENSITIVE true
 
 echo "Script parameters are valid. Proceeding..."
 
-
-
-# Usage: 
-# SwitchAudioSource [-a] [-c] [-t type] [-n] -s device_name | -i device_id | -u device_uid
-# 	-a             : shows all devices
-# 	-c             : shows current device
-# 	-f format      : output format (cli/human/json). Defaults to human.
-# 	-t type        : device type (input/output/system/all).  Defaults to output.
-# 	-m mute_mode : sets the mute status (mute/unmute/toggle). (version 1.2.0+)
-# 	-n             : cycles the audio device to the next one
-# 	-i device_id   : sets the audio device to the given device by id
-# 	-u device_uid  : sets the audio device to the given device by uid or a substring of the uid
-# 	-s device_name : sets the audio device to the given device by name
-# 
-
 echo 'https://github.com/deweller/switchaudio-osx'
 echo "Show  current ${device_type} device, cli format..."
 ${Switch_Audio_Source} -c -f cli -t ${device_type}
@@ -281,6 +266,39 @@ write_launchd_program_arguments "${PathToLaunchAgent}"
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
 write_launchd_program_arguments "${PathToLaunchDaemon}"
 
+# Enable tracing without trace output
+# { set -x; } 2>/dev/null
+
+set_launchd_plist_privs_quarantine "${PathToLaunchAgent}"
+set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
+
+/bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
+/bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
+/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
+/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
+/bin/launchctl kickstart system/${LaunchDaemonLabel} 2>&1
+
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
+
+echo "***End $SCRIPTNAME script***"
+
+exit 0
+
+# DOCUMENTATION AND REFERENCES 
+
+# Usage: 
+# SwitchAudioSource [-a] [-c] [-t type] [-n] -s device_name | -i device_id | -u device_uid
+# 	-a             : shows all devices
+# 	-c             : shows current device
+# 	-f format      : output format (cli/human/json). Defaults to human.
+# 	-t type        : device type (input/output/system/all).  Defaults to output.
+# 	-m mute_mode : sets the mute status (mute/unmute/toggle). (version 1.2.0+)
+# 	-n             : cycles the audio device to the next one
+# 	-i device_id   : sets the audio device to the given device by id
+# 	-u device_uid  : sets the audio device to the given device by uid or a substring of the uid
+# 	-s device_name : sets the audio device to the given device by name
+# 
 
 # If you set LimitLoadToSessionType to an array, be aware that each instance of your agent runs independently. For example, if you set up your agent to run in LoginWindow and Aqua, the system will first run an instance of your agent in the loginwindow context. When a user logs in, that instance will be terminated and a second instance will launch in the standard GUI context.
 # https://developer.apple.com/library/archive/technotes/tn2083/_index.html#//apple_ref/doc/uid/DTS10003794-CH1-SUBSECTION44
@@ -304,21 +322,3 @@ write_launchd_program_arguments "${PathToLaunchDaemon}"
 # </dict>
 # </plist>
 
-# Enable tracing without trace output
-# { set -x; } 2>/dev/null
-
-set_launchd_plist_privs_quarantine "${PathToLaunchAgent}"
-set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
-
-/bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
-/bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
-/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
-/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
-/bin/launchctl kickstart system/${LaunchDaemonLabel} 2>&1
-
-# Disable tracing without trace output
-# { set +x; } 2>/dev/null
-
-echo "***End $SCRIPTNAME script***"
-
-exit 0
