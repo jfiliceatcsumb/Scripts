@@ -153,7 +153,7 @@ check_plist() {
 # 		Check plist files for syntax errors
 	local plist_path="$1"
 	/usr/bin/plutil -lint "${plist_path}"
-	if [[ $? -eq 0 ]]; then
+	if [[ $? -ne 0 ]]; then
 		echo "ERROR: ${plist_path} syntax check failed" >&2
 		echo "Try printing the plist..."
 		/usr/bin/plutil -p "${plist_path}"		
