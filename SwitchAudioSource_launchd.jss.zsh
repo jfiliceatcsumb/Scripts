@@ -126,7 +126,7 @@ EOF
 write_launchd_program_arguments() {
     local plist_path="$1"
 		local LaunchLabel=$(/usr/bin/basename ${plist_path} .plist)
-    /usr/bin/defaults delete "${plist_path}"
+    [[ -f  "${plist_path}" ]] && /usr/bin/defaults delete "${plist_path}"
     /usr/bin/defaults write "${plist_path}" 'ProgramArguments' -array "${LaunchScript}"
 		/usr/bin/defaults write "${plist_path}" 'Label' -string "${LaunchLabel}"
 		/usr/bin/defaults write "${plist_path}" 'StandardOutPath' -string "/private/var/log/${LaunchLabel}_stdout.log"
