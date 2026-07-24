@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/zsh --no-rcs
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -7,9 +7,8 @@
 # https://csumb.edu/it
 
 
+# This script adds Apple Spanish ISO keyboard to the input methods menu.
 
-# Run it with no arguments. 
-# 
 # Use as script in Jamf JSS.
 
 
@@ -46,24 +45,34 @@ echo "userName=$userName"
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
+FILEPATH="/System/Library/User Template/Non_localized/Library/Preferences/com.apple.inputsources.plist"
 
-/usr/bin/defaults write "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist" AppleEnabledInputSources -array-add \
+/usr/bin/defaults write "${FILEPATH}" AppleEnabledThirdPartyInputSources -array-add \
 '<dict>
+<key>Bundle ID</key>
+<string>com.google.inputmethod.Japanese</string>
+<key>Input Mode</key>
+<string>com.apple.inputmethod.Japanese</string>
 <key>InputSourceKind</key>
-<string>Keyboard Layout</string>
-<key>KeyboardLayout ID</key>
-<integer>87</integer>
-<key>KeyboardLayout Name</key>
-<string>Spanish - ISO</string>
+<string>Input Mode</string>
 </dict>'
 
-/usr/bin/plutil -lint  "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+/usr/bin/defaults write "${FILEPATH}" AppleEnabledThirdPartyInputSources -array-add \
+'<dict>
+<key>Bundle ID</key>
+<string>com.google.inputmethod.Japanese</string>
+<key>InputSourceKind</key>
+<string>Keyboard Input Method</string>
+</dict>'
 
-/usr/bin/plutil -p  "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+
+/usr/bin/plutil -lint "${FILEPATH}"
+
+/usr/bin/plutil -p "${FILEPATH}"
  
-/usr/sbin/chown 0:0 "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+/usr/sbin/chown 0:0 "${FILEPATH}"
 
-/bin/chmod 644 "/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+/bin/chmod 644 "${FILEPATH}"
 
 
 exit 0
