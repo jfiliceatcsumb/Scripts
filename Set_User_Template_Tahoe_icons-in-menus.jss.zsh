@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/zsh --no-rcs
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -15,12 +15,8 @@
 # Use as script in Jamf JSS.
 
 
-# Change History:
-# 2026/03/31:	Creation.
-#
-
-SCRIPTNAME=`/usr/bin/basename "$0"`
-SCRIPTDIR=`/usr/bin/dirname "$0"`
+SCRIPTNAME=$(/usr/bin/basename "$0")
+SCRIPTDIR=$(/usr/bin/dirname "$0")
 
 # Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
 
@@ -47,13 +43,16 @@ echo "userName=$userName"
 # set -u
 # debug bash script using xtrace
 # set -x
+FILEPATH="/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist"
+DIRNAME=$(/usr/bin/dirname "${FILEPATH}")
 
-/bin/mkdir -p -m 0755 "/Library/User Template/Non_localized/Library/Preferences/"
-/usr/bin/defaults write "/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist" NSMenuEnableActionImages -bool NO
-/usr/sbin/chown 0:0 "/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist"
+/bin/mkdir -p -m 0755 "${DIRNAME}"
 
-echo "read GlobalPreferences.plist"
-/usr/bin/defaults read "/Library/User Template/Non_localized/Library/Preferences/.GlobalPreferences.plist"
+/usr/bin/defaults write "${FILEPATH}" NSMenuEnableActionImages -bool NO
+/usr/sbin/chown 0:0 "${FILEPATH}"
+
+echo "read $(/usr/bin/basename ${FILEPATH})"
+/usr/bin/defaults read "${FILEPATH}"
 
 
 exit 
