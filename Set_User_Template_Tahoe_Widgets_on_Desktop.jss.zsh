@@ -8,8 +8,7 @@
 
 
 
-# Sets the default user template to turn off menu icons in macOS Tahoe..
-# https://mastodon.social/@stroughtonsmith/116262411548746327
+# Sets the default user template to turn off desktop widgets macOS Tahoe..
 # Run it with no arguments. 
 # 
 # Use as script in Jamf JSS.
