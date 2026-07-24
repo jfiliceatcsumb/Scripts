@@ -7,7 +7,7 @@
 # https://csumb.edu/it
 
 
-# This script adds Apple Spanish ISO keyboard to the input methods menu.
+# This script adds Google Japanese Hiragana keyboard to the input methods menu.
 
 # Use as script in Jamf JSS.
 
@@ -45,7 +45,10 @@ echo "userName=$userName"
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
-FILEPATH="/System/Library/User Template/Non_localized/Library/Preferences/com.apple.inputsources.plist"
+FILEPATH="/Library/User Template/Non_localized/Library/Preferences/com.apple.inputsources.plist"
+DIRNAME=$(/usr/bin/dirname "${FILEPATH}")
+
+/bin/mkdir -p -m 0755 "${DIRNAME}"
 
 /usr/bin/defaults write "${FILEPATH}" AppleEnabledThirdPartyInputSources -array-add \
 '<dict>
