@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/zsh --no-rcs
 
 # Jason Filice
 # jfilice@csumb.edu
@@ -14,8 +14,8 @@
 # Use as script in Jamf JSS.
 
 
-SCRIPTNAME=`/usr/bin/basename "$0"`
-SCRIPTDIR=`/usr/bin/dirname "$0"`
+SCRIPTNAME=$(/usr/bin/basename "$0")
+SCRIPTDIR=$(/usr/bin/dirname "$0")
 
 # Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
 
