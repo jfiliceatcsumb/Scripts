@@ -44,7 +44,10 @@ echo "userName=$userName"
 # Example:
 # /bin/ls -FlOah "${SCRIPTDIR}"
 
-FILEPATH="/System/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+FILEPATH="/Library/User Template/Non_localized/Library/Preferences/com.apple.HIToolbox.plist"
+DIRNAME=$(/usr/bin/dirname "${FILEPATH}")
+
+/bin/mkdir -p -m 0755 "${DIRNAME}"
 
 /usr/bin/defaults write "${FILEPATH}" AppleEnabledInputSources -array-add \
 '<dict>
