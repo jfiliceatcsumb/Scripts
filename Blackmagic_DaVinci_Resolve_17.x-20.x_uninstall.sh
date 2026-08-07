@@ -8,7 +8,7 @@
 
 
 
-# Uninstall script for Blackmagic DaVinci Resolve (Studio) 17.x-19.x.
+# Uninstall script for Blackmagic DaVinci Resolve (Studio) 17.x-21.x.
 # Using code in script from Resolve uninstall application.
 # /Volumes/Blackmagic DaVinci Resolve/Uninstall Resolve.app/Contents/Resources/uninstall.sh
 # 
@@ -43,6 +43,29 @@ echo "userName=$userName"
  
 
 ##### vvvvv Borrowed code starts here vvvvv #####
+unload_panel_daemon()
+{
+    local agentsfolder="/Library/LaunchAgents"
+    local type="com.blackmagic-design.DaVinciResolveBMDPanelDaemon"
+
+    # find the current user who is logged in and try to stop the panel daemon as that user
+    local USER_NAME=`stat -f '%Su' /dev/console`
+    su - "$USER_NAME" -c "launchctl remove $type" 2> /dev/null
+
+    if [ -f "$agentsfolder/$type.plist" ]
+    then
+        launchctl unload "$agentsfolder/$type.plist" 2> /dev/null
+        launchctl remove "$type" 2> /dev/null
+        launchctl bootout system "$agentsfolder/$type.plist" 2> /dev/null
+        sleep 1 # wait before deleting plist file that is being unload'ed, due to launchctl async behavior
+        rm -f "$agentsfolder/$type.plist" 2> /dev/null
+    fi
+
+    rm -f "/var/tmp/davinci_socket"
+}
+
+# unconfigure BMD panel daemon
+unload_panel_daemon
 
 # unconfigure panel
 if [[ -e "/Library/Application Support/Blackmagic Design/DaVinci Resolve/configure-panel.sh" ]]; then
@@ -54,9 +77,9 @@ if [[ -e "/Library/Application Support/Blackmagic Design/DaVinci Resolve/configu
 	"/Library/Application Support/Blackmagic Design/DaVinci Resolve/configure-dp.sh" off
 fi
 
-# DO NOT blow away application support and prefs
-# /bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve/"
-# /bin/rm -rf "/Library/Preferences/Blackmagic Design/DaVinci Resolve/"
+/bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve/" &2>/dev/null
+/bin/rm -rf "/Library/Preferences/Blackmagic Design/DaVinci Resolve/" &2>/dev/null
+
 
 # Proxy Generator
 if [ -e "/Applications/DaVinci Resolve/DaVinci Resolve.app/Contents/Applications/Blackmagic Proxy Generator" ]
@@ -78,15 +101,19 @@ fi
 /bin/rm -rf "/Applications/DaVinci Resolve/"
 
 # Panels
-/bin/rm -rf "/Library/Frameworks/DaVinciPanelAPI.framework"
-/bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve Panels/AdminUtility"
-/bin/rmdir "/Library/Application Support/Blackmagic Design/DaVinci Resolve Panels"
+/bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve Advanced Panel" &2>/dev/null
+/bin/rm -rf "/Library/Frameworks/DaVinciPanelAPI.framework" &2>/dev/null
+/bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve Panels/AdminUtility" &2>/dev/null
+/bin/rmdir "/Library/Application Support/Blackmagic Design/DaVinci Resolve Panels" &2>/dev/null
 
 # Fairlight Panels
-/bin/rm -rf "/Library/Frameworks/FairlightPanelAPI.framework"
+/bin/rm -rf "/Library/Frameworks/FairlightPanelAPI.framework" &2>/dev/null
 
 # Resolve Plugin
-/bin/rm -rf "/Library/OFX/Plugins/DaVinci Resolve Renderer.ofx.bundle"
+/bin/rm -rf "/Library/OFX/Plugins/DaVinci Resolve Renderer.ofx.bundle" &2>/dev/null
+
+# Remove DDM packages: Re-consider what to do when multiple apps start using it
+#/bin/rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve/Extras/" &2>/dev/null
 
 ##### ^^^^^ Borrowed code ends here ^^^^^ #####
 
