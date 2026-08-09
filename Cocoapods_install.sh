@@ -65,7 +65,7 @@ alias sudo=/usr/bin/sudo
 
 # Hard code version numbers here, or pass as ordered input parameters
 # If input parameter is not defined, set to its value to hard coded version number.
-cocoapodsVer=${1:-"1.12.1"}
+cocoapodsVer=${1:-"1.17.0"}
 activesupportVer=${2:-"6.1.7.4"}
 
 # Requires Xcode to be installed first?
