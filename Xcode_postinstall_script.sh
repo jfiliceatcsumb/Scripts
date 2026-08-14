@@ -149,7 +149,6 @@ for PKG in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
 		{ set -x; } 2>/dev/null
     /usr/sbin/installer -verbose -pkg "$PKG" -target /
 		# Disable tracing without trace output
-		{ set +x; } 2>/dev/null
 done
 
 
@@ -165,6 +164,8 @@ echo "Check if any First Launch tasks need to be performed..."
 echo "Download and install all device platform simulators: iOS Simulator, watchOS Simulator, tvOS Simulator..."
 /usr/bin/xcodebuild -downloadAllPlatforms
 /bin/sleep 1
+
+{ set +x; } 2>/dev/null
 
 # -allowProvisioningUpdates
 #     Allow xcodebuild to communicate with the Apple Developer website. For automatically signed targets, xcodebuild will create and update profiles, app IDs, and certificates. 
@@ -184,27 +185,39 @@ echo "Check if command line tools are installed..."
 CommandLineToolsCheck=${?}
 # 	echo ${CommandLineToolsCheck}
 # 	/usr/bin/xcode-select -p 2>&1
-if [[ ${CommandLineToolsCheck} -ne 0 ]]
-then
-	echo "Xcode Command Line Tools not found..."
-	echo "Installing Xcode Command Line Tools..."
+
+if [[ "$(arch)" == "arm64" ]]; then
+# Apple silicon
+	if [[ ${CommandLineToolsCheck} -ne 0 ]]
+	then
+		echo "Xcode Command Line Tools not found..."
+		echo "Running on Apple Silicon, thus not installing Xcode Command Line Tools via command line."
+	else
+		echo "Xcode Command Line Tools already installed..."
+	fi
+else	
+# Intel
+	if [[ ${CommandLineToolsCheck} -ne 0 ]]
+	then
+		echo "Xcode Command Line Tools not found..."
+		echo "Installing Xcode Command Line Tools..."
 	
 	# create the placeholder file that's checked by CLI updates' .dist code
 	# in Apple's SUS catalog
-	/usr/bin/touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
-else
-	echo "Xcode Command Line Tools already installed..."
+		/usr/bin/touch /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+	else
+		echo "Xcode Command Line Tools already installed..."
+		/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress 2>/dev/null
+		echo "Checking for Xcode Command Line Tools updates..."
+	fi
+	PROD=$(/usr/sbin/softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
+	# 	Strip "Label: "
+	PROD=$(echo "$PROD" | sed -e 's/Label: //')
+	
+		# install it
+	/usr/sbin/softwareupdate -i "$PROD" --verbose
 	/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress 2>/dev/null
-	echo "Checking for Xcode Command Line Tools updates..."
 fi
-PROD=$(/usr/sbin/softwareupdate -l | grep "\*.*Command Line" | tail -n 1 | awk -F"*" '{print $2}' | sed -e 's/^ *//' | tr -d '\n')
-# 	Strip "Label: "
-PROD=$(echo "$PROD" | sed -e 's/Label: //')
-
-	# install it
-/usr/sbin/softwareupdate -i "$PROD" --verbose
-/bin/rm /tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress 2>/dev/null
-
 # 
 # #####
 
