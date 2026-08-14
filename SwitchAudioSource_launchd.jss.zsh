@@ -236,7 +236,7 @@ echo "Script parameters are valid. Proceeding..."
 echo 'https://github.com/deweller/switchaudio-osx'
 echo "Show  current ${device_type} device, json format with labels..."
 ${Switch_Audio_Source} -c -f json -t ${device_type}
-echo "List  all ${device_type} devices, cli format..."
+echo "List ${device_type} devices, cli format..."
 # /usr/local/bin/SwitchAudioSource -a -f cli -t output
 
 
@@ -248,9 +248,10 @@ if [[ ${allAudioSourcesStatus} -ne 0 || -z "${allAudioSources}" ]]; then
     exit 1
 fi
 
+echo "All audio sources..."
 echo "${allAudioSources}"
 
-echo "Find requested device..."
+echo "Find requested device ${device_name_uid}..."
 echo "${allAudioSources}" | grep --ignore-case -e "${device_name_uid}"
 
 # grep for the first source that is like the input $device_name_uid, then use awk to get the device_UID as the last item.
