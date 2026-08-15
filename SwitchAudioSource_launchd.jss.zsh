@@ -71,15 +71,17 @@ write_launchd_script() {
     /bin/cat > "${script_path}" <<EOF
 #!/bin/zsh --no-rcs
 
-Switch_Audio_Source=${Switch_Audio_Source:q}
-device_type=${device_type:q}
-device_name_uid=${device_name_uid:q}
-mute_mode=${mute_mode:q}
+Switch_Audio_Source=${(qq)Switch_Audio_Source}
+device_type=${(qq)device_type}
+device_name_uid=${(qq)device_name_uid}
+mute_mode=${(qq)mute_mode}
+
+echo "[\$(date)] Starting script..."
 
 if command -v "\${Switch_Audio_Source}" &>/dev/null; then
     echo "\${Switch_Audio_Source} is installed and can be run."
 else
-    echo "Error: \${Switch_Audio_Source} is not installed." >&2
+    echo "[\$(date)] Error: \${Switch_Audio_Source} is not installed." >&2
     exit 1
 fi
 
@@ -87,26 +89,26 @@ allAudioSources=\$("\${Switch_Audio_Source}" -a -f cli -t "\${device_type}")
 allAudioSourcesStatus=\$?
 
 if [[ \${allAudioSourcesStatus} -ne 0 || -z "\${allAudioSources}" ]]; then
-    echo "Error: Unable to enumerate \${device_type} audio devices with \${Switch_Audio_Source}." >&2
+    echo "[\$(date)] Error: Unable to enumerate \${device_type} audio devices with \${Switch_Audio_Source}." >&2
     exit 1
 fi
 
 matchedAudioSource=\$(echo "\${allAudioSources}" | grep --ignore-case --max-count=1 -e "\${device_name_uid}")
 
 if [[ -z "\${matchedAudioSource}" ]]; then
-    echo "Warning: Device '\${device_name_uid}' not currently available. It will be checked again the next time launchd loads this job." >&2
+    echo "[\$(date)] Warning: Device '\${device_name_uid}' not currently available. It will be checked again the next time launchd loads this job." >&2
     exit 0
 fi
 
-selectAudioSourceUID=\$(echo "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$NF}')
 selectAudioSourceName=\$(echo "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$1}')
+selectAudioSourceUID=\$(echo "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$NF}')
 
-if echo "\${selectAudioSourceUID}" | grep --ignore-case --quiet -e "\${device_name_uid}"; then
-    "\${Switch_Audio_Source}" -t "\${device_type}" -u "\${selectAudioSourceUID}"
-elif [[ -n "\${selectAudioSourceName}" ]]; then
+if echo "\${selectAudioSourceName}" | grep --ignore-case --quiet -e "\${device_name_uid}"; then
     "\${Switch_Audio_Source}" -t "\${device_type}" -s "\${selectAudioSourceName}"
+elif [[ -n "\${selectAudioSourceName}" ]]; then
+    "\${Switch_Audio_Source}" -t "\${device_type}" -u "\${selectAudioSourceUID}"
 else
-    echo "Error: Matched device record did not include a usable device name." >&2
+    echo "[\$(date)] Error: Matched device record did not include a usable device name." >&2
     exit 1
 fi
 switchAudioSourceStatus=\$?
@@ -118,6 +120,9 @@ fi
 if [[ -n "\${mute_mode}" ]]; then
     "\${Switch_Audio_Source}" -m "\${mute_mode}"
 fi
+
+echo "[\$(date)] Script completed."
+
 EOF
     /usr/sbin/chown -fv 0:0 "${script_path}"
     /bin/chmod -fv 755 "${script_path}"
