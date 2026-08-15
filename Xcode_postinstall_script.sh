@@ -19,7 +19,7 @@
 # http://macops.ca/deploying-xcode-the-trick-with-accepting-license-agreements/
 # https://github.com/rtrouton/rtrouton_scripts/blob/c90890b7711b32fa5fcbc014869891c091375bb5/rtrouton_scripts/xcode_post_install_actions/xcode_post_install_actions.sh
 
-
+# https://developer.apple.com/documentation/xcode/downloading-and-installing-additional-xcode-components
 
 
 # Change History:
@@ -145,8 +145,6 @@ fi
 # https://github.com/munki/munki/wiki/Xcode
 echo "Installing all Xcode resource packages, such as mobile device support..."
 for PKG in /Applications/Xcode.app/Contents/Resources/Packages/*.pkg; do
-    # Enable tracing without trace output
-		{ set -x; } 2>/dev/null
     /usr/sbin/installer -verbose -pkg "$PKG" -target /
 		# Disable tracing without trace output
 done
@@ -156,11 +154,15 @@ done
 echo "Run Xcode first launch tasks..."
 # https://github.com/munki/munki/wiki/Xcode#xcode-7
 
+{ set -x; } 2>/dev/null
+
 echo "Check if any First Launch tasks need to be performed..."
 "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -checkFirstLaunchStatus
 
-"/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild" -runFirstLaunch -checkForNewerComponents
-/usr/bin/xcodebuild -runFirstLaunch -checkForNewerComponents
+# -checkForNewerComponents option created an admin prompt and halted the script.
+# https://developer.apple.com/documentation/xcode/downloading-and-installing-additional-xcode-components
+
+/usr/bin/xcodebuild -runFirstLaunch
 echo "Download and install all device platform simulators: iOS Simulator, watchOS Simulator, tvOS Simulator..."
 /usr/bin/xcodebuild -downloadAllPlatforms
 /bin/sleep 1
