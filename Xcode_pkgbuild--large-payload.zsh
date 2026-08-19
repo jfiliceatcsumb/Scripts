@@ -9,7 +9,6 @@ set -u
 # ==============================================================================
 PKG_ID="com.apple.dt.Xcode"
 MIN_OS_VERSION="12.0"
-OUTPUT_NAME="Xcode_LargePayload.pkg"
 
 # Target installation path on the end-user's Mac
 INSTALL_LOCATION="/Applications"
@@ -52,7 +51,6 @@ echo "Compiling native macOS package directly from source volume..."
 PKGBUILD_CMD=(
   pkgbuild
   --root "$SOURCE_VOLUME"
-  --component-plist /dev/null          # Prevents bundle analysis overhead
   --identifier "$PKG_ID"
   --version "$PKG_VERSION"
   --install-location "$INSTALL_LOCATION"
@@ -67,10 +65,10 @@ if [[ -n "$DEVELOPER_ID_INSTALLER" ]]; then
 fi
 
 # Append final package output path
-PKGBUILD_CMD+=("./$OUTPUT_NAME")
-
+PKGBUILD_CMD+=("./build/$OUTPUT_NAME")
+mkdir -pv "./build/"
 # Execute compilation natively. 
 # Zsh safely expands "${PKGBUILD_CMD[@]}" or just $PKGBUILD_CMD preserving array items.
 "${PKGBUILD_CMD[@]}"
 
-echo "✅ Success! Generated direct-build package: ./$OUTPUT_NAME"
+echo "✅ Success! Generated direct-build package: ./build/$OUTPUT_NAME"
