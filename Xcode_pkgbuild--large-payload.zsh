@@ -55,6 +55,7 @@ PKGBUILD_CMD=(
   --version "$PKG_VERSION"
   --install-location "$INSTALL_LOCATION"
   --min-os-version "$MIN_OS_VERSION"
+  --compression latest
   --large-payload
 )
 
