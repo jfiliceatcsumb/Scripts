@@ -50,7 +50,7 @@ echo "Compiling native macOS package directly from source volume..."
 # Zsh handles arrays explicitly without needing strict internal quoting rules during expansion
 PKGBUILD_CMD=(
   pkgbuild
-  --root "$SOURCE_VOLUME"
+  --component "$SOURCE_PAYLOAD"
   --identifier "$PKG_ID"
   --version "$PKG_VERSION"
   --install-location "$INSTALL_LOCATION"
@@ -67,9 +67,16 @@ fi
 
 # Append final package output path
 PKGBUILD_CMD+=("./build/$OUTPUT_NAME")
-mkdir -pv "./build/"
+mkdir -m 777 -pv "./build"
+
+# Enable tracing without trace output
+{ set -x; } 2>/dev/null
+
 # Execute compilation natively. 
 # Zsh safely expands "${PKGBUILD_CMD[@]}" or just $PKGBUILD_CMD preserving array items.
 "${PKGBUILD_CMD[@]}"
+
+# Disable tracing without trace output
+{ set +x; } 2>/dev/null
 
 echo "✅ Success! Generated direct-build package: ./build/$OUTPUT_NAME"
