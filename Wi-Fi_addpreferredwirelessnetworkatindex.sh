@@ -17,7 +17,6 @@ mountPoint=$1
 computerName=$2
 userName=$3
 
-shift 3
 # Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
 
 echo "pathToScript=$pathToScript"
@@ -36,12 +35,12 @@ echo "userName=$userName"
 # debug bash script using xtrace
 
 # set -x
-SSID="${1:-}"
-INDEX="${2:-0}"
-SECURITYTYPE="${3:-}"
-PASSWORD="${4:-''}"
+SSID="${4}"
+INDEX="${5:-0}"
+SECURITYTYPE="${6}"
+PASSWORD="${7}"
 
-if [[ -z "${SSID}" || -z "${SECURITY_TYPE}" ]]; then
+if [[ -z "${SSID}" || -z "${SECURITYTYPE}" ]]; then
 	echo "Usage: $(/usr/bin/basename "$0") <networkSSID> <index> <security type> [password]"
 	exit 1
 fi
