@@ -9,9 +9,24 @@
 
 
 # Client settings for \ CodeMeter to direct to license server.
-# Modify variables Server1 and Server2.
 # 
-# Postponed script execution in DeployStudio. Commands must run as root.
+# This script requires codemeter client software to be installed already
+# Run it with input parameters for variables Server1 and Server2.
+# 
+# Use as script in Jamf JSS.
+
+
+# Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
+
+pathToScript=$0
+mountPoint=$1
+computerName=$2
+userName=$3
+
+echo "pathToScript=$pathToScript"
+echo "mountPoint=$mountPoint"
+echo "computerName=$computerName"
+echo "userName=$userName"
 
 # ### Set server address(es) here ###
 Server1="${4:-127.0.0.1}"
@@ -39,7 +54,10 @@ echo "***Begin $SCRIPTNAME script***"
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
 
-
+if [[ ! -e "/Library/LaunchDaemons/com.wibu.CodeMeter.Server.plist" ]]; then
+	echo "ERROR: CodeMeter client software not installed" >&2
+	exit 1
+fi
 # Stop Codemeter server.
 # https://www.wibu.com/support/faq/faq/category/codemeter-general.html#faq-18
 /bin/launchctl unload -F /Library/LaunchDaemons/com.wibu.CodeMeter.Server.plist
