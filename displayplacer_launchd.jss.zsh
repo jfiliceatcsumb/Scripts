@@ -153,22 +153,22 @@ echo "Script parameters are valid. Proceeding..."
 
 
 
-# #### Create LaunchAgent ####
-echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
+# #### Delete LaunchAgent ####
+echo "Deleting old LaunchAgent plist file ${PathToLaunchAgent}..."
 if [[ -f "${PathToLaunchAgent}" ]]; then
     /usr/bin/defaults delete "${PathToLaunchAgent}"
 fi
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${PathToScript}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LaunchAgentLabel}"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LaunchAgentLabel}.log"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'StandardErrorPath' -string "/private/var/log/${LaunchAgentLabel}.log"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'KeepAlive' -bool false
-/usr/bin/defaults write "${PathToLaunchAgent}" 'RunAtLoad' -bool true
-/usr/bin/defaults write "${PathToLaunchAgent}" 'Debug' -bool false
-
+# # /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${PathToScript}"
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LaunchAgentLabel}"
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LaunchAgentLabel}.log"
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'StandardErrorPath' -string "/private/var/log/${LaunchAgentLabel}.log"
+# # /usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "Aqua"
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'KeepAlive' -bool false
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'RunAtLoad' -bool true
+# /usr/bin/defaults write "${PathToLaunchAgent}" 'Debug' -bool false
+# 
 
 # #### Create LaunchDaemon ####
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
@@ -180,6 +180,7 @@ fi
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardErrorPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
+/usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "LoginWindow" "Aqua"
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'KeepAlive' -bool false
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'RunAtLoad' -bool true
 /usr/bin/defaults write "${PathToLaunchDaemon}" 'Debug' -bool false
@@ -190,31 +191,32 @@ fi
 
 # Set file ownership and privileges
 
-/usr/sbin/chown -fv 0:0 "${PathToLaunchAgent}" "${PathToLaunchDaemon}"
-/bin/chmod -fv 644 "${PathToLaunchAgent}" "${PathToLaunchDaemon}"
+# /usr/sbin/chown -fv 0:0 "${PathToLaunchAgent}"
+/usr/sbin/chown -fv 0:0 "${PathToLaunchDaemon}"
+# /bin/chmod -fv 644 "${PathToLaunchAgent}"
+/bin/chmod -fv 644 "${PathToLaunchDaemon}"
 # /usr/sbin/chown -fv 0:0 "${PathToScript}"
 # /bin/chmod -fv 644 "${PathToScript}"
 
-# Remove quarantine extended attributes
-/usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
-/usr/bin/plutil -lint "${PathToLaunchAgent}"
-echo "Printing ${PathToLaunchAgent}..."
-# /usr/bin/plutil -p "${PathToLaunchAgent}"
-/usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchAgent}"
-echo ""
+# # Remove quarantine extended attributes
+# /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
+# /usr/bin/plutil -lint "${PathToLaunchAgent}"
+# echo "Printing ${PathToLaunchAgent}..."
+# /usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchAgent}"
+# echo ""
 
+# Remove quarantine extended attributes
 /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchDaemon}"
 /usr/bin/plutil -lint "${PathToLaunchDaemon}"
 echo "Printing ${PathToLaunchDaemon}..."
-# /usr/bin/plutil -p "${PathToLaunchDaemon}"
 /usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchDaemon}"
 echo ""
 
-/bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
-/bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
-/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
-/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
-/bin/launchctl kickstart system/${LaunchDaemonLabel} 2>&1
+# /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
+# /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
+/bin/launchctl bootstrap loginwindow "${PathToLaunchDaemon}" 2>&1
+/bin/launchctl enable loginwindow/${LaunchDaemonLabel} 2>&1
+/bin/launchctl kickstart -kp loginwindow/${LaunchDaemonLabel} 2>&1
 
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
