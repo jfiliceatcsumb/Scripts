@@ -15,10 +15,158 @@
 # 4: device type (input/output/system/all).  Defaults to output
 # 5: Audio device name or UID (case insensitive grep matching)
 
+
+
+# ##### Debugging flags #####
+# debug bash script by enabling verbose “-v” option
+# set -v
+# debug bash script using noexec (Test for syntaxt errors)
+# set -n
+# identify the unset variables while debugging bash script
+# set -u
+# debug bash script using xtrace
+# set -x
+# Enable tracing without trace output
+# { set -x; } 2>/dev/null
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
+
+SCRIPTNAME=$(/usr/bin/basename "$0")
+SCRIPTDIR=$(/usr/bin/dirname "$0")
+
+# Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
+
+pathToScript=$0
+mountPoint=$1
+computerName=$2
+userName=$3
+
+shift 3
+# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+
+
+echo "pathToScript=$pathToScript"
+echo "mountPoint=$mountPoint"
+echo "computerName=$computerName"
+echo "userName=$userName"
+
+### Production path:
+# MARK: Set file paths
+readonly PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.displayplacer.agent.plist"
+readonly PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.displayplacer.daemon.plist"
+readonly LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
+readonly LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
+
+# --- Validation Logic ---
+
+readonly DISPLAYPLACER="/usr/local/bin/displayplacer"
+
+if command -v "$DISPLAYPLACER" &>/dev/null; then
+    echo "$DISPLAYPLACER is installed and can be run."
+else
+    echo "Error: $DISPLAYPLACER is not installed." >&2
+    exit 1
+fi
+
+/bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
+/bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
+
+# Slice from the 1st argument up to the 6th
+# $@[4,-1] is shorthand for index 4 through the last element
+# This captures $1, $2, $3, $4, $5, and $6 (if they exist)
+# Filter out empty arguments from the slice [1,6]
+# The (@) flag ensures we treat the result as an array even if empty
+# Using "${args_to_write[@]}" ensures that if any argument contains a space, it is preserved as a single item in the defaults array
+
+# Filter out empty elements AND slice the first 6
+# - "${(@)@:#}" filters out empty/null strings
+# - [1,6] slices the resulting list to the first six elements
+args_to_write=( "${(@)${@:#}[1,6]}" )
+
+non_null_count=${#args_to_write}
+
+echo "Arguments passed: $@"
+echo "Total arguments passed: ${#args_to_write}"
+
+# Ensure minimum requirement is met
+if [[ ${#args_to_write} -lt 1 ]]; then
+    echo "Error: Minimum 1 arguments required." >&2
+    exit 1
+fi
+
+# Warn if we are truncating
+if [[ ${#args_to_write} -gt 6 ]]; then
+    echo "Warning: More than 6 arguments provided. Only the first 6 will be used."
+fi
+
+echo "Script parameters are valid. Proceeding..."
+
+
+
+# MARK: Delete LaunchAgent ]# No longer using a LaunchAgent, so delete it if it exists
+# No longer using a LaunchAgent, so delete any if they exist
+echo "Deleting old LaunchAgent plist file ${PathToLaunchAgent}..."
+[[ -f  "${PathToLaunchAgent}" ]] &&  /bin/rm -v "/Library/LaunchAgents/${LaunchDaemonDomain}".*.plist
+
+
+
+# #### Create LaunchDaemon ####
+echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
+
+if [[ -f "${PathToLaunchDaemon}" ]]; then
+    /usr/bin/defaults delete "${PathToLaunchDaemon}"
+fi
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardErrorPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'LimitLoadToSessionType' -array "LoginWindow" "Aqua"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'KeepAlive' -bool false
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'RunAtLoad' -bool true
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'Debug' -bool false
+
+
+# Enable tracing without trace output
+# { set -x; } 2>/dev/null
+
+# Set file ownership and privileges
+
+# /usr/sbin/chown -fv 0:0 "${PathToLaunchAgent}"
+/usr/sbin/chown -fv 0:0 "${PathToLaunchDaemon}"
+# /bin/chmod -fv 644 "${PathToLaunchAgent}"
+/bin/chmod -fv 644 "${PathToLaunchDaemon}"
+# /usr/sbin/chown -fv 0:0 "${PathToScript}"
+# /bin/chmod -fv 644 "${PathToScript}"
+
+# # Remove quarantine extended attributes
+# /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
+# /usr/bin/plutil -lint "${PathToLaunchAgent}"
+# echo "Printing ${PathToLaunchAgent}..."
+# /usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchAgent}"
+# echo ""
+
+# Remove quarantine extended attributes
+/usr/bin/xattr -d com.apple.quarantine "${PathToLaunchDaemon}"
+/usr/bin/plutil -lint "${PathToLaunchDaemon}"
+echo "Printing ${PathToLaunchDaemon}..."
+/usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchDaemon}"
+echo ""
+
+# /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
+# /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
+/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
+/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
+/bin/launchctl kickstart -kp system/${LaunchDaemonLabel} 2>&1
+
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
+
+echo "***End $SCRIPTNAME script***"
+
+exit 0
+
+# MARK: DOCUMENTATION AND REFERENCES 
 # 
-# Change History:
-# 2025/12/10:	Creation.
-#
 # displayplacer
 # Usage:
 #     Show current screen info and possible resolutions: displayplacer list
@@ -65,162 +213,3 @@
 # 
 # Feedback:
 #     Please create a GitHub Issue for any feedback, feature requests, bugs, Homebrew issues, etc. Happy to accept pull requests too! https://github.com/jakehilborn/displayplacer
-
-# ##### Debugging flags #####
-# debug bash script by enabling verbose “-v” option
-# set -v
-# debug bash script using noexec (Test for syntaxt errors)
-# set -n
-# identify the unset variables while debugging bash script
-# set -u
-# debug bash script using xtrace
-# set -x
-# Enable tracing without trace output
-# { set -x; } 2>/dev/null
-# Disable tracing without trace output
-# { set +x; } 2>/dev/null
-
-SCRIPTNAME=`/usr/bin/basename "$0"`
-SCRIPTDIR=`/usr/bin/dirname "$0"`
-
-# Jamf JSS Parameters 1 through 3 are predefined as mount point, computer name, and username
-
-pathToScript=$0
-mountPoint=$1
-computerName=$2
-userName=$3
-
-shift 3
-# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
-
-
-echo "pathToScript=$pathToScript"
-echo "mountPoint=$mountPoint"
-echo "computerName=$computerName"
-echo "userName=$userName"
-
-### Production path:
-readonly PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.displayplacer.agent.plist"
-readonly PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.displayplacer.daemon.plist"
-
-# --- Validation Logic ---
-
-readonly DISPLAYPLACER="/usr/local/bin/displayplacer"
-
-if command -v "$DISPLAYPLACER" &>/dev/null; then
-    echo "$DISPLAYPLACER is installed and can be run."
-else
-    echo "Error: $DISPLAYPLACER is not installed." >&2
-    exit 1
-fi
-
- 
-readonly LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
-readonly LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
-
-/bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
-/bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
-
-# Slice from the 1st argument up to the 6th
-# $@[4,-1] is shorthand for index 4 through the last element
-# This captures $1, $2, $3, $4, $5, and $6 (if they exist)
-# Filter out empty arguments from the slice [1,6]
-# The (@) flag ensures we treat the result as an array even if empty
-# Using "${args_to_write[@]}" ensures that if any argument contains a space, it is preserved as a single item in the defaults array
-
-# Filter out empty elements AND slice the first 6
-# - "${(@)@:#}" filters out empty/null strings
-# - [1,6] slices the resulting list to the first six elements
-args_to_write=( "${(@)${@:#}[1,6]}" )
-
-non_null_count=${#args_to_write}
-
-echo "Arguments passed: $@"
-echo "Total arguments passed: ${#args_to_write}"
-
-# Ensure minimum requirement is met
-if [[ ${#args_to_write} -lt 1 ]]; then
-    echo "Error: Minimum 1 arguments required." >&2
-    exit 1
-fi
-
-# Warn if we are truncating
-if [[ ${#args_to_write} -gt 6 ]]; then
-    echo "Warning: More than 6 arguments provided. Only the first 6 will be used."
-fi
-
-echo "Script parameters are valid. Proceeding..."
-
-
-
-# #### Delete LaunchAgent ####
-echo "Deleting old LaunchAgent plist file ${PathToLaunchAgent}..."
-if [[ -f "${PathToLaunchAgent}" ]]; then
-    /usr/bin/defaults delete "${PathToLaunchAgent}"
-fi
-# # /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${PathToScript}"
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'Label' -string "${LaunchAgentLabel}"
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'StandardOutPath' -string "/private/var/log/${LaunchAgentLabel}.log"
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'StandardErrorPath' -string "/private/var/log/${LaunchAgentLabel}.log"
-# # /usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "Aqua"
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'KeepAlive' -bool false
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'RunAtLoad' -bool true
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'Debug' -bool false
-# 
-
-# #### Create LaunchDaemon ####
-echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
-
-if [[ -f "${PathToLaunchDaemon}" ]]; then
-    /usr/bin/defaults delete "${PathToLaunchDaemon}"
-fi
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardErrorPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "LoginWindow" "Aqua"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'KeepAlive' -bool false
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'RunAtLoad' -bool true
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'Debug' -bool false
-
-
-# Enable tracing without trace output
-# { set -x; } 2>/dev/null
-
-# Set file ownership and privileges
-
-# /usr/sbin/chown -fv 0:0 "${PathToLaunchAgent}"
-/usr/sbin/chown -fv 0:0 "${PathToLaunchDaemon}"
-# /bin/chmod -fv 644 "${PathToLaunchAgent}"
-/bin/chmod -fv 644 "${PathToLaunchDaemon}"
-# /usr/sbin/chown -fv 0:0 "${PathToScript}"
-# /bin/chmod -fv 644 "${PathToScript}"
-
-# # Remove quarantine extended attributes
-# /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
-# /usr/bin/plutil -lint "${PathToLaunchAgent}"
-# echo "Printing ${PathToLaunchAgent}..."
-# /usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchAgent}"
-# echo ""
-
-# Remove quarantine extended attributes
-/usr/bin/xattr -d com.apple.quarantine "${PathToLaunchDaemon}"
-/usr/bin/plutil -lint "${PathToLaunchDaemon}"
-echo "Printing ${PathToLaunchDaemon}..."
-/usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchDaemon}"
-echo ""
-
-# /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
-# /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
-/bin/launchctl bootstrap loginwindow "${PathToLaunchDaemon}" 2>&1
-/bin/launchctl enable loginwindow/${LaunchDaemonLabel} 2>&1
-/bin/launchctl kickstart -kp loginwindow/${LaunchDaemonLabel} 2>&1
-
-# Disable tracing without trace output
-# { set +x; } 2>/dev/null
-
-echo "***End $SCRIPTNAME script***"
-
-exit 0
