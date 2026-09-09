@@ -56,11 +56,13 @@ device_name_uid="${2:-builtin}"
 mute_mode="${3:-}"
 
 # MARK: Set file paths
-readonly LaunchAgentLabel="edu.csumb.it.SwitchAudioSource.${device_type}.agent"
+readonly LaunchDaemonDomain="edu.csumb.it.SwitchAudioSource"
+readonly LaunchAgentLabel="${LaunchDaemonDomain}.${device_type}.agent"
+readonly LaunchDaemonLabel="${LaunchDaemonDomain}.${device_type}.daemon"
+
 readonly PathToLaunchAgent="/Library/LaunchAgents/${LaunchAgentLabel}.plist"
-readonly LaunchDaemonLabel="edu.csumb.it.SwitchAudioSource.${device_type}.daemon"
 readonly PathToLaunchDaemon="/Library/LaunchDaemons/${LaunchDaemonLabel}.plist"
-readonly LaunchScript="/Library/Scripts/$(/usr/bin/basename ${LaunchDaemonLabel} .daemon).zsh"
+readonly LaunchScript="/Library/Scripts/${LaunchDaemonDomain}.${device_type}.zsh"
 readonly Switch_Audio_Source="/usr/local/bin/SwitchAudioSource"
 
 # MARK: FUNCTIONS
@@ -268,39 +270,33 @@ selectAudioSourceName=$(echo "${allAudioSources}" | grep --ignore-case --max-cou
 /bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
 /bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
+# MARK: Delete LaunchAgent 
+# No longer using a LaunchAgent, so delete any if they exists
+[[ -f  "${PathToLaunchAgent}" ]] && /bin/rm -v "/Library/LaunchAgents/${LaunchDaemonDomain}".*.plist
+
 # MARK: write_launchd_script
 write_launchd_script "${LaunchScript}"
-
-# MARK: Create LaunchAgent
-echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
-write_launchd_program_arguments "${PathToLaunchAgent}"
-
-# MARK: test no root flag
-# Does this need to run as root? Removing this to test.
-# /usr/bin/defaults write "${PathToLaunchAgent}" 'UserName' -string "root"
-/usr/bin/defaults write "${PathToLaunchAgent}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
 
 # MARK: Create LaunchDaemon
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
 write_launchd_program_arguments "${PathToLaunchDaemon}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
 
 # Enable tracing without trace output
 # { set -x; } 2>/dev/null
 
 # MARK: Set file ownership, privileges, remove quarantine
-set_launchd_plist_privs_quarantine "${PathToLaunchAgent}"
 set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
 
 # MARK: Check launchd plist syntax
-check_plist "${PathToLaunchAgent}"
 check_plist "${PathToLaunchDaemon}"
 
 # MARK: BOOSTRAPS
-/bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
-/bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
-/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
+# /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
+# /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
 /bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
-/bin/launchctl kickstart system/${LaunchDaemonLabel} 2>&1
+/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
+/bin/launchctl kickstart -kp system/${LaunchDaemonLabel} 2>&1
 
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
