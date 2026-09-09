@@ -49,7 +49,7 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
-# MARK: INPUT VALUES
+# MARK: Input Values
 
 device_type="${1:-output}"
 device_name_uid="${2:-builtin}"
@@ -267,6 +267,7 @@ selectAudioSourceUID=$(echo "${allAudioSources}" | grep --ignore-case --max-coun
 # grep for the first source that is like the input $device_name_uid, then use awk to get the device_name as the first item.
 selectAudioSourceName=$(echo "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $1}')
 
+# MARK: Unload
 /bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
 /bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
@@ -292,8 +293,6 @@ set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
 check_plist "${PathToLaunchDaemon}"
 
 # MARK: BOOSTRAPS
-# /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
-# /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
 /bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
 /bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
 /bin/launchctl kickstart -kp system/${LaunchDaemonLabel} 2>&1
