@@ -56,10 +56,86 @@ readonly PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.displayplacer.age
 readonly PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.displayplacer.daemon.plist"
 readonly LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
 readonly LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
-
-# --- Validation Logic ---
-
 readonly DISPLAYPLACER="/usr/local/bin/displayplacer"
+
+# MARK: FUNCTIONS
+write_launchd_script() {
+    local script_path="$1"
+
+    /bin/mkdir -p "$(/usr/bin/dirname "${script_path}")"
+    /bin/cat > "${script_path}" <<EOF
+#!/bin/zsh --no-rcs
+
+DISPLAYPLACER=${(qq)DISPLAYPLACER}
+
+
+echo "[\$(date)] Starting script..."
+
+if command -v "\${DISPLAYPLACER}" &>/dev/null; then
+    echo "\${DISPLAYPLACER} is installed and can be run."
+else
+    echo "[\$(date)] Error: \${DISPLAYPLACER} is not installed." >&2
+    exit 1
+fi
+"${DISPLAYPLACER}" "${(qq)args_to_write[@]}"
+
+displayplacerStatus=\$?
+
+if [[ \${displayplacerStatus} -ne 0 ]]; then
+    exit \${displayplacerStatus}
+fi
+
+
+echo "[\$(date)] Script completed."
+
+EOF
+    /usr/sbin/chown -fv 0:0 "${script_path}"
+    /bin/chmod -fv 755 "${script_path}"
+}
+
+write_launchd_program_arguments() {
+    local plist_path="$1"
+		local LaunchLabel=$(/usr/bin/basename ${plist_path} .plist)
+    [[ -f  "${plist_path}" ]] && /usr/bin/defaults delete "${plist_path}"
+    /usr/bin/defaults write "${plist_path}" 'ProgramArguments' -array "${LaunchScript}"
+		/usr/bin/defaults write "${plist_path}" 'Label' -string "${LaunchLabel}"
+		/usr/bin/defaults write "${plist_path}" 'StandardOutPath' -string "/private/var/log/${LaunchLabel}_stdout.log"
+		/usr/bin/defaults write "${plist_path}" 'StandardErrorPath' -string "/private/var/log/${LaunchLabel}_stderr.log"
+		/usr/bin/defaults write "${plist_path}" 'KeepAlive' -bool false
+		/usr/bin/defaults write "${plist_path}" 'RunAtLoad' -bool true
+		/usr/bin/defaults write "${plist_path}" 'Debug' -bool true
+ 
+}
+
+set_launchd_plist_privs_quarantine() {
+    local plist_path="$1"
+		# Set file ownership and privileges
+		/usr/sbin/chown -fv 0:0 "${plist_path}"
+		/bin/chmod -fv 644 "${plist_path}"
+		/usr/sbin/chown -fv 0:0 "${plist_path}"
+		/bin/chmod -fv 644 "${plist_path}"
+		
+		# Remove quarantine extended attributes
+		/usr/bin/xattr -d com.apple.quarantine "${plist_path}"
+}
+
+check_plist() {
+# 		Check plist files for syntax errors
+	local plist_path="$1"
+	/usr/bin/plutil -lint "${plist_path}"
+	if [[ $? -ne 0 ]]; then
+		echo "ERROR: ${plist_path} syntax check failed" >&2
+		echo "Try printing the plist..."
+		/usr/bin/plutil -p "${plist_path}"		
+		exit 1
+	else
+		echo "Printing the plist..."
+		/usr/bin/plutil -p "${plist_path}"
+	fi
+}
+
+# MARK: Validation Logic
+
 
 if command -v "$DISPLAYPLACER" &>/dev/null; then
     echo "$DISPLAYPLACER is installed and can be run."
@@ -103,40 +179,35 @@ echo "Script parameters are valid. Proceeding..."
 
 
 
-# MARK: Delete LaunchAgent ]# No longer using a LaunchAgent, so delete it if it exists
+# MARK: Delete LaunchAgent
 # No longer using a LaunchAgent, so delete any if they exist
 echo "Deleting old LaunchAgent plist file ${PathToLaunchAgent}..."
 [[ -f  "${PathToLaunchAgent}" ]] &&  /bin/rm -v "/Library/LaunchAgents/${LaunchDaemonDomain}".*.plist
 
-
-
-# #### Create LaunchDaemon ####
+# MARK: Create LaunchDaemon
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
-
-if [[ -f "${PathToLaunchDaemon}" ]]; then
-    /usr/bin/defaults delete "${PathToLaunchDaemon}"
-fi
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'ProgramArguments' -array "${DISPLAYPLACER}" "${args_to_write[@]}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'Label' -string "${LaunchDaemonLabel}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardOutPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'StandardErrorPath' -string "/private/var/log/${LaunchDaemonLabel}.log"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'LimitLoadToSessionType' -array "LoginWindow" "Aqua"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'KeepAlive' -bool false
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'RunAtLoad' -bool true
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'Debug' -bool false
-
+write_launchd_program_arguments "${PathToLaunchDaemon}"
+/usr/bin/defaults write "${PathToLaunchDaemon}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
 
 # Enable tracing without trace output
 # { set -x; } 2>/dev/null
 
-# Set file ownership and privileges
+# MARK: Set file ownership, privileges, remove quarantine
+set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
 
-# /usr/sbin/chown -fv 0:0 "${PathToLaunchAgent}"
-/usr/sbin/chown -fv 0:0 "${PathToLaunchDaemon}"
-# /bin/chmod -fv 644 "${PathToLaunchAgent}"
-/bin/chmod -fv 644 "${PathToLaunchDaemon}"
-# /usr/sbin/chown -fv 0:0 "${PathToScript}"
-# /bin/chmod -fv 644 "${PathToScript}"
+# MARK: Check launchd plist syntax
+check_plist "${PathToLaunchDaemon}"
+
+# MARK: BOOSTRAPS
+# /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
+# /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
+/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
+/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
+/bin/launchctl kickstart -kp system/${LaunchDaemonLabel} 2>&1
+
+# Disable tracing without trace output
+# { set +x; } 2>/dev/null
+
 
 # # Remove quarantine extended attributes
 # /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
