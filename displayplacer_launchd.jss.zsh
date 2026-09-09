@@ -12,8 +12,8 @@
 # Run by Jamf Pro.
 # 
 # PARAMETERS:
-# 4: device type (input/output/system/all).  Defaults to output
-# 5: Audio device name or UID (case insensitive grep matching)
+# 4:
+# 5: 
 
 
 
@@ -52,10 +52,11 @@ echo "userName=$userName"
 
 ### Production path:
 # MARK: Set file paths
-readonly PathToLaunchAgent="/Library/LaunchAgents/edu.csumb.it.displayplacer.agent.plist"
-readonly PathToLaunchDaemon="/Library/LaunchDaemons/edu.csumb.it.displayplacer.daemon.plist"
-readonly LaunchAgentLabel=$(/usr/bin/basename ${PathToLaunchAgent} .plist)
-readonly LaunchDaemonLabel=$(/usr/bin/basename ${PathToLaunchDaemon} .plist)
+readonly LaunchDaemonDomain="edu.csumb.it.displayplacer"
+readonly LaunchDaemonLabel="${LaunchDaemonDomain}.daemon"
+readonly PathToLaunchDaemon="/Library/LaunchDaemons/${LaunchDaemonLabel}.plist"
+readonly PathToLaunchAgent="/Library/LaunchAgents/${LaunchDaemonDomain}.agent.plist"
+readonly LaunchScript="/Library/Scripts/${LaunchDaemonDomain}.zsh"
 readonly DISPLAYPLACER="/usr/local/bin/displayplacer"
 
 # MARK: FUNCTIONS
@@ -134,18 +135,8 @@ check_plist() {
 	fi
 }
 
-# MARK: Validation Logic
 
-
-if command -v "$DISPLAYPLACER" &>/dev/null; then
-    echo "$DISPLAYPLACER is installed and can be run."
-else
-    echo "Error: $DISPLAYPLACER is not installed." >&2
-    exit 1
-fi
-
-/bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
-/bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
+# MARK: Input Values
 
 # Slice from the 1st argument up to the 6th
 # $@[4,-1] is shorthand for index 4 through the last element
@@ -158,6 +149,18 @@ fi
 # - "${(@)@:#}" filters out empty/null strings
 # - [1,6] slices the resulting list to the first six elements
 args_to_write=( "${(@)${@:#}[1,6]}" )
+
+
+# MARK: Validation Logic
+
+
+if command -v "$DISPLAYPLACER" &>/dev/null; then
+    echo "$DISPLAYPLACER is installed and can be run."
+else
+    echo "Error: $DISPLAYPLACER is not installed." >&2
+    exit 1
+fi
+
 
 non_null_count=${#args_to_write}
 
@@ -175,14 +178,20 @@ if [[ ${#args_to_write} -gt 6 ]]; then
     echo "Warning: More than 6 arguments provided. Only the first 6 will be used."
 fi
 
+# MARK: MAIN
 echo "Script parameters are valid. Proceeding..."
 
-
+# MARK: Unload
+/bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
+/bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
 # MARK: Delete LaunchAgent
 # No longer using a LaunchAgent, so delete any if they exist
 echo "Deleting old LaunchAgent plist file ${PathToLaunchAgent}..."
 [[ -f  "${PathToLaunchAgent}" ]] &&  /bin/rm -v "/Library/LaunchAgents/${LaunchDaemonDomain}".*.plist
+
+# MARK: write_launchd_script
+write_launchd_script "${LaunchScript}"
 
 # MARK: Create LaunchDaemon
 echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
@@ -198,39 +207,18 @@ set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
 # MARK: Check launchd plist syntax
 check_plist "${PathToLaunchDaemon}"
 
-# MARK: BOOSTRAPS
-# /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
-# /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
-/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
-/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
-/bin/launchctl kickstart -kp system/${LaunchDaemonLabel} 2>&1
-
-# Disable tracing without trace output
-# { set +x; } 2>/dev/null
-
-
-# # Remove quarantine extended attributes
-# /usr/bin/xattr -d com.apple.quarantine "${PathToLaunchAgent}"
-# /usr/bin/plutil -lint "${PathToLaunchAgent}"
-# echo "Printing ${PathToLaunchAgent}..."
-# /usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchAgent}"
-# echo ""
-
-# Remove quarantine extended attributes
-/usr/bin/xattr -d com.apple.quarantine "${PathToLaunchDaemon}"
-/usr/bin/plutil -lint "${PathToLaunchDaemon}"
 echo "Printing ${PathToLaunchDaemon}..."
 /usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchDaemon}"
 echo ""
 
-# /bin/launchctl enable loginwindow/${LaunchAgentLabel} 2>&1
-# /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}" 2>&1
+# MARK: BOOSTRAPS
 /bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
 /bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
 /bin/launchctl kickstart -kp system/${LaunchDaemonLabel} 2>&1
 
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
+
 
 echo "***End $SCRIPTNAME script***"
 
