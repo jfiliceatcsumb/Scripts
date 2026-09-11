@@ -140,7 +140,6 @@ write_launchd_program_arguments() {
 		/usr/bin/defaults write "${plist_path}" 'StandardErrorPath' -string "/private/var/log/${LaunchLabel}_stderr.log"
 		/usr/bin/defaults write "${plist_path}" 'KeepAlive' -bool false
 		/usr/bin/defaults write "${plist_path}" 'RunAtLoad' -bool true
-		/usr/bin/defaults write "${plist_path}" 'Debug' -bool true
 
 }
 
@@ -215,7 +214,7 @@ case "${device_type}" in
     *)
         # Invalid value, print error and exit
         echo "Error: Invalid device_type value: $device_type" >&2
-        echo "Allowed values are: input, output, system." >&2
+        echo "Allowed values are: input, output, system, all." >&2
         exit 1
         ;;
 esac
