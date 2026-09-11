@@ -78,7 +78,7 @@ else
     echo "[\$(date)] Error: \${DISPLAYPLACER} is not installed." >&2
     exit 1
 fi
-"${DISPLAYPLACER}" "${(qq)args_to_write[@]}"
+"\${DISPLAYPLACER}" ${(j: :)${(@qq)args_to_write}}
 
 displayplacerStatus=\$?
 
@@ -137,18 +137,9 @@ check_plist() {
 
 # MARK: Input Values
 
-# Slice from the 1st argument up to the 6th
-# $@[4,-1] is shorthand for index 4 through the last element
-# This captures $1, $2, $3, $4, $5, and $6 (if they exist)
-# Filter out empty arguments from the slice [1,6]
-# The (@) flag ensures we treat the result as an array even if empty
-# Using "${args_to_write[@]}" ensures that if any argument contains a space, it is preserved as a single item in the defaults array
-
-# Filter out empty elements AND slice the first 6
-# - "${(@)@:#}" filters out empty/null strings
-# - [1,6] slices the resulting list to the first six elements
-args_to_write=( "${(@)${@:#}[1,6]}" )
-
+# Collect all nonempty arguments, preserving spaces within each argument.
+# Apply the six-argument limit after validation below.
+args_to_write=( "${(@)@:#}" )
 
 # MARK: Validation Logic
 
@@ -172,9 +163,10 @@ if [[ ${#args_to_write} -lt 1 ]]; then
     exit 1
 fi
 
-# Warn if we are truncating
+# Warn before truncating to the first six nonempty arguments
 if [[ ${#args_to_write} -gt 6 ]]; then
     echo "Warning: More than 6 arguments provided. Only the first 6 will be used."
+    args_to_write=( "${(@)args_to_write[1,6]}" )
 fi
 
 # MARK: MAIN
