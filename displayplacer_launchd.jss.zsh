@@ -114,15 +114,26 @@ EOF
 
 write_launchd_program_arguments() {
     local plist_path="$1"
-		local LaunchLabel=$(/usr/bin/basename ${plist_path} .plist)
-    [[ -f  "${plist_path}" ]] && /usr/bin/defaults delete "${plist_path}"
-    /usr/bin/defaults write "${plist_path}" 'ProgramArguments' -array "${LaunchScript}"
-		/usr/bin/defaults write "${plist_path}" 'Label' -string "${LaunchLabel}"
-		/usr/bin/defaults write "${plist_path}" 'StandardOutPath' -string "/private/var/log/${LaunchLabel}_stdout.log"
-		/usr/bin/defaults write "${plist_path}" 'StandardErrorPath' -string "/private/var/log/${LaunchLabel}_stderr.log"
-		/usr/bin/defaults write "${plist_path}" 'KeepAlive' -bool false
-		/usr/bin/defaults write "${plist_path}" 'RunAtLoad' -bool true
- 
+    local LaunchLabel="${plist_path:t:r}"
+# ${plist_path:t:r} is zsh’s built-in equivalent of extracting the filename and removing its .plist extension.
+    if [[ -f "${plist_path}" ]]; then
+        if ! /usr/bin/defaults delete "${plist_path}"; then
+            echo "Error: Could not clear existing plist: ${plist_path}" >&2
+            exit 1
+        fi
+    fi
+
+    if ! {
+        /usr/bin/defaults write "${plist_path}" ProgramArguments -array "${LaunchScript}" &&
+        /usr/bin/defaults write "${plist_path}" Label -string "${LaunchLabel}" &&
+        /usr/bin/defaults write "${plist_path}" StandardOutPath -string "/private/var/log/${LaunchLabel}_stdout.log" &&
+        /usr/bin/defaults write "${plist_path}" StandardErrorPath -string "/private/var/log/${LaunchLabel}_stderr.log" &&
+        /usr/bin/defaults write "${plist_path}" KeepAlive -bool false &&
+        /usr/bin/defaults write "${plist_path}" RunAtLoad -bool true
+    }; then
+        echo "Error: Could not write LaunchDaemon plist: ${plist_path}" >&2
+        exit 1
+    fi
 }
 
 set_launchd_plist_privs_quarantine() {
