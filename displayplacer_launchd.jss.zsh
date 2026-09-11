@@ -104,7 +104,6 @@ write_launchd_program_arguments() {
 		/usr/bin/defaults write "${plist_path}" 'StandardErrorPath' -string "/private/var/log/${LaunchLabel}_stderr.log"
 		/usr/bin/defaults write "${plist_path}" 'KeepAlive' -bool false
 		/usr/bin/defaults write "${plist_path}" 'RunAtLoad' -bool true
-		/usr/bin/defaults write "${plist_path}" 'Debug' -bool true
  
 }
 
@@ -165,7 +164,7 @@ fi
 non_null_count=${#args_to_write}
 
 echo "Arguments passed: $@"
-echo "Total arguments passed: ${#args_to_write}"
+echo "Total arguments passed: ${non_null_count}"
 
 # Ensure minimum requirement is met
 if [[ ${#args_to_write} -lt 1 ]]; then
