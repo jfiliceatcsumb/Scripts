@@ -63,8 +63,11 @@ readonly DISPLAYPLACER="/usr/local/bin/displayplacer"
 write_launchd_script() {
     local script_path="$1"
 
-    /bin/mkdir -p "$(/usr/bin/dirname "${script_path}")"
-    /bin/cat > "${script_path}" <<EOF
+    if ! /bin/mkdir -p "$(/usr/bin/dirname "${script_path}")"; then
+        echo "Error: Could not create parent directory for ${script_path}." >&2
+        exit 1
+    fi
+    if ! /bin/cat > "${script_path}" <<EOF
 #!/bin/zsh --no-rcs
 
 DISPLAYPLACER=${(qq)DISPLAYPLACER}
@@ -90,8 +93,23 @@ fi
 echo "[\$(date)] Script completed."
 
 EOF
-    /usr/sbin/chown -fv 0:0 "${script_path}"
-    /bin/chmod -fv 755 "${script_path}"
+    then
+        echo "Error: Could not write generated script: ${script_path}" >&2
+        exit 1
+    fi
+    if ! /bin/zsh -f -n "${script_path}"; then
+        echo "Error: Generated script failed syntax validation: ${script_path}" >&2
+        exit 1
+    fi
+    if ! /usr/sbin/chown -fv 0:0 "${script_path}"; then
+        echo "Error: Could not set ownership: ${script_path}" >&2
+        exit 1
+    fi
+
+    if ! /bin/chmod -fv 755 "${script_path}"; then
+        echo "Error: Could not set executable permissions: ${script_path}" >&2
+        exit 1
+    fi
 }
 
 write_launchd_program_arguments() {
@@ -109,12 +127,17 @@ write_launchd_program_arguments() {
 
 set_launchd_plist_privs_quarantine() {
     local plist_path="$1"
-		# Set file ownership and privileges
-		/usr/sbin/chown -fv 0:0 "${plist_path}"
-		/bin/chmod -fv 644 "${plist_path}"
-		/usr/sbin/chown -fv 0:0 "${plist_path}"
-		/bin/chmod -fv 644 "${plist_path}"
-		
+    # Set file ownership and permissions
+    if ! /usr/sbin/chown -fv 0:0 "${plist_path}"; then
+        echo "Error: Could not set plist ownership: ${plist_path}" >&2
+        exit 1
+    fi
+
+    if ! /bin/chmod -fv 644 "${plist_path}"; then
+        echo "Error: Could not set plist permissions: ${plist_path}" >&2
+        exit 1
+    fi
+    
 		# Remove quarantine extended attributes
 		/usr/bin/xattr -d com.apple.quarantine "${plist_path}"
 }
@@ -176,10 +199,14 @@ echo "Script parameters are valid. Proceeding..."
 /bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
 /bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
-# MARK: Delete LaunchAgent
-# No longer using a LaunchAgent, so delete any if they exist
-echo "Deleting old LaunchAgent plist file ${PathToLaunchAgent}..."
-[[ -f  "${PathToLaunchAgent}" ]] &&  /bin/rm -v "/Library/LaunchAgents/${LaunchDaemonDomain}".*.plist
+# MARK: Delete old LaunchAgent
+if [[ -f "${PathToLaunchAgent}" ]]; then
+    echo "Deleting old LaunchAgent plist file ${PathToLaunchAgent}..."
+    if ! /bin/rm -v "${PathToLaunchAgent}"; then
+        echo "Error: Could not delete ${PathToLaunchAgent}." >&2
+        exit 1
+    fi
+fi
 
 # MARK: write_launchd_script
 write_launchd_script "${LaunchScript}"
@@ -202,10 +229,16 @@ echo "Printing ${PathToLaunchDaemon}..."
 /usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchDaemon}"
 echo ""
 
-# MARK: BOOSTRAPS
-/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
-/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
-/bin/launchctl kickstart -kp system/${LaunchDaemonLabel} 2>&1
+# MARK: Load and start LaunchDaemon
+if ! /bin/launchctl enable "system/${LaunchDaemonLabel}"; then
+    echo "Error: Could not enable ${LaunchDaemonLabel}." >&2
+    exit 1
+fi
+
+if ! /bin/launchctl bootstrap system "${PathToLaunchDaemon}"; then
+    echo "Error: Could not load ${PathToLaunchDaemon}." >&2
+    exit 1
+fi
 
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
