@@ -60,8 +60,9 @@ fi
 # MARK: Set file paths
 readonly LaunchDaemonDomain="edu.csumb.it.displayplacer"
 readonly LaunchDaemonLabel="${LaunchDaemonDomain}.daemon"
+readonly LaunchAgentLabel="${LaunchDaemonDomain}.agent"
 readonly PathToLaunchDaemon="/Library/LaunchDaemons/${LaunchDaemonLabel}.plist"
-readonly PathToLaunchAgent="/Library/LaunchAgents/${LaunchDaemonDomain}.agent.plist"
+readonly PathToLaunchAgent="/Library/LaunchAgents/${LaunchAgentLabel}.plist"
 readonly LaunchScript="/Library/Scripts/${LaunchDaemonDomain}.zsh"
 readonly DISPLAYPLACER="/usr/local/bin/displayplacer"
 
@@ -136,8 +137,9 @@ write_launchd_program_arguments() {
         /usr/bin/defaults write "${plist_path}" StandardErrorPath -string "/private/var/log/${LaunchLabel}_stderr.log" &&
         /usr/bin/defaults write "${plist_path}" KeepAlive -bool false &&
         /usr/bin/defaults write "${plist_path}" RunAtLoad -bool true
+        /usr/bin/defaults write "${plist_path}" LimitLoadToSessionType -array "Aqua" "LoginWindow"
     }; then
-        echo "Error: Could not write LaunchDaemon plist: ${plist_path}" >&2
+        echo "Error: Could not write launchd plist: ${plist_path}" >&2
         exit 1
     fi
 }
@@ -214,11 +216,11 @@ echo "Script parameters are valid. Proceeding..."
 /bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
 /bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
 
-# MARK: Delete old LaunchAgent
-if [[ -f "${PathToLaunchAgent}" ]]; then
-    echo "Deleting old LaunchAgent plist file ${PathToLaunchAgent}..."
-    if ! /bin/rm -v "${PathToLaunchAgent}"; then
-        echo "Error: Could not delete ${PathToLaunchAgent}." >&2
+# MARK: Delete old LaunchDaemon
+if [[ -f "${PathToLaunchDaemon}" ]]; then
+    echo "Deleting old LaunchDaemon plist file ${PathToLaunchDaemon}..."
+    if ! /bin/rm -v "${PathToLaunchDaemon}"; then
+        echo "Error: Could not delete ${PathToLaunchDaemon}." >&2
         exit 1
     fi
 fi
@@ -226,32 +228,31 @@ fi
 # MARK: write_launchd_script
 write_launchd_script "${LaunchScript}"
 
-# MARK: Create LaunchDaemon
-echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
-write_launchd_program_arguments "${PathToLaunchDaemon}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
+# MARK: Create LaunchAgent
+echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
+write_launchd_program_arguments "${PathToLaunchAgent}"
 
 # Enable tracing without trace output
 # { set -x; } 2>/dev/null
 
 # MARK: Set file ownership and permissions
-set_launchd_plist_privs "${PathToLaunchDaemon}"
+set_launchd_plist_privs "${PathToLaunchAgent}"
 
 # MARK: Check launchd plist syntax
-check_plist "${PathToLaunchDaemon}"
+check_plist "${PathToLaunchAgent}"
 
-echo "Printing ${PathToLaunchDaemon}..."
-/usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchDaemon}"
+echo "Printing ${PathToLaunchAgent}..."
+/usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchAgent}"
 echo ""
 
-# MARK: Load and start LaunchDaemon
-if ! /bin/launchctl enable "system/${LaunchDaemonLabel}"; then
-    echo "Error: Could not enable ${LaunchDaemonLabel}." >&2
+# MARK: Load and start LaunchAgent
+if ! /bin/launchctl enable "system/${LaunchAgentLabel}"; then
+    echo "Error: Could not enable ${LaunchAgentLabel}." >&2
     exit 1
 fi
 
-if ! /bin/launchctl bootstrap system "${PathToLaunchDaemon}"; then
-    echo "Error: Could not load ${PathToLaunchDaemon}." >&2
+if ! /bin/launchctl bootstrap system "${PathToLaunchAgent}"; then
+    echo "Error: Could not load ${PathToLaunchAgent}." >&2
     exit 1
 fi
 
