@@ -218,9 +218,18 @@ fi
 # MARK: MAIN
 echo "Script parameters are valid. Proceeding..."
 
-# MARK: Unload
-/bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
-/bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
+# MARK: Unload existing jobs
+for service_target in \
+    "loginwindow/${LaunchAgentLabel}" \
+    "system/${LaunchDaemonLabel}"
+do
+    if /bin/launchctl print "${service_target}" >/dev/null 2>&1; then
+        if ! /bin/launchctl bootout "${service_target}"; then
+            echo "Error: Could not unload ${service_target}." >&2
+            exit 1
+        fi
+    fi
+done
 
 # MARK: Delete old LaunchDaemon
 if [[ -f "${PathToLaunchDaemon}" ]]; then
