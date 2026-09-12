@@ -79,6 +79,14 @@ write_launchd_script() {
 
 DISPLAYPLACER=${(qq)DISPLAYPLACER}
 
+# Use the executing account's home directory for logs.
+log_dir="\${HOME}/Library/Logs/edu.csumb.it.displayplacer"
+
+if /bin/mkdir -p "\${log_dir}" && [[ -w "\${log_dir}" ]]; then
+    exec >> "\${log_dir}/displayplacer.log" 2>&1
+else
+    echo "Warning: Cannot create log directory: \${log_dir}" >&2
+fi
 
 echo "[\$(date)] Starting script..."
 
@@ -133,8 +141,6 @@ write_launchd_program_arguments() {
     if ! {
         /usr/bin/defaults write "${plist_path}" ProgramArguments -array "${LaunchScript}" &&
         /usr/bin/defaults write "${plist_path}" Label -string "${LaunchLabel}" &&
-        /usr/bin/defaults write "${plist_path}" StandardOutPath -string "/private/var/log/${LaunchLabel}_stdout.log" &&
-        /usr/bin/defaults write "${plist_path}" StandardErrorPath -string "/private/var/log/${LaunchLabel}_stderr.log" &&
         /usr/bin/defaults write "${plist_path}" KeepAlive -bool false &&
         /usr/bin/defaults write "${plist_path}" RunAtLoad -bool true &&
         /usr/bin/defaults write "${plist_path}" LimitLoadToSessionType -array "Aqua" "LoginWindow"
