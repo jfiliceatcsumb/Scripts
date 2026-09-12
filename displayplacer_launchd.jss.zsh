@@ -12,8 +12,7 @@
 # Run by Jamf Pro.
 # 
 # PARAMETERS:
-# 4:
-# 5: 
+# 4-9:displayplacer arguments
 
 
 
@@ -41,8 +40,10 @@ mountPoint=$1
 computerName=$2
 userName=$3
 
-shift 3
-# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+if (( $# >= 3 )); then
+		# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+    shift 3
+fi
 
 
 echo "pathToScript=$pathToScript"
