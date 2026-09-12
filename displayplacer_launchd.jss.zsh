@@ -136,7 +136,7 @@ write_launchd_program_arguments() {
         /usr/bin/defaults write "${plist_path}" StandardOutPath -string "/private/var/log/${LaunchLabel}_stdout.log" &&
         /usr/bin/defaults write "${plist_path}" StandardErrorPath -string "/private/var/log/${LaunchLabel}_stderr.log" &&
         /usr/bin/defaults write "${plist_path}" KeepAlive -bool false &&
-        /usr/bin/defaults write "${plist_path}" RunAtLoad -bool true
+        /usr/bin/defaults write "${plist_path}" RunAtLoad -bool true &&
         /usr/bin/defaults write "${plist_path}" LimitLoadToSessionType -array "Aqua" "LoginWindow"
     }; then
         echo "Error: Could not write launchd plist: ${plist_path}" >&2
@@ -246,14 +246,14 @@ echo "Printing ${PathToLaunchAgent}..."
 echo ""
 
 # MARK: Load and start LaunchAgent
-if ! /bin/launchctl enable "system/${LaunchAgentLabel}"; then
-    echo "Error: Could not enable ${LaunchAgentLabel}." >&2
-    exit 1
-fi
-
-if ! /bin/launchctl bootstrap system "${PathToLaunchAgent}"; then
-    echo "Error: Could not load ${PathToLaunchAgent}." >&2
-    exit 1
+# Load only into an existing LoginWindow domain.
+if /bin/launchctl print loginwindow >/dev/null 2>&1; then
+    if ! /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}"; then
+        echo "Error: Could not load ${LaunchAgentLabel} into LoginWindow." >&2
+        exit 1
+    fi
+else
+    echo "LoginWindow domain unavailable; deferring loading until a future session."
 fi
 
 # Disable tracing without trace output
