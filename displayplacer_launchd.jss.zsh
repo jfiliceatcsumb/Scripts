@@ -50,6 +50,12 @@ echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
 
+# Installation requires root privileges.
+if (( EUID != 0 )); then
+    echo "Error: Run this script as root, through Jamf or sudo." >&2
+    exit 1
+fi
+
 ### Production path:
 # MARK: Set file paths
 readonly LaunchDaemonDomain="edu.csumb.it.displayplacer"
@@ -136,7 +142,7 @@ write_launchd_program_arguments() {
     fi
 }
 
-set_launchd_plist_privs_quarantine() {
+set_launchd_plist_privs() {
     local plist_path="$1"
     # Set file ownership and permissions
     if ! /usr/sbin/chown -fv 0:0 "${plist_path}"; then
@@ -149,8 +155,6 @@ set_launchd_plist_privs_quarantine() {
         exit 1
     fi
     
-		# Remove quarantine extended attributes
-		/usr/bin/xattr -d com.apple.quarantine "${plist_path}"
 }
 
 check_plist() {
@@ -230,8 +234,8 @@ write_launchd_program_arguments "${PathToLaunchDaemon}"
 # Enable tracing without trace output
 # { set -x; } 2>/dev/null
 
-# MARK: Set file ownership, privileges, remove quarantine
-set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
+# MARK: Set file ownership and permissions
+set_launchd_plist_privs "${PathToLaunchDaemon}"
 
 # MARK: Check launchd plist syntax
 check_plist "${PathToLaunchDaemon}"
