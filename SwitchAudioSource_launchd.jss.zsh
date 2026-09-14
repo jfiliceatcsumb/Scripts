@@ -41,13 +41,21 @@ mountPoint=$1
 computerName=$2
 userName=$3
 
-shift 3
-# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+if (( $# >= 3 )); then
+		# Shift off the $1 $2 $3 parameters passed by the JSS so that parameter 4 is now $1
+    shift 3
+fi
 
 echo "pathToScript=$pathToScript"
 echo "mountPoint=$mountPoint"
 echo "computerName=$computerName"
 echo "userName=$userName"
+
+# Installation requires root privileges.
+if (( EUID != 0 )); then
+    echo "Error: Run this script as root, through Jamf or sudo." >&2
+    exit 1
+fi
 
 # MARK: Input Values
 
@@ -57,11 +65,10 @@ mute_mode="${3:-}"
 
 # MARK: Set file paths
 readonly LaunchDaemonDomain="edu.csumb.it.SwitchAudioSource"
-readonly LaunchAgentLabel="${LaunchDaemonDomain}.${device_type}.agent"
 readonly LaunchDaemonLabel="${LaunchDaemonDomain}.${device_type}.daemon"
-
-readonly PathToLaunchAgent="/Library/LaunchAgents/${LaunchAgentLabel}.plist"
+readonly LaunchAgentLabel="${LaunchDaemonDomain}.${device_type}.agent"
 readonly PathToLaunchDaemon="/Library/LaunchDaemons/${LaunchDaemonLabel}.plist"
+readonly PathToLaunchAgent="/Library/LaunchAgents/${LaunchAgentLabel}.plist"
 readonly LaunchScript="/Library/Scripts/${LaunchDaemonDomain}.${device_type}.zsh"
 readonly Switch_Audio_Source="/usr/local/bin/SwitchAudioSource"
 
@@ -69,8 +76,11 @@ readonly Switch_Audio_Source="/usr/local/bin/SwitchAudioSource"
 write_launchd_script() {
     local script_path="$1"
 
-    /bin/mkdir -p "$(/usr/bin/dirname "${script_path}")"
-    /bin/cat > "${script_path}" <<EOF
+    if ! /bin/mkdir -p "$(/usr/bin/dirname "${script_path}")"; then
+        echo "Error: Could not create parent directory for ${script_path}." >&2
+        exit 1
+    fi
+    if ! /bin/cat > "${script_path}" <<EOF
 #!/bin/zsh --no-rcs
 
 Switch_Audio_Source=${(qq)Switch_Audio_Source}
@@ -126,33 +136,61 @@ fi
 echo "[\$(date)] Script completed."
 
 EOF
-    /usr/sbin/chown -fv 0:0 "${script_path}"
-    /bin/chmod -fv 755 "${script_path}"
+    then
+        echo "Error: Could not write generated script: ${script_path}" >&2
+        exit 1
+    fi
+    if ! /bin/zsh -f -n "${script_path}"; then
+        echo "Error: Generated script failed syntax validation: ${script_path}" >&2
+        exit 1
+    fi
+    if ! /usr/sbin/chown -fv 0:0 "${script_path}"; then
+        echo "Error: Could not set ownership: ${script_path}" >&2
+        exit 1
+    fi
+
+    if ! /bin/chmod -fv 755 "${script_path}"; then
+        echo "Error: Could not set executable permissions: ${script_path}" >&2
+        exit 1
+    fi
 }
 
 write_launchd_program_arguments() {
     local plist_path="$1"
-		local LaunchLabel=$(/usr/bin/basename ${plist_path} .plist)
-    [[ -f  "${plist_path}" ]] && /usr/bin/defaults delete "${plist_path}"
-    /usr/bin/defaults write "${plist_path}" 'ProgramArguments' -array "${LaunchScript}"
-		/usr/bin/defaults write "${plist_path}" 'Label' -string "${LaunchLabel}"
-		/usr/bin/defaults write "${plist_path}" 'StandardOutPath' -string "/private/var/log/${LaunchLabel}_stdout.log"
-		/usr/bin/defaults write "${plist_path}" 'StandardErrorPath' -string "/private/var/log/${LaunchLabel}_stderr.log"
-		/usr/bin/defaults write "${plist_path}" 'KeepAlive' -bool false
-		/usr/bin/defaults write "${plist_path}" 'RunAtLoad' -bool true
+    local LaunchLabel="${plist_path:t:r}"
+# ${plist_path:t:r} is zsh’s built-in equivalent of extracting the filename and removing its .plist extension.
+    if [[ -f "${plist_path}" ]]; then
+        if ! /usr/bin/defaults delete "${plist_path}"; then
+            echo "Error: Could not clear existing plist: ${plist_path}" >&2
+            exit 1
+        fi
+    fi
 
+    if ! {
+        /usr/bin/defaults write "${plist_path}" ProgramArguments -array "${LaunchScript}" &&
+        /usr/bin/defaults write "${plist_path}" Label -string "${LaunchLabel}" &&
+        /usr/bin/defaults write "${plist_path}" KeepAlive -bool false &&
+        /usr/bin/defaults write "${plist_path}" RunAtLoad -bool true &&
+        /usr/bin/defaults write "${plist_path}" LimitLoadToSessionType -array "Aqua" "LoginWindow"
+    }; then
+        echo "Error: Could not write launchd plist: ${plist_path}" >&2
+        exit 1
+    fi
 }
 
-set_launchd_plist_privs_quarantine() {
+set_launchd_plist_privs() {
     local plist_path="$1"
-		# Set file ownership and privileges
-		/usr/sbin/chown -fv 0:0 "${plist_path}"
-		/bin/chmod -fv 644 "${plist_path}"
-		/usr/sbin/chown -fv 0:0 "${plist_path}"
-		/bin/chmod -fv 644 "${plist_path}"
+    # Set file ownership and permissions
+    if ! /usr/sbin/chown -fv 0:0 "${plist_path}"; then
+        echo "Error: Could not set plist ownership: ${plist_path}" >&2
+        exit 1
+    fi
 		
-		# Remove quarantine extended attributes
-		/usr/bin/xattr -d com.apple.quarantine "${plist_path}"
+    if ! /bin/chmod -fv 644 "${plist_path}"; then
+        echo "Error: Could not set plist permissions: ${plist_path}" >&2
+        exit 1
+    fi
+    
 }
 
 check_plist() {
@@ -266,35 +304,58 @@ selectAudioSourceUID=$(echo "${allAudioSources}" | grep --ignore-case --max-coun
 # grep for the first source that is like the input $device_name_uid, then use awk to get the device_name as the first item.
 selectAudioSourceName=$(echo "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $1}')
 
-# MARK: Unload
-/bin/launchctl bootout loginwindow "${PathToLaunchAgent}" 2>/dev/null
-/bin/launchctl bootout system "${PathToLaunchDaemon}" 2>/dev/null
+# MARK: Unload existing jobs
+for service_target in \
+    "loginwindow/${LaunchAgentLabel}" \
+    "system/${LaunchDaemonLabel}"
+do
+    if /bin/launchctl print "${service_target}" >/dev/null 2>&1; then
+        if ! /bin/launchctl bootout "${service_target}"; then
+            echo "Error: Could not unload ${service_target}." >&2
+            exit 1
+        fi
+    fi
+done
 
-# MARK: Delete LaunchAgent 
-# No longer using a LaunchAgent, so delete any if they exists
-[[ -f  "${PathToLaunchAgent}" ]] && /bin/rm -v "/Library/LaunchAgents/${LaunchDaemonDomain}".*.plist
+# MARK: Delete old LaunchDaemon
+if [[ -f "${PathToLaunchDaemon}" ]]; then
+    echo "Deleting old LaunchDaemon plist file ${PathToLaunchDaemon}..."
+    if ! /bin/rm -v "${PathToLaunchDaemon}"; then
+        echo "Error: Could not delete ${PathToLaunchDaemon}." >&2
+        exit 1
+    fi
+fi
 
 # MARK: write_launchd_script
 write_launchd_script "${LaunchScript}"
 
-# MARK: Create LaunchDaemon
-echo "Creating LaunchDaemon plist file ${PathToLaunchDaemon}..."
-write_launchd_program_arguments "${PathToLaunchDaemon}"
-/usr/bin/defaults write "${PathToLaunchDaemon}" 'LimitLoadToSessionType' -array "Aqua" "LoginWindow"
+# MARK: Create LaunchAgent
+echo "Creating LaunchAgent plist file ${PathToLaunchAgent}..."
+write_launchd_program_arguments "${PathToLaunchAgent}"
 
 # Enable tracing without trace output
 # { set -x; } 2>/dev/null
 
-# MARK: Set file ownership, privileges, remove quarantine
-set_launchd_plist_privs_quarantine "${PathToLaunchDaemon}"
+# MARK: Set file ownership and permissions
+set_launchd_plist_privs "${PathToLaunchAgent}"
 
 # MARK: Check launchd plist syntax
-check_plist "${PathToLaunchDaemon}"
+check_plist "${PathToLaunchAgent}"
 
-# MARK: BOOSTRAPS
-/bin/launchctl bootstrap system "${PathToLaunchDaemon}" 2>&1
-/bin/launchctl enable system/${LaunchDaemonLabel} 2>&1
-/bin/launchctl kickstart -kp system/${LaunchDaemonLabel} 2>&1
+echo "Printing ${PathToLaunchAgent}..."
+/usr/libexec/PlistBuddy -x -c 'Print' "${PathToLaunchAgent}"
+echo ""
+
+# MARK: Load and start LaunchAgent
+# Load only into an existing LoginWindow domain.
+if /bin/launchctl print loginwindow >/dev/null 2>&1; then
+    if ! /bin/launchctl bootstrap loginwindow "${PathToLaunchAgent}"; then
+        echo "Error: Could not load ${LaunchAgentLabel} into LoginWindow." >&2
+        exit 1
+    fi
+else
+    echo "LoginWindow domain unavailable; deferring loading until a future session."
+fi
 
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
