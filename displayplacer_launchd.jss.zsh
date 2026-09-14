@@ -190,6 +190,7 @@ args_to_write=( "${(@)@:#}" )
 
 # MARK: Validation Logic
 
+# Validate executable file
 
 if command -v "$DISPLAYPLACER" &>/dev/null; then
     echo "$DISPLAYPLACER is installed and can be run."
