@@ -106,17 +106,17 @@ if [[ \${allAudioSourcesStatus} -ne 0 || -z "\${allAudioSources}" ]]; then
     exit 1
 fi
 
-matchedAudioSource=\$(echo "\${allAudioSources}" | grep --ignore-case --max-count=1 -e "\${device_name_uid}")
+matchedAudioSource=\$(printf '%s\n' "\${allAudioSources}" | grep --ignore-case --max-count=1 -e "\${device_name_uid}")
 
 if [[ -z "\${matchedAudioSource}" ]]; then
     echo "[\$(date)] Warning: Device '\${device_name_uid}' not currently available. It will be checked again the next time launchd loads this job." >&2
     exit 0
 fi
 
-selectAudioSourceName=\$(echo "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$1}')
-selectAudioSourceUID=\$(echo "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$NF}')
+selectAudioSourceName=\$(printf '%s\n' "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$1}')
+selectAudioSourceUID=\$(printf '%s\n' "\${matchedAudioSource}" | /usr/bin/awk -F',' '{print \$NF}')
 
-if echo "\${selectAudioSourceName}" | grep --ignore-case --quiet -e "\${device_name_uid}"; then
+if printf '%s\n' "\${selectAudioSourceName}" | grep --ignore-case --quiet -e "\${device_name_uid}"; then
     "\${Switch_Audio_Source}" -t "\${device_type}" -s "\${selectAudioSourceName}"
 elif [[ -n "\${selectAudioSourceName}" ]]; then
     "\${Switch_Audio_Source}" -t "\${device_type}" -u "\${selectAudioSourceUID}"
@@ -273,6 +273,11 @@ if [[ -n "${mute_mode}" ]]; then
             exit 1
             ;;
     esac
+		if [[ "${device_type}" == "system" && -n "${mute_mode}" ]]; then
+				echo "Error: Mute mode is not supported for device_type 'system'." >&2
+				echo "Leave Jamf parameter 6 empty when using device_type 'system'." >&2
+				exit 1
+		fi
 fi
 
 
@@ -298,13 +303,13 @@ echo "All audio sources..."
 echo "${allAudioSources}"
 
 echo "Find requested device ${device_name_uid}..."
-echo "${allAudioSources}" | grep --ignore-case -e "${device_name_uid}"
+printf '%s\n' "${allAudioSources}" | grep --ignore-case -e "${device_name_uid}"
 
 # grep for the first source that is like the input $device_name_uid, then use awk to get the device_UID as the last item.
-selectAudioSourceUID=$(echo "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $NF}')
+selectAudioSourceUID=$(printf '%s\n' "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $NF}')
 
 # grep for the first source that is like the input $device_name_uid, then use awk to get the device_name as the first item.
-selectAudioSourceName=$(echo "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $1}')
+selectAudioSourceName=$(printf '%s\n' "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $1}')
 
 # MARK: Unload existing jobs
 for service_target in \
