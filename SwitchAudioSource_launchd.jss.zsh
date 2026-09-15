@@ -106,7 +106,13 @@ if [[ \${allAudioSourcesStatus} -ne 0 || -z "\${allAudioSources}" ]]; then
     exit 1
 fi
 
-matchedAudioSource=\$(printf '%s\n' "\${allAudioSources}" | grep --ignore-case --max-count=1 -e "\${device_name_uid}")
+matchedAudioSource=\$(printf '%s\n' "\${allAudioSources}" | /usr/bin/grep --ignore-case --max-count=1 -e "\${device_name_uid}")
+matchStatus=\$?
+
+if (( matchStatus > 1 )); then
+    echo "[\$(date)] Error: Audio device matching failed; check the device name or UID search pattern." >&2
+    exit \${matchStatus}
+fi
 
 if [[ -z "\${matchedAudioSource}" ]]; then
     echo "[\$(date)] Warning: Device '\${device_name_uid}' not currently available. It will be checked again the next time launchd loads this job." >&2
