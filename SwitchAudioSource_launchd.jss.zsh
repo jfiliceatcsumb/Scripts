@@ -60,6 +60,7 @@ fi
 # MARK: Input Values
 
 device_type="${1:-output}"
+device_type="${device_type:l}" # Normalize all device_type values to lowercase
 device_name_uid="${2:-builtin}"
 mute_mode="${3:-}"
 
@@ -210,7 +211,7 @@ check_plist() {
 
 # MARK: Validation Logic
 
-# Validate executable file at /usr/local/bin/SwitchAudioSource
+# Validate executable file
 
 if command -v "$Switch_Audio_Source" &>/dev/null; then
     echo "$Switch_Audio_Source is installed and can be run."
@@ -221,8 +222,6 @@ fi
 
 
 # Validate device_type using a case statement
-# Temporarily set the style for case-insensitivity for 'case' comparisons
-zstyle ':case' GLOB_CASE_SENSITIVE false
 
 case "${device_type}" in
     input)
@@ -271,8 +270,6 @@ if [[ -n "${mute_mode}" ]]; then
     esac
 fi
 
-# Restore default case-sensitivity behavior (optional, good practice)
-zstyle ':case' GLOB_CASE_SENSITIVE true
 
 # MARK: MAIN
 echo "Script parameters are valid. Proceeding..."
