@@ -7,26 +7,25 @@
 # https://csumb.edu/it
 # 
 # This script requires /usr/local/bin/SwitchAudioSource version 1.2.2 or newer.
-# Sets  audio output to script input parameter. 
-# If multiple values are provided, the script will stop after setting it to the first match. 
+# Sets the requested audio device for input, output, or system sounds.
+# If multiple devices match, uses the first matching record.
 # Run by Jamf Pro.
-# 
+#
 # PARAMETERS:
-# 4: device type (input|output|system|all).  Defaults to output
-# 5: Audio device name or UID (case insensitive grep matching)
-# 6: Mute mode (mute|unmute|toggle)
+# 4: Device type (input|output|system). Defaults to output.
+# 5: Audio device name or UID (case-insensitive grep matching).
+# 6: Mute mode (mute|unmute). Empty leaves mute unchanged; unavailable for system.
 
 
 # ##### Debugging flags #####
-# debug bash script by enabling verbose “-v” option
+# Show zsh input lines as they are read.
 # set -v
-# debug bash script using noexec (Test for syntaxt errors)
+# Check zsh syntax without executing subsequent commands.
 # set -n
-# identify the unset variables while debugging bash script
+# Report references to unset variables.
 # set -u
-# debug bash script using xtrace
-# set -x
-# Enable tracing without trace output
+# Trace zsh commands as they execute.
+# set -x# Enable tracing without trace output
 # { set -x; } 2>/dev/null
 # Disable tracing without trace output
 # { set +x; } 2>/dev/null
@@ -63,6 +62,7 @@ device_type="${1:-output}"
 device_type="${device_type:l}" # Normalize all device_type values to lowercase
 device_name_uid="${2:-builtin}"
 mute_mode="${3:-}"
+mute_mode="${mute_mode:l}"
 
 # MARK: Set file paths
 readonly LaunchDaemonDomain="edu.csumb.it.SwitchAudioSource"
@@ -232,58 +232,36 @@ else
 fi
 
 
-# Validate device_type using a case statement
-
+# Validate device_type.
 case "${device_type}" in
-    input)
-        # Valid value, assign the value as lower-case. 
-				# SwitchAudioSource is case-senstive
-        device_type="input"
-        echo "Valid device_type: $device_type"
-        ;;
-    output)
-        # Valid value, assign the value as lower-case. 
-				# SwitchAudioSource is case-senstive
-        device_type="output"
-        echo "Valid device_type: $device_type"
-        ;;
-    system)
-        # Valid value, assign the value as lower-case. 
-				# SwitchAudioSource is case-senstive
-        device_type="system"
-        echo "Valid device_type: $device_type"
-        ;;
-    all)
-        # Valid value, assign the value as lower-case. 
-				# SwitchAudioSource is case-senstive
-        device_type="all"
-        echo "Valid device_type: $device_type"
+    input|output|system)
+        echo "Valid device_type: ${device_type}"
         ;;
     *)
-        # Invalid value, print error and exit
-        echo "Error: Invalid device_type value: $device_type" >&2
-        echo "Allowed values are: input, output, system, all." >&2
+        echo "Error: Invalid device_type value: ${device_type}" >&2
+        echo "Allowed values are: input, output, system." >&2
         exit 1
         ;;
 esac
 
-
+# An empty mute_mode leaves the mute state unchanged.
 if [[ -n "${mute_mode}" ]]; then
     case "${mute_mode}" in
-        mute|unmute|toggle)
-            echo "Valid mute_mode: $mute_mode"
+        mute|unmute)
+            echo "Valid mute_mode: ${mute_mode}"
             ;;
         *)
-            echo "Error: Invalid mute_mode value: $mute_mode" >&2
-            echo "Allowed values are: mute, unmute, toggle." >&2
+            echo "Error: Invalid mute_mode value: ${mute_mode}" >&2
+            echo "Allowed values are: mute, unmute, or empty." >&2
             exit 1
             ;;
     esac
-		if [[ "${device_type}" == "system" && -n "${mute_mode}" ]]; then
-				echo "Error: Mute mode is not supported for device_type 'system'." >&2
-				echo "Leave Jamf parameter 6 empty when using device_type 'system'." >&2
-				exit 1
-		fi
+
+    if [[ "${device_type}" == "system" ]]; then
+        echo "Error: Mute mode is not supported for device_type 'system'." >&2
+        echo "Leave Jamf parameter 6 empty when using device_type 'system'." >&2
+        exit 1
+    fi
 fi
 
 
@@ -306,16 +284,11 @@ if [[ ${allAudioSourcesStatus} -ne 0 || -z "${allAudioSources}" ]]; then
 fi
 
 echo "All audio sources..."
-echo "${allAudioSources}"
+printf '%s\n' "${allAudioSources}"
 
 echo "Find requested device ${device_name_uid}..."
 printf '%s\n' "${allAudioSources}" | grep --ignore-case -e "${device_name_uid}"
 
-# grep for the first source that is like the input $device_name_uid, then use awk to get the device_UID as the last item.
-selectAudioSourceUID=$(printf '%s\n' "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $NF}')
-
-# grep for the first source that is like the input $device_name_uid, then use awk to get the device_name as the first item.
-selectAudioSourceName=$(printf '%s\n' "${allAudioSources}" | grep --ignore-case --max-count=1 -e "${device_name_uid}" | /usr/bin/awk -F',' '{print $1}')
 
 # MARK: Unload existing jobs
 for service_target in \
@@ -379,7 +352,7 @@ exit 0
 
 # MARK: DOCUMENTATION AND REFERENCES 
 
-# Usage: 
+# Upstream SwitchAudioSource usage; this wrapper excludes 'all' and 'toggle':
 # SwitchAudioSource [-a] [-c] [-t type] [-n] -s device_name | -i device_id | -u device_uid
 # 	-a             : shows all devices
 # 	-c             : shows current device
