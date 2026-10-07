@@ -89,6 +89,16 @@ device_type=${(qq)device_type}
 device_name_uid=${(qq)device_name_uid}
 mute_mode=${(qq)mute_mode}
 
+# Use the executing account's home directory for logs.
+log_dir="\${HOME}/Library/Logs/${(qq)LaunchDaemonDomain}"
+
+if /bin/mkdir -p "\${log_dir}" && [[ -w "\${log_dir}" ]]; then
+# 	This redirects all subsequent output from the generated script into a log file
+    exec >> "\${log_dir}/SwitchAudioSource.${(qq)device_type}.log" 2>&1
+else
+    echo "Warning: Cannot create log directory: \${log_dir}" >&2
+fi
+
 echo "[\$(date)] Starting script..."
 
 if command -v "\${Switch_Audio_Source}" &>/dev/null; then
