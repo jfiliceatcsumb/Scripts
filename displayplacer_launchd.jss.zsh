@@ -81,9 +81,10 @@ write_launchd_script() {
 DISPLAYPLACER=${(qq)DISPLAYPLACER}
 
 # Use the executing account's home directory for logs.
-log_dir="\${HOME}/Library/Logs/edu.csumb.it.displayplacer"
+log_dir="\${HOME}/Library/Logs/${(qq)LaunchDaemonDomain}"
 
 if /bin/mkdir -p "\${log_dir}" && [[ -w "\${log_dir}" ]]; then
+# 	This redirects all subsequent output from the generated script into a log file
     exec >> "\${log_dir}/displayplacer.log" 2>&1
 else
     echo "Warning: Cannot create log directory: \${log_dir}" >&2
