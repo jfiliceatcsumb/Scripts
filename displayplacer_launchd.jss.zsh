@@ -12,7 +12,7 @@
 # Run by Jamf Pro.
 # 
 # PARAMETERS:
-# 4-9:displayplacer arguments
+# 4-9:displayplacer arguments (without quotes)
 
 
 
@@ -81,7 +81,7 @@ write_launchd_script() {
 DISPLAYPLACER=${(qq)DISPLAYPLACER}
 
 # Use the executing account's home directory for logs.
-log_dir="\${HOME}/Library/Logs/${(qq)LaunchDaemonDomain}"
+log_dir="\${HOME}/Library/Logs/${LaunchDaemonDomain}"
 
 if /bin/mkdir -p "\${log_dir}" && [[ -w "\${log_dir}" ]]; then
 # 	This redirects all subsequent output from the generated script into a log file
@@ -98,7 +98,13 @@ else
     echo "[\$(date)] Error: \${DISPLAYPLACER} is not installed." >&2
     exit 1
 fi
+# set -x# Enable tracing without trace output
+{ set -x; } 2>/dev/null
+
 "\${DISPLAYPLACER}" ${(j: :)${(@qq)args_to_write}}
+
+# Disable tracing without trace output
+{ set +x; } 2>/dev/null
 
 displayplacerStatus=\$?
 
@@ -203,7 +209,7 @@ fi
 
 non_null_count=${#args_to_write}
 
-echo "Arguments passed: $@"
+echo "Arguments passed: ${(@qq)@}"
 echo "Total arguments passed: ${non_null_count}"
 
 # Ensure minimum requirement is met
