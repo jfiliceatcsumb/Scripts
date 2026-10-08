@@ -90,11 +90,11 @@ device_name_uid=${(qq)device_name_uid}
 mute_mode=${(qq)mute_mode}
 
 # Use the executing account's home directory for logs.
-log_dir="\${HOME}/Library/Logs/${(qq)LaunchDaemonDomain}"
+log_dir="\${HOME}/Library/Logs/${LaunchDaemonDomain}"
 
 if /bin/mkdir -p "\${log_dir}" && [[ -w "\${log_dir}" ]]; then
 # 	This redirects all subsequent output from the generated script into a log file
-    exec >> "\${log_dir}/SwitchAudioSource.${(qq)device_type}.log" 2>&1
+    exec >> "\${log_dir}/SwitchAudioSource.${device_type}.log" 2>&1
 else
     echo "Warning: Cannot create log directory: \${log_dir}" >&2
 fi
@@ -107,6 +107,9 @@ else
     echo "[\$(date)] Error: \${Switch_Audio_Source} is not installed." >&2
     exit 1
 fi
+
+# Enable tracing without trace output
+# { set -x; } 2>/dev/null
 
 allAudioSources=\$("\${Switch_Audio_Source}" -a -f cli -t "\${device_type}")
 allAudioSourcesStatus=\$?
@@ -154,6 +157,8 @@ if [[ -n "\${mute_mode}" ]]; then
         exit \${muteStatus}
     fi
 fi
+# Disable tracing without trace output
+{ set +x; } 2>/dev/null
 
 echo "[\$(date)] Script completed."
 
