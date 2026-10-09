@@ -9,16 +9,19 @@
 
 
 
-# This script requires .
+# This script requires loopdown 2.0.3. 
+# https://github.com/carlashley/loopdown/releases#release-v2.0.3
+# loopdown in Swift, without Python
+# Minimum Requirements:
+# macOS 14.0+
+# Intel/Apple Silicon CPU
+
 # Run it with no arguments. 
 # 
 # For best results, copy it to the Mac and run it as a post-flight task in DeployStudio 
 # or postinstall script in a PKG installer.
 
 
-# Change History:
-# 2022/MM/DD:	Creation.
-#
 
 SCRIPTNAME=$(/usr/bin/basename "$0")
 SCRIPTDIR=$(/usr/bin/dirname "$0")
@@ -31,8 +34,15 @@ targetVolume=$3
 
 # Example:
 /bin/ls -FlOah "${SCRIPTDIR}"
-"${SCRIPTDIR}"/loopdown-1.0.20250919 --discover-plists
-"${SCRIPTDIR}"/loopdown-1.0.20250919 --apps garageband --mandatory --install
+"${SCRIPTDIR}"/loopdown deploy --app garageband --core
+
+#   deploy                  Install content for selected apps; requires root level privilege.
+#   -a, --app <app>   Install content for an app (default: all supported apps).
+# 										values: garageband, logicpro, mainstage
+#   -e, --essential   Select essential content (Logic Pro 12+ and MainStage 4+ only).
+#   -r, --core        Select core content (equivalent to old -r, --req for Legacy apps).
+#   -o, --optional    Select optional content.
+
 
 exit 0
 
