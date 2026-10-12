@@ -42,6 +42,7 @@ targetVolume=$3
 #   -e, --essential   Select essential content (Logic Pro 12+ and MainStage 4+ only).
 #   -r, --core        Select core content (equivalent to old -r, --req for Legacy apps).
 #   -o, --optional    Select optional content.
+# 	-f, --force      Force install content packages regardless of existing install state.
 
 
 exit 0
