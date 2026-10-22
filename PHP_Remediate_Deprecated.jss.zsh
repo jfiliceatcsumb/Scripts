@@ -12,32 +12,33 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# Target current user console to correctly invoke user-space Homebrew environments
+# Target current user console to correctly invoke user-space package manager environments
 CURRENT_USER=$(stat -f '%Su' /dev/console)
 USER_HOME=$(dscl . -read "/Users/$CURRENT_USER" NFSHomeDirectory | awk '{print $2}')
 
-# Arrays to target specific End-Of-Life (EOL) versions
+# Arrays to target specific End-Of-Life (EOL) versions (<= PHP 8.0)
 DEPRECATED_BREW_PACKAGES=("php@7.1" "php@7.2" "php@7.3" "php@7.4" "php@8.0")
 DEPRECATED_PORTS=("php56" "php70" "php71" "php72" "php73" "php74" "php80")
 
 echo "Starting PHP remediation cleanup for active user: $CURRENT_USER"
 
 # -------------------------------------------------------------------------
-# 1. REMOVE DEPRECATED HOMEBREW PACKAGES
+# 1. REMOVE DEPRECATED PACKAGES VIA HOMEBREW / WORKBREW
 # -------------------------------------------------------------------------
-# Homebrew must be executed in the context of the logged-in user
-for BREW_PREFIX in "/opt/homebrew/bin/brew" "/usr/local/bin/brew"; do
+# Loops through Workbrew, Apple Silicon, and Intel Homebrew paths
+for BREW_PREFIX in "/opt/workbrew/bin/brew" "/opt/homebrew/bin/brew" "/usr/local/bin/brew"; do
     if [[ -x "$BREW_PREFIX" ]]; then
-        echo "Found Homebrew at $BREW_PREFIX. Checking for deprecated packages..."
+        echo "Found environment manager at $BREW_PREFIX. Checking for deprecated packages..."
         
         for pkg in "${DEPRECATED_BREW_PACKAGES[@]}"; do
+            # Execute brew in the context of the active user to locate formula states safely
             if sudo -u "$CURRENT_USER" HOME="$USER_HOME" "$BREW_PREFIX" list --formula | grep -q "^${pkg}$"; then
-                echo "Removing outdated Homebrew package: $pkg"
+                echo "Removing outdated package: $pkg from $BREW_PREFIX"
                 sudo -u "$CURRENT_USER" HOME="$USER_HOME" "$BREW_PREFIX" uninstall --force "$pkg"
             fi
         done
         
-        # Clean up unneeded build leftovers and cached files
+        # Clean up unneeded build leftovers and cached files for this environment
         sudo -u "$CURRENT_USER" HOME="$USER_HOME" "$BREW_PREFIX" cleanup -s
     fi
 done
@@ -64,8 +65,8 @@ fi
 # -------------------------------------------------------------------------
 echo "Scanning structural symlinks for dead references..."
 
-# If the default Homebrew alias points to a legacy version, unbind it
-for ALIAS_PATH in "/opt/homebrew/bin/php" "/usr/local/bin/php"; do
+# If the default Workbrew or Homebrew alias points to a legacy version, unbind it
+for ALIAS_PATH in "/opt/workbrew/bin/php" "/opt/homebrew/bin/php" "/usr/local/bin/php"; do
     if [[ -L "$ALIAS_PATH" ]]; then
         REAL_TARGET=$(readlink "$ALIAS_PATH")
         if [[ "$REAL_TARGET" =~ "php@(7\.|8\.0)" ]]; then
