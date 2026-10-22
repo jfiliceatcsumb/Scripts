@@ -46,13 +46,13 @@ check_php_binary() {
 # 1. Native macOS (macOS 11 Big Sur and older)
 check_php_binary "/usr/bin/php"
 
-# 2. Homebrew (Apple Silicon & Intel paths)
-for brew_prefix in "/opt/homebrew" "/usr/local"; do
+# 2. Managed & Open Source Homebrew Ecosystem (Workbrew, Apple Silicon, & Intel)
+for brew_prefix in "/opt/workbrew" "/opt/homebrew" "/usr/local"; do
     if [[ -d "$brew_prefix" ]]; then
-        # Default active homebrew php link
+        # Default active php link under this prefix
         check_php_binary "$brew_prefix/bin/php"
         
-        # Version-pinned links (e.g., /opt/homebrew/opt/php@8.2/bin/php)
+        # Version-pinned links (e.g., /opt/workbrew/opt/php@8.3/bin/php)
         for pin in $brew_prefix/opt/php@*/bin/php(N); do
             check_php_binary "$pin"
         done
@@ -86,4 +86,5 @@ if [[ -n "$RESULT_STRING" ]]; then
 else
     echo "<result>None</result>"
 fi
+
 exit 0
