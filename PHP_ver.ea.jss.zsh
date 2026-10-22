@@ -6,6 +6,10 @@
 # California State University, Monterey Bay
 # https://csumb.edu/it
 
+# All discovered versions and their respective paths are aggregated into a clean, comma-separated list formatted as [Version] at [Path]. 
+# If multiple versions exist, they are separated by a newline character within the single <result> tag block.
+# If no PHP binaries are found, it gracefully outputs <result>None</result>
+
 # Array to track unique real paths and prevent duplicates (e.g., symlinks)
 typeset -A SEEN_PATHS
 RESULT_STRING=""
