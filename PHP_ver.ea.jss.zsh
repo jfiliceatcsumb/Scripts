@@ -1,0 +1,85 @@
+#!/bin/zsh --no-rcs
+# 
+# Jason Filice
+# jfilice@csumb.edu
+# Technology Support Services in IT
+# California State University, Monterey Bay
+# https://csumb.edu/it
+
+# Array to track unique real paths and prevent duplicates (e.g., symlinks)
+typeset -A SEEN_PATHS
+RESULT_STRING=""
+
+# Function to check a PHP binary, extract version, and add to results
+check_php_binary() {
+    local php_path="$1"
+    
+    # Verify the file exists and is executable
+    [[ -x "$php_path" ]] || return
+
+    # Resolve the absolute real path to filter out duplicate symlinks
+    local real_path
+    real_path=$(zmodload zsh/stat &>/dev/null && stat +link "$php_path" 2>/dev/null || readlink -f "$php_path" 2>/dev/null)
+    [[ -z "$real_path" ]] && real_path="$php_path"
+
+    # Skip if we already evaluated this exact binary
+    [[ -n "${SEEN_PATHS[$real_path]}" ]] && return
+    SEEN_PATHS[$real_path]=1
+
+    # Extract version string safely
+    local version
+    version=$("$php_path" -r 'echo PHP_VERSION;' 2>/dev/null)
+
+    if [[ -n "$version" ]]; then
+        if [[ -z "$RESULT_STRING" ]]; then
+            RESULT_STRING="${version} at ${php_path}"
+        else
+            RESULT_STRING="${RESULT_STRING}\n${version} at ${php_path}"
+        fi
+    fi
+}
+
+# 1. Native macOS (macOS 11 Big Sur and older)
+check_php_binary "/usr/bin/php"
+
+# 2. Homebrew (Apple Silicon & Intel paths)
+for brew_prefix in "/opt/homebrew" "/usr/local"; do
+    if [[ -d "$brew_prefix" ]]; then
+        # Default active homebrew php link
+        check_php_binary "$brew_prefix/bin/php"
+        
+        # Version-pinned links (e.g., /opt/homebrew/opt/php@8.2/bin/php)
+        for pin in $brew_prefix/opt/php@*/bin/php(N); do
+            check_php_binary "$pin"
+        done
+    fi
+done
+
+# 3. MacPorts
+if [[ -d "/opt/local/bin" ]]; then
+    check_php_binary "/opt/local/bin/php"
+    for port_bin in /opt/local/bin/php[0-9]#(N); do
+        check_php_binary "$port_bin"
+    done
+fi
+
+# 4. Fink
+if [[ -d "/sw/bin" ]]; then
+    check_php_binary "/sw/bin/php"
+    for fink_bin in /sw/bin/php[0-9.]#(N); do
+        check_php_binary "$fink_bin"
+    done
+fi
+
+# 5. Environment PATH Fallback (for any custom or user-level installations)
+if (( $+commands[php] )); then
+    check_php_binary "$commands[php]"
+fi
+
+# Format output for Jamf Pro
+if [[ -n "$RESULT_STRING" ]]; then
+    echo "<result>${RESULT_STRING}</result>"
+else
+    echo "<result>None</result>"
+fi
+exit 0
