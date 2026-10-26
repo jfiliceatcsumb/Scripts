@@ -10,6 +10,19 @@
 # If multiple versions exist, they are separated by a newline character within the single <result> tag block.
 # If no PHP binaries are found, it gracefully outputs <result>None</result>
 
+# search_paths
+# "/opt/homebrew/bin/php"
+# "/opt/homebrew/opt/php*/bin/php"
+# "/usr/local/bin/php"
+# "/usr/local/opt/php*/bin/php"
+# "/Applications/MAMP/bin/php/php*/bin/php"
+# "/Applications/Herd.app/Contents/Resources/valet/bin/php*"
+# "$HOME/.config/herd/bin/php*"
+# "$HOME/.asdf/shims/php"
+# "$HOME/.jenv/shims/php"
+# 
+
+
 # Array to track unique real paths and prevent duplicates (e.g., symlinks)
 typeset -A SEEN_PATHS
 RESULT_STRING=""
@@ -75,10 +88,30 @@ if [[ -d "/sw/bin" ]]; then
     done
 fi
 
-# 5. Environment PATH Fallback (for any custom or user-level installations)
+# 5. MAMP
+if [[ -d "/Applications/MAMP/bin" ]]; then
+    check_php_binary "/Applications/MAMP/bin/php"
+    for mamp_bin in /Applications/MAMP/bin/php/php[0-9.]#(N); do
+        check_php_binary "$mamp_bin"
+    done
+fi
+
+
+# 6. Herd
+if [[ -d "/Applications/Herd.app/Contents/Resources/valet/bin" ]]; then
+    check_php_binary "/Applications/Herd.app/Contents/Resources/valet/bin/php"
+    for herd_bin in /Applications/Herd.app/Contents/Resources/valet/bin/php[0-9.]#(N); do
+        check_php_binary "$herd_bin"
+    done
+fi
+
+
+
+# 7. Environment PATH Fallback (for any custom or user-level installations)
 if (( $+commands[php] )); then
     check_php_binary "$commands[php]"
 fi
+
 
 # Format output for Jamf Pro
 if [[ -n "$RESULT_STRING" ]]; then
